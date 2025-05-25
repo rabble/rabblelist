@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useOnlineStatus } from '../useOnlineStatus'
+import { useOnlineStatus, isOnline, isOffline } from '../useOnlineStatus'
 
 describe('useOnlineStatus', () => {
   // Store original values
@@ -117,6 +117,13 @@ describe('useOnlineStatus', () => {
         call => call[0] === 'online'
       )?.[1]
 
+      // Simulate going online
+      Object.defineProperty(navigator, 'onLine', {
+        writable: true,
+        configurable: true,
+        value: true
+      })
+
       // Trigger online event
       act(() => {
         onlineHandler?.()
@@ -141,6 +148,13 @@ describe('useOnlineStatus', () => {
         call => call[0] === 'offline'
       )?.[1]
 
+      // Simulate going offline
+      Object.defineProperty(navigator, 'onLine', {
+        writable: true,
+        configurable: true,
+        value: false
+      })
+
       // Trigger offline event
       act(() => {
         offlineHandler?.()
@@ -150,6 +164,12 @@ describe('useOnlineStatus', () => {
     })
 
     it('should handle multiple status changes', () => {
+      Object.defineProperty(navigator, 'onLine', {
+        writable: true,
+        configurable: true,
+        value: true
+      })
+
       const { result } = renderHook(() => useOnlineStatus())
 
       const onlineHandler = mockAddEventListener.mock.calls.find(
@@ -160,14 +180,29 @@ describe('useOnlineStatus', () => {
       )?.[1]
 
       // Go offline
+      Object.defineProperty(navigator, 'onLine', {
+        writable: true,
+        configurable: true,
+        value: false
+      })
       act(() => offlineHandler?.())
       expect(result.current).toBe(false)
 
       // Go online
+      Object.defineProperty(navigator, 'onLine', {
+        writable: true,
+        configurable: true,
+        value: true
+      })
       act(() => onlineHandler?.())
       expect(result.current).toBe(true)
 
       // Go offline again
+      Object.defineProperty(navigator, 'onLine', {
+        writable: true,
+        configurable: true,
+        value: false
+      })
       act(() => offlineHandler?.())
       expect(result.current).toBe(false)
     })
@@ -182,8 +217,8 @@ describe('useOnlineStatus', () => {
       })
 
       const { result } = renderHook(() => useOnlineStatus())
-      // useState preserves undefined as the initial value
-      expect(result.current).toBe(undefined)
+      // Should default to false when undefined (due to ?? operator)
+      expect(result.current).toBe(false)
     })
 
     it('should not cause memory leaks on rapid mount/unmount', () => {
@@ -203,4 +238,50 @@ describe('useOnlineStatus', () => {
       expect(removeCalls).toBe(2) // Should only have 2 removes (online and offline)
     })
   })
+
+  describe('utility functions', () => {
+    it('isOnline should return current online status', () => {
+      Object.defineProperty(navigator, 'onLine', {
+        writable: true,
+        configurable: true,
+        value: true
+      })
+      expect(isOnline()).toBe(true)
+
+      Object.defineProperty(navigator, 'onLine', {
+        writable: true,
+        configurable: true,
+        value: false
+      })
+      expect(isOnline()).toBe(false)
+    })
+
+    it('isOffline should return inverse of online status', () => {
+      Object.defineProperty(navigator, 'onLine', {
+        writable: true,
+        configurable: true,
+        value: true
+      })
+      expect(isOffline()).toBe(false)
+
+      Object.defineProperty(navigator, 'onLine', {
+        writable: true,
+        configurable: true,
+        value: false
+      })
+      expect(isOffline()).toBe(true)
+    })
+
+    it('utility functions should handle undefined navigator.onLine', () => {
+      Object.defineProperty(navigator, 'onLine', {
+        writable: true,
+        configurable: true,
+        value: undefined
+      })
+      
+      expect(isOnline()).toBe(false)
+      expect(isOffline()).toBe(true)
+    })
+  })
+
 })
