@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "setup:twilio": "node scripts/setup-twilio.js",
+    "setup:cloudflare-secrets": "./scripts/setup-cloudflare-secrets.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -21,6 +23,7 @@
     "@twilio/voice-sdk": "^2.13.0",
     "@types/papaparse": "^5.3.16",
     "clsx": "^2.1.1",
+    "dotenv": "^16.5.0",
     "idb": "^8.0.3",
     "lucide-react": "^0.511.0",
     "papaparse": "^5.5.3",

@@ -10,6 +10,7 @@ import { ContactDetail } from '@/features/contacts/ContactDetail'
 import { ContactImport } from '@/features/contacts/ContactImport'
 import { EventsManagement } from '@/features/events/EventsManagement'
 import { EventDetail } from '@/features/events/EventDetail'
+import { EventForm } from '@/features/events/EventForm'
 import { GroupsManagement } from '@/features/groups/GroupsManagement'
 import { PathwaysManagement } from '@/features/pathways/PathwaysManagement'
 import { AdminDashboard } from '@/features/admin/AdminDashboard'
@@ -101,12 +102,32 @@ function App() {
             }
           />
           
+          {/* Create Event */}
+          <Route
+            path="/events/new"
+            element={
+              <ProtectedRoute>
+                <EventForm />
+              </ProtectedRoute>
+            }
+          />
+          
           {/* Event Detail */}
           <Route
             path="/events/:id"
             element={
               <ProtectedRoute>
                 <EventDetail />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Edit Event */}
+          <Route
+            path="/events/:id/edit"
+            element={
+              <ProtectedRoute>
+                <EventForm />
               </ProtectedRoute>
             }
           />
