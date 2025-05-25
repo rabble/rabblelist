@@ -11,13 +11,11 @@ import {
   Users, 
   Calendar, 
   Target,
-  Clock,
   CheckCircle,
-  AlertCircle,
   TrendingUp,
   Loader2
 } from 'lucide-react'
-import type { DashboardStats, CallLog } from '@/types'
+import type { DashboardStats } from '@/types'
 
 export function Dashboard() {
   const { profile } = useAuth()

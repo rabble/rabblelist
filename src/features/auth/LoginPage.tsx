@@ -205,19 +205,29 @@ export function LoginPage() {
                 </Button>
               </div>
 
-              <div className="text-center pt-2">
+              <div className="text-center pt-2 space-y-2">
                 <button
                   type="button"
                   onClick={() => {
                     setMode(mode === 'signin' ? 'signup' : 'signin')
                     setError(null)
                   }}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium block w-full"
                 >
                   {mode === 'signin' 
                     ? "Don't have an account? Sign up" 
                     : "Already have an account? Sign in"}
                 </button>
+                
+                {mode === 'signin' && (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/reset-password')}
+                    className="text-sm text-gray-600 hover:text-gray-900"
+                  >
+                    Forgot your password?
+                  </button>
+                )}
               </div>
             </form>
           </CardContent>

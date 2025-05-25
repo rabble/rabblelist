@@ -4,7 +4,6 @@ import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { useContactStore } from '@/stores/contactStore'
-import { ContactService } from '../contacts.service'
 import { 
   Plus,
   Search,
@@ -14,16 +13,12 @@ import {
   MoreVertical,
   Phone,
   Mail,
-  MapPin,
-  Tag,
   Calendar,
   Edit,
   Trash2,
   Users,
-  CheckSquare,
   X
 } from 'lucide-react'
-import type { Contact } from '@/types'
 
 interface FilterOptions {
   tags: string[]

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from '@/features/auth/AuthContext'
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute'
 import { LoginPage } from '@/features/auth/LoginPage'
+import { ResetPassword } from '@/features/auth/ResetPassword'
 import { ContactQueue } from '@/features/contacts/ContactQueue'
 import { Dashboard } from '@/features/dashboard/Dashboard'
 import { ContactsManagement } from '@/features/contacts/management/ContactsManagement'
@@ -21,6 +22,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           
           {/* Main Dashboard */}
           <Route

@@ -14,7 +14,6 @@ import {
   Trash2,
   ArrowLeft,
   Clock,
-  User,
   MessageSquare,
   Loader2,
   CheckCircle,

@@ -78,7 +78,6 @@ export function EventDetail() {
         start_time: newDate.toISOString(),
         end_time: event.end_time ? new Date(new Date(event.end_time).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString() : null,
         location: event.location,
-        is_virtual: event.is_virtual,
         capacity: event.capacity,
         settings: event.settings
       })

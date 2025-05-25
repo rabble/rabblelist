@@ -17,7 +17,7 @@ interface Stats {
 
 export function AdminDashboard() {
   const navigate = useNavigate()
-  const { organization } = useAuth()
+  const { } = useAuth()
   const [stats, setStats] = useState<Stats>({
     totalContacts: 0,
     totalCalls: 0,

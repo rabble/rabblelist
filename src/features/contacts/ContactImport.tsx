@@ -189,7 +189,7 @@ export function ContactImport() {
           phone: row.phone,
           email: row.email,
           address: row.address,
-          tags: row.tags || []
+          tags: Array.isArray(row.tags) ? row.tags : (row.tags ? [row.tags] : [])
         }))
       )
       

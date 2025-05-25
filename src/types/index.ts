@@ -82,7 +82,7 @@ export interface ContactImportRow {
   phone: string
   email?: string
   address?: string
-  tags?: string
+  tags?: string | string[]
   [key: string]: any
 }
 

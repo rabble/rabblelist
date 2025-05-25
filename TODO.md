@@ -12,8 +12,8 @@
 - [ ] Add retry logic for failed database operations
 
 ### 2. Complete Authentication System
-- [ ] Implement real user registration flow
-- [ ] Add password reset functionality
+- [x] Implement real user registration flow
+- [x] Add password reset functionality
 - [ ] Implement proper session management
 - [ ] Add refresh token handling
 - [ ] Create proper logout that clears all local data

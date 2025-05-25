@@ -17,7 +17,6 @@ import {
   ArrowLeft,
   Loader2,
   Globe,
-  Building
 } from 'lucide-react'
 
 // Validation schema
@@ -43,13 +42,12 @@ export function EventForm() {
   const { createEvent, updateEvent } = useEventStore()
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [existingEvent, setExistingEvent] = useState<any>(null)
+  const [, setExistingEvent] = useState<any>(null)
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
     watch,
     reset
   } = useForm<EventFormValues>({

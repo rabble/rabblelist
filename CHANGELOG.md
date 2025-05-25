@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cloudflare Pages deployment configuration
 - Twilio telephony integration for anonymous calling
 - Database schema for call sessions and transcripts
+- Password reset functionality with email recovery
+- User registration with organization creation
 
 ### Changed
 - Updated environment configuration for Supabase and Twilio

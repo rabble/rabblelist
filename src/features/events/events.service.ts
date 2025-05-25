@@ -94,7 +94,6 @@ export class EventService {
         .insert({
           ...event,
           organization_id: orgId,
-          is_virtual: event.is_virtual || false,
           settings: event.settings || {}
         })
         .select()

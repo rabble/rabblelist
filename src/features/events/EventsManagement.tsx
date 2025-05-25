@@ -16,7 +16,6 @@ import {
   Search,
   ChevronRight,
   AlertCircle,
-  CheckCircle,
   Loader2,
   Filter
 } from 'lucide-react'
