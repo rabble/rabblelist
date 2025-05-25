@@ -187,10 +187,11 @@ export function ContactImport() {
         parsedData.valid.map(row => ({
           full_name: row.full_name,
           phone: row.phone,
-          email: row.email,
-          address: row.address,
-          tags: Array.isArray(row.tags) ? row.tags : (row.tags ? [row.tags] : [])
-        }))
+          email: row.email || null,
+          address: row.address || null,
+          tags: Array.isArray(row.tags) ? row.tags : (row.tags ? [row.tags] : []),
+          organization_id: '' // Will be set by the service
+        }) as any)
       )
       
       if (error) {

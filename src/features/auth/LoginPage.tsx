@@ -31,7 +31,16 @@ export function LoginPage() {
         const { error } = await signIn(email, password)
         
         if (error) {
-          setError(error.message)
+          // Provide user-friendly error messages
+          if (error.message.includes('Invalid login credentials')) {
+            setError('Invalid email or password. Please try again.')
+          } else if (error.message.includes('Email not confirmed')) {
+            setError('Please check your email to confirm your account before signing in.')
+          } else if (error.message.includes('Network')) {
+            setError('Network error. Please check your connection and try again.')
+          } else {
+            setError(error.message)
+          }
         } else {
           navigate(from, { replace: true })
         }
@@ -45,13 +54,23 @@ export function LoginPage() {
         )
         
         if (error) {
-          setError(error.message)
-        } else {
-          // Auto sign in after registration
-          const { error: signInError } = await signIn(email, password)
-          if (!signInError) {
-            navigate('/', { replace: true })
+          // Provide user-friendly error messages for signup
+          if (error.message.includes('already registered')) {
+            setError('An account with this email already exists. Please sign in instead.')
+          } else if (error.message.includes('Password')) {
+            setError('Password must be at least 6 characters long.')
+          } else if (error.message.includes('valid email')) {
+            setError('Please enter a valid email address.')
+          } else {
+            setError(error.message)
           }
+        } else {
+          // Show success message
+          setError(null)
+          setMode('signin')
+          setPassword('')
+          // Note: User needs to confirm email before signing in
+          alert('Account created! Please check your email to confirm your account before signing in.')
         }
       }
     } catch (err) {

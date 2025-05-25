@@ -233,11 +233,6 @@ export function EventsManagement() {
                         )}
                       </div>
                       <div className="flex items-center gap-2 ml-4">
-                        {event.is_virtual && (
-                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                            Virtual
-                          </span>
-                        )}
                         {new Date(event.start_time) > new Date() && (
                           <Clock className="w-4 h-4 text-blue-600" />
                         )}
@@ -322,11 +317,11 @@ export function EventsManagement() {
                   No events found
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  {searchTerm || filterStatus !== 'all' || filterType !== 'all'
-                    ? 'Try adjusting your filters'
+                  {searchTerm
+                    ? 'Try adjusting your search'
                     : 'Create your first event to get started'}
                 </p>
-                {!searchTerm && filterStatus === 'all' && filterType === 'all' && (
+                {!searchTerm && (
                   <Button onClick={() => navigate('/events/new')}>
                     <Plus className="w-4 h-4 mr-2" />
                     Create Event

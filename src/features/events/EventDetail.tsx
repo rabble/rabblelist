@@ -79,8 +79,9 @@ export function EventDetail() {
         end_time: event.end_time ? new Date(new Date(event.end_time).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString() : null,
         location: event.location,
         capacity: event.capacity,
-        settings: event.settings
-      })
+        settings: event.settings,
+        organization_id: '' // Will be set by the service
+      } as any)
 
       if (error || !data) {
         alert('Failed to duplicate event')

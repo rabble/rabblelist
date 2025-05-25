@@ -1,4 +1,5 @@
-import { openDB, DBSchema, IDBPDatabase } from 'idb'
+import { openDB } from 'idb'
+import type { DBSchema, IDBPDatabase } from 'idb'
 import type { Contact, CallLog, Event, SyncChange } from '@/types'
 
 interface ContactManagerDB extends DBSchema {
@@ -161,7 +162,8 @@ export async function addToSyncQueue(change: Omit<SyncChange, 'id'>): Promise<vo
 
 export async function getPendingSyncChanges(): Promise<SyncChange[]> {
   const db = await getDB()
-  return db.getAllFromIndex('sync_queue', 'by-synced', false)
+  const changes = await db.getAllFromIndex('sync_queue', 'by-synced', IDBKeyRange.only(0))
+  return changes.filter(change => !change.synced)
 }
 
 export async function markSynced(id: string): Promise<void> {

@@ -4,7 +4,7 @@ import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { useAuth } from '@/features/auth/AuthContext'
-import { supabase, isDemoMode } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { 
   Plus,
   Users,
@@ -47,7 +47,7 @@ interface GroupMember {
 }
 
 export function GroupsManagement() {
-  const { user } = useAuth()
+  const { profile } = useAuth()
   const navigate = useNavigate()
   const [groups, setGroups] = useState<Group[]>([])
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null)
@@ -161,7 +161,7 @@ export function GroupsManagement() {
     try {
       setLoading(true)
       
-      if (isDemoMode) {
+      if (true) { // Using mock data for now
         let filtered = [...mockGroups]
         
         if (filterType !== 'all') {
@@ -184,7 +184,7 @@ export function GroupsManagement() {
         let query = supabase
           .from('groups')
           .select('*')
-          .eq('organization_id', user?.organization_id)
+          .eq('organization_id', profile?.organization_id || '')
           .eq('active', true)
           .order('name')
         
@@ -213,7 +213,7 @@ export function GroupsManagement() {
 
   const loadGroupMembers = async (groupId: string) => {
     try {
-      if (isDemoMode) {
+      if (true) { // Using mock data for now
         const members = mockMembers.filter(m => m.group_id === groupId)
         setGroupMembers(members)
       } else {
@@ -242,7 +242,7 @@ export function GroupsManagement() {
     if (!confirm('Are you sure you want to delete this group? This action cannot be undone.')) return
     
     try {
-      if (isDemoMode) {
+      if (true) { // Using mock data for now
         setGroups(prev => prev.filter(g => g.id !== groupId))
         if (selectedGroup?.id === groupId) {
           setSelectedGroup(null)

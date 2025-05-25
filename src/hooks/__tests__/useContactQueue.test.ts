@@ -1,133 +1,187 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { renderHook } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { renderHook, waitFor } from '@testing-library/react'
 import { useContactQueue } from '../useContactQueue'
-import { useContactStore } from '@/stores/contactStore'
 import { useAuthStore } from '@/stores/authStore'
-import type { User } from '@/types'
+import { useContactStore } from '@/stores/contactStore'
+import type { User, CallQueueItem } from '@/types'
 
-// Mock the dependencies
-vi.mock('@/stores/contactStore')
+// Mock the stores
 vi.mock('@/stores/authStore')
+vi.mock('@/stores/contactStore')
 
 describe('useContactQueue', () => {
-  // Mock functions
-  const mockLoadContacts = vi.fn()
-  
-  // Mock data
   const mockUser: User = {
     id: 'user-123',
     organization_id: 'org-123',
     email: 'test@example.com',
     full_name: 'Test User',
     role: 'ringer',
-    phone: '1234567890',
+    phone: null,
     settings: {},
-    last_active: '2024-01-01',
+    last_active: null,
     created_at: '2024-01-01',
     updated_at: '2024-01-01'
   }
 
-  const mockContacts = [
-    { id: '1', full_name: 'John Doe' },
-    { id: '2', full_name: 'Jane Smith' }
+  const mockContacts: CallQueueItem[] = [
+    {
+      id: '1',
+      organization_id: 'org-123',
+      external_id: null,
+      full_name: 'John Doe',
+      phone: '+1234567890',
+      email: 'john@example.com',
+      address: null,
+      tags: [],
+      custom_fields: {},
+      last_contact_date: null,
+      total_events_attended: 0,
+      created_at: '2024-01-01',
+      updated_at: '2024-01-01',
+      priority: 1,
+      assigned_at: '2024-01-01'
+    }
   ]
+
+  const mockLoadQueue = vi.fn()
+  
+  // Create mock selectors
+  const createMockContactStore = (overrides = {}) => {
+    const defaults = {
+      queue: [],
+      currentIndex: 0,
+      isLoadingQueue: false,
+      loadQueue: mockLoadQueue,
+      ...overrides
+    }
+    
+    return (selector: any) => {
+      if (typeof selector === 'function') {
+        return selector(defaults)
+      }
+      return defaults
+    }
+  }
+  
+  const createMockAuthStore = (user: User | null) => {
+    return (selector: any) => {
+      if (typeof selector === 'function') {
+        return selector({ user })
+      }
+      return { user }
+    }
+  }
 
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  afterEach(() => {
-    vi.clearAllMocks()
-  })
-
   describe('when user is not authenticated', () => {
     beforeEach(() => {
-      vi.mocked(useAuthStore).mockReturnValue({ user: null } as any)
-      vi.mocked(useContactStore).mockReturnValue({
-        contacts: [],
-        isLoading: false,
-        loadContacts: mockLoadContacts
-      } as any)
+      vi.mocked(useAuthStore).mockImplementation(createMockAuthStore(null))
+      vi.mocked(useContactStore).mockImplementation(createMockContactStore())
     })
 
-    it('should not load contacts', () => {
+    it('should not load queue', () => {
       const { result } = renderHook(() => useContactQueue())
 
-      expect(mockLoadContacts).not.toHaveBeenCalled()
-      expect(result.current.contacts).toEqual([])
+      expect(mockLoadQueue).not.toHaveBeenCalled()
+      expect(result.current.queue).toEqual([])
       expect(result.current.isLoading).toBe(false)
+      expect(result.current.currentContact).toBeNull()
+      expect(result.current.hasContacts).toBe(false)
+      expect(result.current.totalContacts).toBe(0)
     })
   })
 
   describe('when user is authenticated', () => {
     beforeEach(() => {
-      vi.mocked(useAuthStore).mockReturnValue({ user: mockUser } as any)
+      vi.mocked(useAuthStore).mockImplementation(createMockAuthStore(mockUser))
     })
 
-    it('should return contacts and loading state', () => {
-      vi.mocked(useContactStore).mockReturnValue({
-        contacts: mockContacts,
-        isLoading: false,
-        loadContacts: mockLoadContacts
-      } as any)
+    it('should return queue and loading state', () => {
+      vi.mocked(useContactStore).mockImplementation(createMockContactStore({
+        queue: mockContacts,
+        currentIndex: 0,
+        isLoadingQueue: false
+      }))
 
       const { result } = renderHook(() => useContactQueue())
 
-      expect(result.current.contacts).toEqual(mockContacts)
+      expect(result.current.queue).toEqual(mockContacts)
       expect(result.current.isLoading).toBe(false)
+      expect(result.current.currentContact).toEqual(mockContacts[0])
+      expect(result.current.hasContacts).toBe(true)
+      expect(result.current.totalContacts).toBe(1)
     })
 
     it('should return loading state when loading', () => {
-      vi.mocked(useContactStore).mockReturnValue({
-        contacts: [],
-        isLoading: true,
-        loadContacts: mockLoadContacts
-      } as any)
+      vi.mocked(useContactStore).mockImplementation(createMockContactStore({
+        queue: [],
+        currentIndex: 0,
+        isLoadingQueue: true
+      }))
 
       const { result } = renderHook(() => useContactQueue())
 
-      expect(result.current.contacts).toEqual([])
+      expect(result.current.queue).toEqual([])
       expect(result.current.isLoading).toBe(true)
+      expect(result.current.currentContact).toBeNull()
+      expect(result.current.hasContacts).toBe(false)
     })
 
-    it('should handle empty contact list', () => {
-      vi.mocked(useContactStore).mockReturnValue({
-        contacts: [],
-        isLoading: false,
-        loadContacts: mockLoadContacts
-      } as any)
+    it('should load queue on mount', async () => {
+      vi.mocked(useContactStore).mockImplementation(createMockContactStore())
 
-      const { result } = renderHook(() => useContactQueue())
+      renderHook(() => useContactQueue())
 
-      expect(result.current.contacts).toEqual([])
-      expect(result.current.isLoading).toBe(false)
+      await waitFor(() => {
+        expect(mockLoadQueue).toHaveBeenCalledTimes(1)
+      })
     })
-  })
 
-  describe('effect dependencies', () => {
-    it('should reload when user changes', () => {
-      const user1 = { ...mockUser, id: 'user-1' }
-      const user2 = { ...mockUser, id: 'user-2' }
-
-      vi.mocked(useContactStore).mockReturnValue({
-        contacts: [],
-        isLoading: false,
-        loadContacts: mockLoadContacts
-      } as any)
-
-      // First render with user1
-      vi.mocked(useAuthStore).mockReturnValue({ user: user1 } as any)
+    it('should reload queue when user changes', async () => {
       const { rerender } = renderHook(() => useContactQueue())
 
-      // Clear mock calls
-      mockLoadContacts.mockClear()
+      expect(mockLoadQueue).toHaveBeenCalledTimes(1)
 
       // Change user
-      vi.mocked(useAuthStore).mockReturnValue({ user: user2 } as any)
+      const newUser = { ...mockUser, id: 'user-456' }
+      vi.mocked(useAuthStore).mockImplementation(createMockAuthStore(newUser))
+
       rerender()
 
-      // Should trigger effect again with new user
-      // Note: The actual implementation needs to be updated to properly handle this
+      await waitFor(() => {
+        expect(mockLoadQueue).toHaveBeenCalledTimes(2)
+      })
+    })
+
+    it('should handle current contact navigation', () => {
+      const queue = [mockContacts[0], { ...mockContacts[0], id: '2', full_name: 'Jane Doe' }]
+      vi.mocked(useContactStore).mockImplementation(createMockContactStore({
+        queue,
+        currentIndex: 1,
+        isLoadingQueue: false
+      }))
+
+      const { result } = renderHook(() => useContactQueue())
+
+      expect(result.current.currentContact?.full_name).toBe('Jane Doe')
+      expect(result.current.currentIndex).toBe(1)
+    })
+
+    it('should handle empty queue', () => {
+      vi.mocked(useContactStore).mockImplementation(createMockContactStore({
+        queue: [],
+        currentIndex: 0,
+        isLoadingQueue: false
+      }))
+
+      const { result } = renderHook(() => useContactQueue())
+
+      expect(result.current.currentContact).toBeNull()
+      expect(result.current.hasContacts).toBe(false)
+      expect(result.current.totalContacts).toBe(0)
     })
   })
 })

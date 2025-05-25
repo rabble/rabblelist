@@ -37,7 +37,6 @@ export function ContactCard({ contact, onComplete, onNext }: ContactCardProps) {
       
       if (navigator.onLine) {
         // If online, save directly
-        // @ts-expect-error - ContactService.logCall adds organization_id and ringer_id internally
         await ContactService.logCall(callLog as any)
       } else {
         // If offline, add to sync queue

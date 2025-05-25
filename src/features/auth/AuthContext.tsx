@@ -195,11 +195,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
+    // Clear all local storage
+    localStorage.clear()
+    
+    // Clear all session storage
+    sessionStorage.clear()
+    
+    // Clear IndexedDB data if it exists
+    if ('indexedDB' in window) {
+      try {
+        const databases = await indexedDB.databases()
+        databases.forEach(db => {
+          if (db.name) {
+            indexedDB.deleteDatabase(db.name)
+          }
+        })
+      } catch (e) {
+        // Some browsers don't support indexedDB.databases()
+        // Try to delete known databases
+        try {
+          indexedDB.deleteDatabase('contact-manager-db')
+        } catch (err) {
+          console.error('Error clearing IndexedDB:', err)
+        }
+      }
+    }
+    
+    // Sign out from Supabase
     await supabase.auth.signOut()
+    
+    // Clear state
     setUser(null)
     setProfile(null)
     setOrganization(null)
     setSession(null)
+    
+    // Clear any cached data in service worker
+    if ('caches' in window) {
+      const cacheNames = await caches.keys()
+      await Promise.all(
+        cacheNames.map(cacheName => caches.delete(cacheName))
+      )
+    }
   }
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
