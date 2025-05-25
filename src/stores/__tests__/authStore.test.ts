@@ -1,14 +1,16 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useAuthStore } from '../authStore'
+import { useAuthStore, selectUser, selectIsLoading, selectIsAuthenticated } from '../authStore'
 import type { User } from '@/types'
 
 describe('authStore', () => {
   // Reset store before each test
   beforeEach(() => {
+    localStorage.clear()
     const { result } = renderHook(() => useAuthStore())
     act(() => {
       result.current.clear()
+      result.current.setLoading(true) // Reset to initial state
     })
   })
 
@@ -112,6 +114,62 @@ describe('authStore', () => {
       
       expect(persistedState).toHaveProperty('user')
       expect(persistedState).not.toHaveProperty('isLoading')
+    })
+  })
+
+  describe('selectors', () => {
+    it('selectUser should return the current user', () => {
+      const { result } = renderHook(() => useAuthStore())
+      const mockUser: User = {
+        id: '123',
+        email: 'test@example.com',
+        role: 'ringer',
+        created_at: '2024-01-01',
+        updated_at: '2024-01-01'
+      }
+
+      act(() => {
+        result.current.setUser(mockUser)
+      })
+
+      expect(selectUser(result.current)).toEqual(mockUser)
+    })
+
+    it('selectIsLoading should return loading state', () => {
+      const { result } = renderHook(() => useAuthStore())
+      
+      act(() => {
+        result.current.setLoading(false)
+      })
+
+      expect(selectIsLoading(result.current)).toBe(false)
+    })
+
+    it('selectIsAuthenticated should return true when user exists', () => {
+      const { result } = renderHook(() => useAuthStore())
+      const mockUser: User = {
+        id: '123',
+        email: 'test@example.com',
+        role: 'ringer',
+        created_at: '2024-01-01',
+        updated_at: '2024-01-01'
+      }
+
+      act(() => {
+        result.current.setUser(mockUser)
+      })
+
+      expect(selectIsAuthenticated(result.current)).toBe(true)
+    })
+
+    it('selectIsAuthenticated should return false when user is null', () => {
+      const { result } = renderHook(() => useAuthStore())
+      
+      act(() => {
+        result.current.setUser(null)
+      })
+
+      expect(selectIsAuthenticated(result.current)).toBe(false)
     })
   })
 })

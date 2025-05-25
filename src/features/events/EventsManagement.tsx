@@ -21,22 +21,6 @@ import {
   Filter
 } from 'lucide-react'
 
-interface Event {
-  id: string
-  name: string
-  description: string
-  date: string
-  time: string
-  location: string
-  type: 'meeting' | 'action' | 'training' | 'social' | 'phonebank'
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled'
-  capacity?: number
-  registered: number
-  organization_id: string
-  created_at: string
-  created_by: string
-}
-
 export function EventsManagement() {
   const navigate = useNavigate()
   const { events, totalEvents, isLoadingEvents, loadEvents, deleteEvent } = useEventStore()
@@ -211,7 +195,7 @@ export function EventsManagement() {
                   <input
                     type="text"
                     placeholder="Search events..."
-                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -219,30 +203,13 @@ export function EventsManagement() {
               </div>
               
               <div className="flex gap-3">
-                <select
-                  className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
+                <Button
+                  variant={showUpcoming ? 'primary' : 'outline'}
+                  onClick={() => setShowUpcoming(!showUpcoming)}
                 >
-                  <option value="all">All Status</option>
-                  <option value="upcoming">Upcoming</option>
-                  <option value="ongoing">Ongoing</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-                
-                <select
-                  className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                >
-                  <option value="all">All Types</option>
-                  <option value="meeting">Meeting</option>
-                  <option value="action">Action</option>
-                  <option value="training">Training</option>
-                  <option value="social">Social</option>
-                  <option value="phonebank">Phone Bank</option>
-                </select>
+                  <Filter className="w-4 h-4 mr-2" />
+                  {showUpcoming ? 'Upcoming Only' : 'All Events'}
+                </Button>
               </div>
             </div>
           </CardContent>
@@ -260,32 +227,33 @@ export function EventsManagement() {
                         <h3 className="text-lg font-semibold text-gray-900 mb-1">
                           {event.name}
                         </h3>
-                        <p className="text-gray-600 text-sm mb-3">
-                          {event.description}
-                        </p>
+                        {event.description && (
+                          <p className="text-gray-600 text-sm mb-3">
+                            {event.description}
+                          </p>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 ml-4">
-                        {getEventStatusIcon(event.status)}
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getEventTypeColor(event.type)}`}>
-                          {event.type}
-                        </span>
+                        {event.is_virtual && (
+                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            Virtual
+                          </span>
+                        )}
+                        {new Date(event.start_time) > new Date() && (
+                          <Clock className="w-4 h-4 text-blue-600" />
+                        )}
                       </div>
                     </div>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                       <div className="flex items-center text-sm text-gray-600">
                         <Calendar className="w-4 h-4 mr-2" />
-                        {new Date(event.date).toLocaleDateString('en-US', {
-                          weekday: 'short',
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric'
-                        })}
+                        {formatEventDate(event.start_time)}
                       </div>
                       
                       <div className="flex items-center text-sm text-gray-600">
                         <Clock className="w-4 h-4 mr-2" />
-                        {event.time}
+                        {formatEventTime(event.start_time)}
                       </div>
                       
                       <div className="flex items-center text-sm text-gray-600">
@@ -296,21 +264,19 @@ export function EventsManagement() {
                     
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="flex items-center text-sm">
-                          <Users className="w-4 h-4 mr-1 text-gray-400" />
-                          <span className="font-medium">{event.registered}</span>
-                          {event.capacity && (
-                            <span className="text-gray-500">/{event.capacity} registered</span>
-                          )}
-                        </div>
-                        
                         {event.capacity && (
-                          <div className="w-32 bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-primary-500 h-2 rounded-full"
-                              style={{ width: `${(event.registered / event.capacity) * 100}%` }}
-                            />
-                          </div>
+                          <>
+                            <div className="flex items-center text-sm">
+                              <Users className="w-4 h-4 mr-1 text-gray-400" />
+                              <span className="text-gray-500">Capacity: {event.capacity}</span>
+                            </div>
+                            <div className="w-32 bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-blue-600 h-2 rounded-full"
+                                style={{ width: '0%' }}
+                              />
+                            </div>
+                          </>
                         )}
                       </div>
                       
@@ -337,7 +303,7 @@ export function EventsManagement() {
                           size="sm"
                           variant="outline"
                           className="p-2 text-red-600 hover:bg-red-50"
-                          onClick={() => handleDeleteEvent(event.id)}
+                          onClick={() => handleDeleteEvent(event.id, event.name)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
