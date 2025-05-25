@@ -1,0 +1,23 @@
+name = "telephony-worker"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+account_id = "c84e7a9bf7ed99cb41b8e73566568c75"
+
+# KV Namespace for session storage
+[[kv_namespaces]]
+binding = "TELEPHONY_SESSIONS"
+id = "telephony_sessions_production"
+preview_id = "telephony_sessions_preview"
+
+# Environment configuration
+[env.production]
+vars = { }  # Non-sensitive vars can go here
+
+# Routes (update with your domain)
+[[env.production.routes]]
+pattern = "contact-manager-pwa.pages.dev/api/telephony/*"
+zone_name = "contact-manager-pwa.pages.dev"
+
+# Development environment
+[env.development]
+vars = { }

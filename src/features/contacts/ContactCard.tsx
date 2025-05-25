@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { Phone, Check, X, Voicemail, Clock, Calendar } from 'lucide-react'
 import type { Contact, CallOutcome } from '@/types'
-import { useSync } from '@/hooks/useSync'
+import { ContactService } from './contacts.service'
 import { formatDistanceToNow } from '@/lib/utils'
+import * as idb from '@/lib/indexeddb'
+import { CallDialog } from '../telephony/components/CallDialog'
+import { telephonyService } from '../telephony/telephony.service'
 
 interface ContactCardProps {
   contact: Contact
-  onComplete: (outcome: CallOutcome, notes?: string) => void
+  onComplete: () => void
   onNext: () => void
 }
 
@@ -14,7 +17,8 @@ export function ContactCard({ contact, onComplete, onNext }: ContactCardProps) {
   const [outcome, setOutcome] = useState<CallOutcome | null>(null)
   const [notes, setNotes] = useState('')
   const [isSaving, setIsSaving] = useState(false)
-  const { addPendingChange } = useSync()
+  const [showCallDialog, setShowCallDialog] = useState(false)
+  const [isTelephonyAvailable, setIsTelephonyAvailable] = useState(false)
 
   const handleOutcomeSelect = (selectedOutcome: CallOutcome) => {
     setOutcome(selectedOutcome)
@@ -26,20 +30,26 @@ export function ContactCard({ contact, onComplete, onNext }: ContactCardProps) {
     setIsSaving(true)
     
     try {
-      // Add to sync queue
-      addPendingChange({
-        type: 'call_log',
-        action: 'create',
-        data: {
-          contact_id: contact.id,
-          outcome,
-          notes,
-          called_at: new Date().toISOString()
-        }
-      })
+      // Log the call
+      const callLog = {
+        contact_id: contact.id,
+        outcome,
+        notes: notes || undefined,
+        called_at: new Date().toISOString()
+      }
       
-      // Update the contact's last contact date locally
-      onComplete(outcome, notes)
+      if (navigator.onLine) {
+        // If online, save directly
+        await ContactService.logCall(callLog)
+      } else {
+        // If offline, add to sync queue
+        await idb.addToSyncQueue({
+          type: 'call_log',
+          action: 'create',
+          data: callLog,
+          timestamp: new Date().toISOString()
+        })
+      }
       
       // Move to next contact
       onNext()
@@ -47,6 +57,12 @@ export function ContactCard({ contact, onComplete, onNext }: ContactCardProps) {
       // Reset form
       setOutcome(null)
       setNotes('')
+      
+      // Notify parent
+      onComplete()
+    } catch (error) {
+      console.error('Error saving call log:', error)
+      alert('Failed to save call log')
     } finally {
       setIsSaving(false)
     }
@@ -88,8 +104,15 @@ export function ContactCard({ contact, onComplete, onNext }: ContactCardProps) {
       </div>
 
       {/* Call Button */}
-      <a
-        href={`tel:${contact.phone}`}
+      <button
+        onClick={() => {
+          if (isTelephonyAvailable) {
+            setShowCallDialog(true)
+          } else {
+            // Fallback to native phone call
+            window.location.href = `tel:${contact.phone}`
+          }
+        }}
         className="block w-full bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all"
       >
         <div className="flex items-center justify-between">
@@ -98,7 +121,9 @@ export function ContactCard({ contact, onComplete, onNext }: ContactCardProps) {
               <Phone className="w-6 h-6 text-white" />
             </div>
             <div className="text-left">
-              <p className="text-sm text-gray-600">Tap to call</p>
+              <p className="text-sm text-gray-600">
+                {isTelephonyAvailable ? 'Tap for anonymous call' : 'Tap to call'}
+              </p>
               <p className="text-lg font-semibold text-gray-900">{contact.phone}</p>
             </div>
           </div>
@@ -106,7 +131,7 @@ export function ContactCard({ contact, onComplete, onNext }: ContactCardProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </div>
-      </a>
+      </button>
 
       {/* Outcome Selection */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -178,6 +203,15 @@ export function ContactCard({ contact, onComplete, onNext }: ContactCardProps) {
           )}
         </button>
       </div>
+
+      {/* Call Dialog */}
+      <CallDialog
+        isOpen={showCallDialog}
+        onClose={() => setShowCallDialog(false)}
+        contactId={contact.id}
+        contactName={contact.full_name}
+        contactPhone={contact.phone}
+      />
     </div>
   )
 }

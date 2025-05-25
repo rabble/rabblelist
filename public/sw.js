@@ -1,11 +1,15 @@
 const CACHE_NAME = 'contact-manager-v1';
+const RUNTIME_CACHE = 'contact-manager-runtime-v1';
 const urlsToCache = [
   '/',
   '/index.html',
+  '/offline.html',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
-  '/vite.svg'
+  '/vite.svg',
+  '/privacy-policy.html',
+  '/terms-of-service.html'
 ];
 
 // Install event - cache essential files
@@ -26,7 +30,7 @@ self.addEventListener('activate', event => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
+          if (cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE) {
             console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
@@ -64,14 +68,30 @@ self.addEventListener('fetch', event => {
           // Clone the response
           const responseToCache = response.clone();
 
+          // Determine which cache to use
+          const isAPI = event.request.url.includes('/api/') || 
+                       event.request.url.includes('supabase');
+          const cacheName = isAPI ? RUNTIME_CACHE : CACHE_NAME;
+
           // Cache dynamic content for offline use
-          caches.open(CACHE_NAME)
+          caches.open(cacheName)
             .then(cache => {
-              // Cache API responses and assets
-              if (event.request.url.includes('/api/') || 
-                  event.request.url.includes('.js') || 
-                  event.request.url.includes('.css') ||
-                  event.request.url.includes('.json')) {
+              // Cache API responses with expiration
+              if (isAPI) {
+                // Add timestamp to API responses
+                const headers = new Headers(responseToCache.headers);
+                headers.append('sw-fetched-on', new Date().getTime().toString());
+                
+                return responseToCache.blob().then(body => {
+                  return cache.put(event.request, new Response(body, {
+                    status: responseToCache.status,
+                    statusText: responseToCache.statusText,
+                    headers: headers
+                  }));
+                });
+              } else if (event.request.url.includes('.js') || 
+                        event.request.url.includes('.css') ||
+                        event.request.url.includes('.json')) {
                 cache.put(event.request, responseToCache);
               }
             });
@@ -82,7 +102,7 @@ self.addEventListener('fetch', event => {
       .catch(() => {
         // Offline fallback for navigation requests
         if (event.request.destination === 'document') {
-          return caches.match('/index.html');
+          return caches.match('/offline.html');
         }
       })
   );

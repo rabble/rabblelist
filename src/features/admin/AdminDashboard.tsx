@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { useAuth } from '@/features/auth/AuthContext'
-import { supabase, isDemoMode } from '@/lib/supabase'
-import { mockDb } from '@/lib/mockData'
-import { Phone, Users, Calendar, TrendingUp, UserPlus, Upload } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { ContactService } from '@/features/contacts/contacts.service'
+import { Phone, Users, Calendar, TrendingUp, UserPlus, Upload, Loader2 } from 'lucide-react'
 import type { Contact } from '@/types'
 
 interface Stats {
@@ -16,7 +17,8 @@ interface Stats {
 }
 
 export function AdminDashboard() {
-  const { user } = useAuth()
+  const navigate = useNavigate()
+  const { profile, organization } = useAuth()
   const [stats, setStats] = useState<Stats>({
     totalContacts: 0,
     totalCalls: 0,
@@ -34,48 +36,37 @@ export function AdminDashboard() {
     try {
       setLoading(true)
 
-      if (isDemoMode) {
-        // Mock data for demo mode
-        const contacts = await mockDb.contacts.list()
-        const logs = await mockDb.callLogs.list()
-        
-        setStats({
-          totalContacts: contacts.data?.length || 0,
-          totalCalls: logs.data?.length || 0,
-          totalEvents: 3,
-          activeRingers: 1
-        })
-        
-        setRecentContacts(contacts.data?.slice(0, 5) || [])
-      } else {
-        // Real Supabase queries
-        const orgId = user?.organization_id
-
-        // Get stats
-        const [contactsCount, callsCount, eventsCount, ringersCount] = await Promise.all([
-          supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('organization_id', orgId),
-          supabase.from('call_logs').select('*', { count: 'exact', head: true }).eq('organization_id', orgId),
-          supabase.from('events').select('*', { count: 'exact', head: true }).eq('organization_id', orgId),
-          supabase.from('users').select('*', { count: 'exact', head: true }).eq('organization_id', orgId).eq('role', 'ringer')
-        ])
-
-        setStats({
-          totalContacts: contactsCount.count || 0,
-          totalCalls: callsCount.count || 0,
-          totalEvents: eventsCount.count || 0,
-          activeRingers: ringersCount.count || 0
-        })
-
-        // Get recent contacts
-        const { data: contacts } = await supabase
-          .from('contacts')
-          .select('*')
-          .eq('organization_id', orgId)
-          .order('created_at', { ascending: false })
-          .limit(5)
-
-        setRecentContacts(contacts || [])
+      // Get organization ID
+      const { data: orgId } = await supabase.rpc('organization_id')
+      if (!orgId) {
+        console.error('No organization found')
+        return
       }
+
+      // Get stats in parallel
+      const [contactsCount, callsCount, eventsCount, ringersCount] = await Promise.all([
+        supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('organization_id', orgId),
+        supabase.from('call_logs').select('*', { count: 'exact', head: true }).eq('organization_id', orgId),
+        supabase.from('events').select('*', { count: 'exact', head: true }).eq('organization_id', orgId),
+        supabase.from('users').select('*', { count: 'exact', head: true }).eq('organization_id', orgId).neq('role', 'admin')
+      ])
+
+      setStats({
+        totalContacts: contactsCount.count || 0,
+        totalCalls: callsCount.count || 0,
+        totalEvents: eventsCount.count || 0,
+        activeRingers: ringersCount.count || 0
+      })
+
+      // Get recent contacts
+      const { data: contacts } = await supabase
+        .from('contacts')
+        .select('*')
+        .eq('organization_id', orgId)
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      setRecentContacts(contacts || [])
     } catch (error) {
       console.error('Failed to load dashboard data:', error)
     } finally {
@@ -118,7 +109,7 @@ export function AdminDashboard() {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
         </div>
       </Layout>
     )
@@ -158,15 +149,27 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button className="justify-start" variant="outline">
+              <Button 
+                className="justify-start" 
+                variant="outline"
+                onClick={() => navigate('/contacts/import')}
+              >
                 <Upload className="w-4 h-4 mr-2" />
                 Import Contacts
               </Button>
-              <Button className="justify-start" variant="outline">
+              <Button 
+                className="justify-start" 
+                variant="outline"
+                onClick={() => navigate('/admin/users/new')}
+              >
                 <UserPlus className="w-4 h-4 mr-2" />
                 Add Ringer
               </Button>
-              <Button className="justify-start" variant="outline">
+              <Button 
+                className="justify-start" 
+                variant="outline"
+                onClick={() => navigate('/events/new')}
+              >
                 <Calendar className="w-4 h-4 mr-2" />
                 Create Event
               </Button>

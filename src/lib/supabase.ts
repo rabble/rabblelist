@@ -4,16 +4,16 @@ import type { Database } from './database.types'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
-// Check if we're in demo mode - only if URL is not a real Supabase URL
-export const isDemoMode = !supabaseUrl || supabaseUrl.includes('example') || !supabaseAnonKey || supabaseAnonKey === 'mock-anon-key' || supabaseUrl === 'https://example.supabase.co'
-
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Missing Supabase environment variables - running in demo mode')
+  console.error('Missing Supabase environment variables!')
+  console.error('Please create a .env.local file with:')
+  console.error('VITE_SUPABASE_URL=your-supabase-url')
+  console.error('VITE_SUPABASE_ANON_KEY=your-supabase-anon-key')
 }
 
 export const supabase = createClient<Database>(
-  supabaseUrl || 'https://example.supabase.co',
-  supabaseAnonKey || 'mock-key',
+  supabaseUrl,
+  supabaseAnonKey,
   {
     auth: {
       persistSession: true,

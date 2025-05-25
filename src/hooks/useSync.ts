@@ -1,56 +1,63 @@
-import { useEffect, useCallback } from 'react'
-import { useSyncStore } from '@/stores/syncStore'
-import { useOnlineStatus } from './useOnlineStatus'
-import { syncManager } from '@/lib/sync'
+import { useState, useEffect } from 'react'
+import { syncService } from '@/lib/sync'
 
 export function useSync() {
-  const isOnline = useOnlineStatus()
-  const { 
-    pendingChanges, 
-    isSyncing, 
-    lastSyncTime,
-    addPendingChange,
-    startSync,
-    syncComplete,
-    syncError
-  } = useSyncStore()
+  const [isOnline, setIsOnline] = useState(navigator.onLine)
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [pendingCount, setPendingCount] = useState(0)
 
-  const sync = useCallback(async () => {
-    if (!isOnline || isSyncing || pendingChanges.length === 0) return
-    
-    startSync()
+  useEffect(() => {
+    // Start auto sync
+    syncService.startAutoSync()
+
+    // Update online status
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    // Check sync status periodically
+    const checkStatus = async () => {
+      const status = await syncService.getSyncStatus()
+      setIsSyncing(status.isSyncing)
+      setPendingCount(status.pendingChanges)
+    }
+
+    checkStatus()
+    const interval = setInterval(checkStatus, 5000) // Check every 5 seconds
+
+    return () => {
+      syncService.stopAutoSync()
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+      clearInterval(interval)
+    }
+  }, [])
+
+  const sync = async () => {
+    setIsSyncing(true)
     try {
-      await syncManager.syncAll(pendingChanges)
-      syncComplete()
-    } catch (error) {
-      syncError(error as Error)
+      await syncService.sync()
+      const status = await syncService.getSyncStatus()
+      setPendingCount(status.pendingChanges)
+    } finally {
+      setIsSyncing(false)
     }
-  }, [isOnline, isSyncing, pendingChanges, startSync, syncComplete, syncError])
+  }
 
-  // Auto-sync when coming online
-  useEffect(() => {
-    if (isOnline && pendingChanges.length > 0) {
-      sync()
-    }
-  }, [isOnline, pendingChanges.length, sync])
-
-  // Periodic sync attempt
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (isOnline && pendingChanges.length > 0 && !isSyncing) {
-        sync()
-      }
-    }, 30000) // Every 30 seconds
-
-    return () => clearInterval(interval)
-  }, [isOnline, pendingChanges.length, isSyncing, sync])
+  const addPendingChange = async (change: any) => {
+    // This is now handled internally by the sync service
+    // But we'll keep the interface for compatibility
+    const status = await syncService.getSyncStatus()
+    setPendingCount(status.pendingChanges)
+  }
 
   return {
-    pendingCount: pendingChanges.length,
+    isOnline,
     isSyncing,
-    lastSyncTime,
+    pendingCount,
     sync,
-    addPendingChange,
-    isOnline
+    addPendingChange
   }
 }

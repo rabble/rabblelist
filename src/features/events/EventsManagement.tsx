@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
-import { useAuth } from '@/features/auth/AuthContext'
-import { supabase, isDemoMode } from '@/lib/supabase'
+import { useEventStore } from '@/stores/eventStore'
+import { EventService } from './events.service'
 import { 
   Plus,
   Calendar,
@@ -16,7 +16,9 @@ import {
   Search,
   ChevronRight,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  Loader2,
+  Filter
 } from 'lucide-react'
 
 interface Event {
@@ -36,189 +38,94 @@ interface Event {
 }
 
 export function EventsManagement() {
-  const { user } = useAuth()
   const navigate = useNavigate()
-  const [events, setEvents] = useState<Event[]>([])
-  const [loading, setLoading] = useState(true)
-  const [filterStatus, setFilterStatus] = useState<string>('all')
-  const [filterType, setFilterType] = useState<string>('all')
+  const { events, totalEvents, isLoadingEvents, loadEvents, deleteEvent } = useEventStore()
   const [searchTerm, setSearchTerm] = useState('')
-
-  // Mock events data
-  const mockEvents: Event[] = [
-    {
-      id: '1',
-      name: 'Community Climate Action Meeting',
-      description: 'Monthly planning meeting for climate action campaigns',
-      date: '2024-02-15',
-      time: '18:00',
-      location: 'Community Center, 123 Main St',
-      type: 'meeting',
-      status: 'upcoming',
-      capacity: 50,
-      registered: 32,
-      organization_id: '1',
-      created_at: new Date().toISOString(),
-      created_by: '1'
-    },
-    {
-      id: '2',
-      name: 'Phone Banking Session',
-      description: 'Call supporters about upcoming legislation',
-      date: '2024-02-10',
-      time: '14:00',
-      location: 'Virtual - Zoom',
-      type: 'phonebank',
-      status: 'upcoming',
-      capacity: 20,
-      registered: 15,
-      organization_id: '1',
-      created_at: new Date().toISOString(),
-      created_by: '1'
-    },
-    {
-      id: '3',
-      name: 'Direct Action Training',
-      description: 'Non-violent direct action training for new members',
-      date: '2024-02-20',
-      time: '10:00',
-      location: 'Peace Center, 456 Oak Ave',
-      type: 'training',
-      status: 'upcoming',
-      capacity: 30,
-      registered: 28,
-      organization_id: '1',
-      created_at: new Date().toISOString(),
-      created_by: '1'
-    },
-    {
-      id: '4',
-      name: 'Rally for Housing Justice',
-      description: 'Public rally to demand affordable housing',
-      date: '2024-02-25',
-      time: '13:00',
-      location: 'City Hall Steps',
-      type: 'action',
-      status: 'upcoming',
-      registered: 150,
-      organization_id: '1',
-      created_at: new Date().toISOString(),
-      created_by: '1'
-    }
-  ]
+  const [showUpcoming, setShowUpcoming] = useState(true)
+  const [stats, setStats] = useState({
+    thisMonth: 0,
+    totalRegistered: 0,
+    upcomingCount: 0,
+    averageCapacity: 0
+  })
 
   useEffect(() => {
-    loadEvents()
-  }, [filterStatus, filterType, searchTerm])
+    loadEventsWithFilters()
+  }, [searchTerm, showUpcoming])
 
-  const loadEvents = async () => {
-    try {
-      setLoading(true)
-      
-      if (isDemoMode) {
-        // Filter mock events
-        let filtered = [...mockEvents]
-        
-        if (filterStatus !== 'all') {
-          filtered = filtered.filter(e => e.status === filterStatus)
-        }
-        
-        if (filterType !== 'all') {
-          filtered = filtered.filter(e => e.type === filterType)
-        }
-        
-        if (searchTerm) {
-          const search = searchTerm.toLowerCase()
-          filtered = filtered.filter(e => 
-            e.name.toLowerCase().includes(search) ||
-            e.description.toLowerCase().includes(search) ||
-            e.location.toLowerCase().includes(search)
-          )
-        }
-        
-        // Sort by date
-        filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        
-        setEvents(filtered)
-      } else {
-        // Real Supabase query
-        let query = supabase
-          .from('events')
-          .select('*')
-          .eq('organization_id', user?.organization_id)
-          .order('date', { ascending: true })
-        
-        if (filterStatus !== 'all') {
-          query = query.eq('status', filterStatus)
-        }
-        
-        if (filterType !== 'all') {
-          query = query.eq('type', filterType)
-        }
-        
-        if (searchTerm) {
-          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%`)
-        }
-        
-        const { data, error } = await query
-        
-        if (error) throw error
-        setEvents(data || [])
-      }
-    } catch (error) {
-      console.error('Failed to load events:', error)
-    } finally {
-      setLoading(false)
-    }
+  useEffect(() => {
+    calculateStats()
+  }, [events])
+
+  const loadEventsWithFilters = () => {
+    loadEvents({
+      search: searchTerm,
+      upcoming: showUpcoming
+    })
   }
 
-  const handleDeleteEvent = async (eventId: string) => {
-    if (!confirm('Are you sure you want to delete this event?')) return
-    
-    try {
-      if (isDemoMode) {
-        setEvents(prev => prev.filter(e => e.id !== eventId))
-      } else {
-        const { error } = await supabase
-          .from('events')
-          .delete()
-          .eq('id', eventId)
-        
-        if (error) throw error
-        await loadEvents()
+  const calculateStats = async () => {
+    // Calculate this month's events
+    const now = new Date()
+    const thisMonthEvents = events.filter(event => {
+      const eventDate = new Date(event.start_time)
+      return eventDate.getMonth() === now.getMonth() && 
+             eventDate.getFullYear() === now.getFullYear()
+    })
+
+    // Get total registered across all events
+    let totalRegistered = 0
+    for (const event of events.slice(0, 5)) { // Sample first 5 for performance
+      const { data } = await EventService.getEvent(event.id)
+      if (data?.attendee_count) {
+        totalRegistered += data.attendee_count
       }
-    } catch (error) {
-      console.error('Failed to delete event:', error)
+    }
+
+    // Calculate average capacity usage
+    const eventsWithCapacity = events.filter(e => e.capacity)
+    const avgCapacity = eventsWithCapacity.length > 0 
+      ? Math.round(totalRegistered / eventsWithCapacity.reduce((sum, e) => sum + (e.capacity || 0), 0) * 100)
+      : 0
+
+    setStats({
+      thisMonth: thisMonthEvents.length,
+      totalRegistered,
+      upcomingCount: events.filter(e => new Date(e.start_time) > new Date()).length,
+      averageCapacity: avgCapacity
+    })
+  }
+
+  const handleDeleteEvent = async (eventId: string, eventName: string) => {
+    if (!confirm(`Are you sure you want to delete "${eventName}"? This action cannot be undone.`)) return
+    
+    const success = await deleteEvent(eventId)
+    if (!success) {
       alert('Failed to delete event')
     }
   }
 
-  const getEventTypeColor = (type: string) => {
-    switch (type) {
-      case 'meeting': return 'bg-blue-100 text-blue-800'
-      case 'action': return 'bg-red-100 text-red-800'
-      case 'training': return 'bg-purple-100 text-purple-800'
-      case 'social': return 'bg-green-100 text-green-800'
-      case 'phonebank': return 'bg-yellow-100 text-yellow-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
+  const formatEventDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
   }
 
-  const getEventStatusIcon = (status: string) => {
-    switch (status) {
-      case 'upcoming': return <Clock className="w-4 h-4 text-blue-600" />
-      case 'ongoing': return <AlertCircle className="w-4 h-4 text-yellow-600" />
-      case 'completed': return <CheckCircle className="w-4 h-4 text-green-600" />
-      case 'cancelled': return <AlertCircle className="w-4 h-4 text-red-600" />
-      default: return null
-    }
+  const formatEventTime = (dateStr: string) => {
+    return new Date(dateStr).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit'
+    })
   }
 
-  if (loading) {
+  if (isLoadingEvents) {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
         </div>
       </Layout>
     )
@@ -250,7 +157,7 @@ export function EventsManagement() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">This Month</p>
-                  <p className="text-2xl font-bold">12</p>
+                  <p className="text-2xl font-bold">{stats.thisMonth}</p>
                 </div>
                 <Calendar className="w-8 h-8 text-blue-600" />
               </div>
@@ -262,7 +169,7 @@ export function EventsManagement() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Registered</p>
-                  <p className="text-2xl font-bold">225</p>
+                  <p className="text-2xl font-bold">{stats.totalRegistered}</p>
                 </div>
                 <Users className="w-8 h-8 text-green-600" />
               </div>
@@ -274,7 +181,7 @@ export function EventsManagement() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Upcoming</p>
-                  <p className="text-2xl font-bold">{events.filter(e => e.status === 'upcoming').length}</p>
+                  <p className="text-2xl font-bold">{stats.upcomingCount}</p>
                 </div>
                 <Clock className="w-8 h-8 text-purple-600" />
               </div>
@@ -286,7 +193,7 @@ export function EventsManagement() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Capacity Used</p>
-                  <p className="text-2xl font-bold">78%</p>
+                  <p className="text-2xl font-bold">{stats.averageCapacity}%</p>
                 </div>
                 <AlertCircle className="w-8 h-8 text-orange-600" />
               </div>
