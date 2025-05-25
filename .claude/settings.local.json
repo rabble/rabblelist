@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "Bash(wrangler pages deploy:*)"
+    ],
+    "deny": []
+  }
+}

@@ -1,0 +1,16 @@
+name = "contact-manager-pwa"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "dist"
+
+# Environment variables (these will be encrypted in Cloudflare)
+[vars]
+VITE_SUPABASE_URL = ""
+VITE_SUPABASE_ANON_KEY = ""
+
+# Preview environment (for PR previews and non-main branches)
+[env.preview.vars]
+VITE_DEMO_MODE = "true"
+
+# Production environment
+[env.production.vars]
+VITE_DEMO_MODE = "true"
