@@ -259,15 +259,19 @@ describe('utils', () => {
   describe('exportToCSV', () => {
     let originalCreateElement: typeof document.createElement
     let originalCreateObjectURL: typeof URL.createObjectURL
+    let originalRevokeObjectURL: typeof URL.revokeObjectURL
 
     beforeEach(() => {
       originalCreateElement = document.createElement
       originalCreateObjectURL = URL.createObjectURL
+      originalRevokeObjectURL = URL.revokeObjectURL
+      URL.revokeObjectURL = vi.fn()
     })
 
     afterEach(() => {
       document.createElement = originalCreateElement
       URL.createObjectURL = originalCreateObjectURL
+      URL.revokeObjectURL = originalRevokeObjectURL
     })
 
     it('should export data to CSV', () => {

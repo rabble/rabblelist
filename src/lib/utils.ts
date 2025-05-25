@@ -1,127 +1,354 @@
 import { type ClassValue, clsx } from 'clsx'
 
-// Re-export clsx as cn for consistency
-export function cn(...inputs: ClassValue[]) {
+// ============================================================================
+// Type Definitions
+// ============================================================================
+
+type TimeUnit = 'minutes' | 'hours' | 'days' | 'months' | 'years'
+
+interface TimeDistance {
+  value: number
+  unit: TimeUnit
+}
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+const TIME_CONSTANTS = {
+  MILLISECONDS_PER_MINUTE: 60 * 1000,
+  MILLISECONDS_PER_HOUR: 60 * 60 * 1000,
+  MILLISECONDS_PER_DAY: 24 * 60 * 60 * 1000,
+  DAYS_PER_MONTH: 30,
+  DAYS_PER_YEAR: 365,
+} as const
+
+const PHONE_FORMATS = {
+  US_10_DIGIT: /^(\d{3})(\d{3})(\d{4})$/,
+  US_11_DIGIT: /^1(\d{3})(\d{3})(\d{4})$/,
+} as const
+
+const VALIDATION_PATTERNS = {
+  EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  PHONE_DIGITS_ONLY: /\D/g,
+} as const
+
+const PHONE_LENGTH = {
+  MIN: 10,
+  MAX: 15,
+} as const
+
+const CSV_EXPORT = {
+  CONTENT_TYPE: 'text/csv;charset=utf-8;',
+  FILE_EXTENSION: '.csv',
+} as const
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+/**
+ * Combines class names using clsx
+ * @param inputs - Class values to combine
+ * @returns Combined class string
+ */
+export function cn(...inputs: ClassValue[]): string {
   return clsx(inputs)
 }
 
-// Format date distance
+// ============================================================================
+// Date and Time Utilities
+// ============================================================================
+
+/**
+ * Calculates time difference components
+ * @param milliseconds - Time difference in milliseconds
+ * @returns Object with calculated time components
+ */
+function calculateTimeDifference(milliseconds: number) {
+  const days = Math.floor(milliseconds / TIME_CONSTANTS.MILLISECONDS_PER_DAY)
+  const hours = Math.floor(milliseconds / TIME_CONSTANTS.MILLISECONDS_PER_HOUR)
+  const minutes = Math.floor(milliseconds / TIME_CONSTANTS.MILLISECONDS_PER_MINUTE)
+  const months = Math.floor(days / TIME_CONSTANTS.DAYS_PER_MONTH)
+  const years = Math.floor(days / TIME_CONSTANTS.DAYS_PER_YEAR)
+
+  return { days, hours, minutes, months, years }
+}
+
+/**
+ * Formats time distance with proper pluralization
+ * @param value - Numeric value
+ * @param unit - Time unit
+ * @returns Formatted string
+ */
+function formatTimeUnit(value: number, unit: string): string {
+  return value === 1 ? `1 ${unit}` : `${value} ${unit}s`
+}
+
+/**
+ * Determines the appropriate time distance
+ * @param diff - Time difference calculations
+ * @returns Time distance object
+ */
+function getTimeDistance(diff: ReturnType<typeof calculateTimeDifference>): TimeDistance {
+  if (diff.days === 0) {
+    if (diff.hours === 0) {
+      return { value: diff.minutes, unit: 'minutes' }
+    }
+    return { value: diff.hours, unit: 'hours' }
+  }
+  
+  if (diff.days < TIME_CONSTANTS.DAYS_PER_MONTH) {
+    return { value: diff.days, unit: 'days' }
+  }
+  
+  if (diff.days < TIME_CONSTANTS.DAYS_PER_YEAR) {
+    return { value: diff.months, unit: 'months' }
+  }
+  
+  return { value: diff.years, unit: 'years' }
+}
+
+/**
+ * Formats the distance between a date and now in human-readable format
+ * @param date - The date to compare
+ * @returns Formatted time distance string
+ */
 export function formatDistanceToNow(date: Date): string {
   const now = new Date()
   const diffInMilliseconds = now.getTime() - date.getTime()
-  const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24))
+  const diff = calculateTimeDifference(diffInMilliseconds)
+  const distance = getTimeDistance(diff)
   
-  if (diffInDays === 0) {
-    const diffInHours = Math.floor(diffInMilliseconds / (1000 * 60 * 60))
-    if (diffInHours === 0) {
-      const diffInMinutes = Math.floor(diffInMilliseconds / (1000 * 60))
-      return `${diffInMinutes} minutes`
-    }
-    return `${diffInHours} hours`
-  } else if (diffInDays === 1) {
+  // Special case for single day
+  if (distance.value === 1 && distance.unit === 'days') {
     return '1 day'
-  } else if (diffInDays < 30) {
-    return `${diffInDays} days`
-  } else if (diffInDays < 365) {
-    const diffInMonths = Math.floor(diffInDays / 30)
-    return diffInMonths === 1 ? '1 month' : `${diffInMonths} months`
-  } else {
-    const diffInYears = Math.floor(diffInDays / 365)
-    return diffInYears === 1 ? '1 year' : `${diffInYears} years`
   }
+  
+  return formatTimeUnit(distance.value, distance.unit.slice(0, -1))
 }
 
-// Phone number formatting
+// ============================================================================
+// Phone Number Utilities
+// ============================================================================
+
+/**
+ * Removes all non-digit characters from a string
+ * @param phone - Phone number string
+ * @returns Cleaned phone number
+ */
+function cleanPhoneNumber(phone: string): string {
+  return phone.replace(VALIDATION_PATTERNS.PHONE_DIGITS_ONLY, '')
+}
+
+/**
+ * Formats a US phone number
+ * @param cleaned - Cleaned phone number digits
+ * @returns Formatted phone number or null if not a US format
+ */
+function formatUSPhoneNumber(cleaned: string): string | null {
+  const match10Digit = cleaned.match(PHONE_FORMATS.US_10_DIGIT)
+  if (match10Digit) {
+    return `(${match10Digit[1]}) ${match10Digit[2]}-${match10Digit[3]}`
+  }
+
+  const match11Digit = cleaned.match(PHONE_FORMATS.US_11_DIGIT)
+  if (match11Digit) {
+    return `1 (${match11Digit[1]}) ${match11Digit[2]}-${match11Digit[3]}`
+  }
+
+  return null
+}
+
+/**
+ * Formats a phone number to a standard display format
+ * @param phone - Phone number to format
+ * @returns Formatted phone number
+ */
 export function formatPhoneNumber(phone: string): string {
-  // Remove all non-digit characters
-  const cleaned = phone.replace(/\D/g, '')
-  
-  // Format based on length
-  if (cleaned.length === 10) {
-    // US format: (123) 456-7890
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`
-  } else if (cleaned.length === 11 && cleaned[0] === '1') {
-    // US format with country code: 1 (123) 456-7890
-    return `1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`
-  }
-  
-  // Return as-is if not a standard format
-  return phone
+  const cleaned = cleanPhoneNumber(phone)
+  const formatted = formatUSPhoneNumber(cleaned)
+  return formatted || phone
 }
 
-// Validate email
+// ============================================================================
+// Validation Utilities
+// ============================================================================
+
+/**
+ * Validates an email address
+ * @param email - Email to validate
+ * @returns True if valid email
+ */
 export function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
+  return VALIDATION_PATTERNS.EMAIL.test(email)
 }
 
-// Validate phone number
+/**
+ * Validates a phone number
+ * @param phone - Phone number to validate
+ * @returns True if valid phone number
+ */
 export function isValidPhone(phone: string): boolean {
-  const cleaned = phone.replace(/\D/g, '')
-  return cleaned.length >= 10 && cleaned.length <= 15
+  const cleaned = cleanPhoneNumber(phone)
+  return cleaned.length >= PHONE_LENGTH.MIN && cleaned.length <= PHONE_LENGTH.MAX
 }
 
-// Generate a unique ID
+// ============================================================================
+// ID Generation
+// ============================================================================
+
+/**
+ * Generates a unique ID using crypto.randomUUID
+ * @returns UUID string
+ */
 export function generateId(): string {
   return crypto.randomUUID()
 }
 
-// Debounce function
+// ============================================================================
+// Function Utilities
+// ============================================================================
+
+/**
+ * Creates a debounced version of a function
+ * @param func - Function to debounce
+ * @param wait - Wait time in milliseconds
+ * @returns Debounced function
+ */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | null = null
   
-  return function (...args: Parameters<T>) {
-    if (timeout) clearTimeout(timeout)
-    timeout = setTimeout(() => func(...args), wait)
+  return function debounced(...args: Parameters<T>) {
+    if (timeout) {
+      clearTimeout(timeout)
+    }
+    
+    timeout = setTimeout(() => {
+      func(...args)
+    }, wait)
   }
 }
 
-// Check if running as PWA
+// ============================================================================
+// PWA Detection
+// ============================================================================
+
+/**
+ * Checks if the app is running as a PWA
+ * @returns True if running as PWA
+ */
 export function isPWA(): boolean {
-  return window.matchMedia('(display-mode: standalone)').matches ||
-         (window.navigator as any).standalone ||
-         document.referrer.includes('android-app://')
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+  const isIOSStandalone = (window.navigator as any).standalone === true
+  const isAndroidApp = document.referrer.includes('android-app://')
+  
+  return isStandalone || isIOSStandalone || isAndroidApp
 }
 
-// Get initials from name
+// ============================================================================
+// String Utilities
+// ============================================================================
+
+/**
+ * Extracts initials from a name
+ * @param name - Full name
+ * @returns Initials (max 2 characters)
+ */
 export function getInitials(name: string): string {
-  return name
-    .split(' ')
+  if (!name) return ''
+  
+  const parts = name.split(' ').filter(Boolean)
+  const initials = parts
     .map(part => part[0])
     .join('')
     .toUpperCase()
-    .slice(0, 2)
+  
+  return initials.slice(0, 2)
 }
 
-// Export to CSV
-export function exportToCSV(data: any[], filename: string): void {
-  const headers = Object.keys(data[0] || {})
-  const csvContent = [
-    headers.join(','),
-    ...data.map(row => 
-      headers.map(header => {
-        const value = row[header]
-        // Escape quotes and wrap in quotes if contains comma
-        if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
-          return `"${value.replace(/"/g, '""')}"`
-        }
-        return value
-      }).join(',')
-    )
-  ].join('\n')
+// ============================================================================
+// Export Utilities
+// ============================================================================
+
+/**
+ * Escapes a CSV field value
+ * @param value - Value to escape
+ * @returns Escaped value
+ */
+function escapeCSVField(value: unknown): string {
+  if (value === null || value === undefined) {
+    return ''
+  }
   
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const link = document.createElement('a')
+  const stringValue = String(value)
+  
+  // Escape quotes and wrap in quotes if contains comma or quotes
+  if (stringValue.includes(',') || stringValue.includes('"')) {
+    return `"${stringValue.replace(/"/g, '""')}"`
+  }
+  
+  return stringValue
+}
+
+/**
+ * Converts data array to CSV content
+ * @param data - Array of objects to convert
+ * @returns CSV string
+ */
+function dataToCSV<T extends Record<string, unknown>>(data: T[]): string {
+  if (data.length === 0) {
+    return ''
+  }
+  
+  const headers = Object.keys(data[0])
+  const headerRow = headers.join(',')
+  
+  const dataRows = data.map(row => 
+    headers
+      .map(header => escapeCSVField(row[header]))
+      .join(',')
+  )
+  
+  return [headerRow, ...dataRows].join('\n')
+}
+
+/**
+ * Creates and downloads a file
+ * @param content - File content
+ * @param filename - Name of the file
+ * @param contentType - MIME type
+ */
+function downloadFile(content: string, filename: string, contentType: string): void {
+  const blob = new Blob([content], { type: contentType })
   const url = URL.createObjectURL(blob)
   
+  const link = document.createElement('a')
   link.setAttribute('href', url)
-  link.setAttribute('download', `${filename}.csv`)
+  link.setAttribute('download', filename)
   link.style.visibility = 'hidden'
   
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+  
+  URL.revokeObjectURL(url)
+}
+
+/**
+ * Exports data to a CSV file
+ * @param data - Array of objects to export
+ * @param filename - Name of the file (without extension)
+ */
+export function exportToCSV<T extends Record<string, unknown>>(
+  data: T[],
+  filename: string
+): void {
+  const csvContent = dataToCSV(data)
+  const fullFilename = `${filename}${CSV_EXPORT.FILE_EXTENSION}`
+  
+  downloadFile(csvContent, fullFilename, CSV_EXPORT.CONTENT_TYPE)
 }

@@ -59,6 +59,15 @@ export default {
         case '/api/telephony/webhook/status':
           return await handleStatusWebhook(request, env);
         
+        case '/api/telephony/webhook/proxy':
+          return await handleProxyWebhook(request, env);
+        
+        case '/api/telephony/webhook/intercept':
+          return await handleInterceptWebhook(request, env);
+        
+        case '/api/telephony/webhook/out-of-session':
+          return await handleOutOfSessionWebhook(request, env);
+        
         default:
           return new Response('Not found', { status: 404 });
       }
@@ -325,4 +334,34 @@ function verifyTwilioSignature(request: Request, signature: string, env: Env): b
   // TODO: Implement Twilio signature verification
   // For now, return true in development
   return true;
+}
+
+async function handleProxyWebhook(request: Request, env: Env): Promise<Response> {
+  const data = await request.json();
+  console.log('Proxy webhook:', data);
+  
+  // Handle proxy callbacks
+  return new Response('OK', { status: 200 });
+}
+
+async function handleInterceptWebhook(request: Request, env: Env): Promise<Response> {
+  const data = await request.json();
+  console.log('Intercept webhook:', data);
+  
+  // You can intercept and modify the call here
+  // For now, just let it proceed
+  return new Response(JSON.stringify({ 
+    action: 'proceed' 
+  }), {
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
+
+async function handleOutOfSessionWebhook(request: Request, env: Env): Promise<Response> {
+  const data = await request.json();
+  console.log('Out of session webhook:', data);
+  
+  // Handle calls that come in when no session exists
+  // You could create a new session or reject the call
+  return new Response('OK', { status: 200 });
 }
