@@ -1,22 +1,76 @@
 {
-  "name": "Contact Manager",
+  "name": "Contact Manager - Professional CRM",
   "short_name": "Contacts",
-  "description": "Manage contacts and track calls",
+  "description": "Professional contact management app for tracking calls, managing relationships, and organizing your network efficiently",
   "theme_color": "#10b981",
   "background_color": "#ffffff",
   "display": "standalone",
   "orientation": "portrait",
   "start_url": "/",
+  "scope": "/",
+  "id": "com.contactmanager.pwa",
+  "categories": ["business", "productivity"],
+  "dir": "ltr",
+  "lang": "en-US",
+  "prefer_related_applications": false,
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot-1.png",
+      "sizes": "1290x2796",
+      "type": "image/png",
+      "label": "Contact Queue View"
+    },
+    {
+      "src": "screenshot-2.png",
+      "sizes": "1290x2796",
+      "type": "image/png",
+      "label": "Dashboard Analytics"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Call Queue",
+      "short_name": "Queue",
+      "description": "View contacts to call",
+      "url": "/queue",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Add Contact",
+      "short_name": "Add",
+      "description": "Add a new contact",
+      "url": "/contacts/new",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "features": [
+    "Contact Management",
+    "Call Tracking",
+    "Offline Support",
+    "Analytics Dashboard"
+  ],
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
 }

@@ -3,16 +3,19 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from './AuthContext'
 import { Button } from '@/components/common/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
-import { Mail, Lock, AlertCircle, Info } from 'lucide-react'
-import { isDemoMode } from '@/lib/supabase'
+import { Mail, Lock, AlertCircle, User, Building } from 'lucide-react'
 
 export function LoginPage() {
-  const [email, setEmail] = useState('demo@example.com')
-  const [password, setPassword] = useState('password')
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [organizationName, setOrganizationName] = useState('')
+  const [createNewOrg, setCreateNewOrg] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   
-  const { signIn } = useAuth()
+  const { signIn, signUp } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   
@@ -24,12 +27,32 @@ export function LoginPage() {
     setIsLoading(true)
 
     try {
-      const { error } = await signIn(email, password)
-      
-      if (error) {
-        setError(error.message)
+      if (mode === 'signin') {
+        const { error } = await signIn(email, password)
+        
+        if (error) {
+          setError(error.message)
+        } else {
+          navigate(from, { replace: true })
+        }
       } else {
-        navigate(from, { replace: true })
+        // Sign up
+        const { error } = await signUp(
+          email, 
+          password, 
+          fullName,
+          createNewOrg ? organizationName : undefined
+        )
+        
+        if (error) {
+          setError(error.message)
+        } else {
+          // Auto sign in after registration
+          const { error: signInError } = await signIn(email, password)
+          if (!signInError) {
+            navigate('/', { replace: true })
+          }
+        }
       }
     } catch (err) {
       setError('An unexpected error occurred')
@@ -39,28 +62,96 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
           <h1 className="text-3xl font-bold text-gray-900">Contact Manager</h1>
-          <p className="text-gray-600 mt-2">Sign in to continue</p>
+          <p className="text-gray-600 mt-2">
+            {mode === 'signin' ? 'Sign in to your account' : 'Create a new account'}
+          </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Sign In</CardTitle>
+            <CardTitle>{mode === 'signin' ? 'Sign In' : 'Sign Up'}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4" />
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-2">
+                  <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
                   <p className="text-sm">{error}</p>
                 </div>
               )}
 
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-gray-700">
+              {mode === 'signup' && (
+                <>
+                  <div>
+                    <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        id="fullName"
+                        type="text"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="John Doe"
+                        required
+                        autoComplete="name"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label htmlFor="createOrg" className="text-sm font-medium text-gray-700">
+                        Organization
+                      </label>
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          id="createOrg"
+                          type="checkbox"
+                          checked={createNewOrg}
+                          onChange={(e) => setCreateNewOrg(e.target.checked)}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        Create new organization
+                      </label>
+                    </div>
+                    
+                    {createNewOrg && (
+                      <div className="relative">
+                        <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                          type="text"
+                          value={organizationName}
+                          onChange={(e) => setOrganizationName(e.target.value)}
+                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Organization name"
+                          required={createNewOrg}
+                        />
+                      </div>
+                    )}
+                    
+                    {!createNewOrg && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        You'll be added to the demo organization. Contact an admin to create your own.
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                   Email
                 </label>
                 <div className="relative">
@@ -70,7 +161,7 @@ export function LoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="you@example.com"
                     required
                     autoComplete="email"
@@ -78,8 +169,8 @@ export function LoginPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium text-gray-700">
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                   Password
                 </label>
                 <div className="relative">
@@ -89,42 +180,57 @@ export function LoginPage() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="••••••••"
                     required
-                    autoComplete="current-password"
+                    autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                    minLength={6}
                   />
                 </div>
+                {mode === 'signup' && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    Must be at least 6 characters
+                  </p>
+                )}
               </div>
 
-              <Button
-                type="submit"
-                fullWidth
-                isLoading={isLoading}
-                disabled={isLoading}
-              >
-                Sign In
-              </Button>
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  fullWidth
+                  isLoading={isLoading}
+                  disabled={isLoading}
+                >
+                  {mode === 'signin' ? 'Sign In' : 'Create Account'}
+                </Button>
+              </div>
+
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode(mode === 'signin' ? 'signup' : 'signin')
+                    setError(null)
+                  }}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  {mode === 'signin' 
+                    ? "Don't have an account? Sign up" 
+                    : "Already have an account? Sign in"}
+                </button>
+              </div>
             </form>
           </CardContent>
         </Card>
 
-        {isDemoMode && (
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-start gap-2">
-              <Info className="w-5 h-5 text-blue-600 mt-0.5" />
-              <div className="text-sm text-blue-800">
-                <p className="font-medium mb-1">Demo Mode</p>
-                <p>Use any email and password to sign in.</p>
-                <p className="mt-1">Sample: demo@example.com / password</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <p className="text-center text-sm text-gray-600 mt-6">
-          Need an account? Contact your administrator.
-        </p>
+        <div className="mt-6 text-center text-sm text-gray-500">
+          <p>By signing up, you agree to our</p>
+          <p>
+            <a href="#" className="text-blue-600 hover:underline">Terms of Service</a>
+            {' and '}
+            <a href="#" className="text-blue-600 hover:underline">Privacy Policy</a>
+          </p>
+        </div>
       </div>
     </div>
   )

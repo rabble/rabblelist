@@ -1,196 +1,238 @@
-import { openDB } from 'idb'
-import type { DBSchema, IDBPDatabase } from 'idb'
 import { supabase } from './supabase'
-import type { SyncQueueItem, CallLog } from '@/types'
+import * as idb from './indexeddb'
+import type { Contact, CallLog, Event, SyncChange } from '@/types'
 
-interface SyncDB extends DBSchema {
-  syncQueue: {
-    key: string
-    value: SyncQueueItem
-  }
-}
+class SyncService {
+  private syncInProgress = false
+  private syncInterval: NodeJS.Timer | null = null
+  private onlineListener: (() => void) | null = null
+  private offlineListener: (() => void) | null = null
 
-class SyncManager {
-  private db: IDBPDatabase<SyncDB> | null = null
-  private readonly DB_NAME = 'contact-manager-sync'
-  private readonly DB_VERSION = 1
+  // Start automatic sync
+  startAutoSync(intervalMs = 30000) {
+    // Sync when coming online
+    this.onlineListener = () => {
+      console.log('Network online - starting sync')
+      this.sync()
+    }
+    
+    this.offlineListener = () => {
+      console.log('Network offline')
+    }
 
-  async initDB() {
-    if (this.db) return this.db
+    window.addEventListener('online', this.onlineListener)
+    window.addEventListener('offline', this.offlineListener)
 
-    this.db = await openDB<SyncDB>(this.DB_NAME, this.DB_VERSION, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains('syncQueue')) {
-          db.createObjectStore('syncQueue', { keyPath: 'id' })
-        }
-      },
-    })
+    // Periodic sync
+    this.syncInterval = setInterval(() => {
+      if (navigator.onLine) {
+        this.sync()
+      }
+    }, intervalMs)
 
-    return this.db
-  }
-
-  async addToQueue(item: SyncQueueItem) {
-    const db = await this.initDB()
-    await db.put('syncQueue', item)
-  }
-
-  async getQueueItems(): Promise<SyncQueueItem[]> {
-    const db = await this.initDB()
-    return await db.getAll('syncQueue')
-  }
-
-  async removeFromQueue(id: string) {
-    const db = await this.initDB()
-    await db.delete('syncQueue', id)
+    // Initial sync
+    if (navigator.onLine) {
+      this.sync()
+    }
   }
 
-  async syncAll(items: SyncQueueItem[]) {
-    const results = await Promise.allSettled(
-      items.map(item => this.syncItem(item))
-    )
+  // Stop automatic sync
+  stopAutoSync() {
+    if (this.syncInterval) {
+      clearInterval(this.syncInterval)
+      this.syncInterval = null
+    }
 
-    // Handle results
-    for (let i = 0; i < results.length; i++) {
-      const result = results[i]
-      const item = items[i]
+    if (this.onlineListener) {
+      window.removeEventListener('online', this.onlineListener)
+      this.onlineListener = null
+    }
 
-      if (result.status === 'fulfilled') {
-        await this.removeFromQueue(item.id)
-      } else {
+    if (this.offlineListener) {
+      window.removeEventListener('offline', this.offlineListener)
+      this.offlineListener = null
+    }
+  }
+
+  // Main sync function
+  async sync(): Promise<{ success: boolean; error?: Error }> {
+    if (this.syncInProgress || !navigator.onLine) {
+      return { success: false, error: new Error('Sync already in progress or offline') }
+    }
+
+    this.syncInProgress = true
+
+    try {
+      // 1. Upload pending changes
+      await this.uploadPendingChanges()
+
+      // 2. Download latest data
+      await this.downloadLatestData()
+
+      // 3. Clean up synced changes
+      await idb.deleteSyncedChanges()
+
+      return { success: true }
+    } catch (error) {
+      console.error('Sync error:', error)
+      return { success: false, error: error as Error }
+    } finally {
+      this.syncInProgress = false
+    }
+  }
+
+  // Upload pending changes to Supabase
+  private async uploadPendingChanges() {
+    const pendingChanges = await idb.getPendingSyncChanges()
+
+    for (const change of pendingChanges) {
+      try {
+        await this.processSyncChange(change)
+        await idb.markSynced(change.id)
+      } catch (error) {
+        console.error(`Failed to sync change ${change.id}:`, error)
+        
         // Increment retry count
-        item.retries += 1
-        if (item.retries >= 3) {
-          // Max retries reached, remove from queue
-          await this.removeFromQueue(item.id)
-          console.error(`Max retries reached for sync item ${item.id}`, result.reason)
-        } else {
-          await this.addToQueue(item)
+        const updatedChange: SyncChange = {
+          ...change,
+          retries: (change.retries || 0) + 1
+        }
+        
+        // If too many retries, mark as synced to avoid infinite loop
+        if (updatedChange.retries! > 3) {
+          console.error(`Giving up on change ${change.id} after ${updatedChange.retries} retries`)
+          await idb.markSynced(change.id)
         }
       }
     }
   }
 
-  private async syncItem(item: SyncQueueItem): Promise<void> {
-    switch (item.type) {
-      case 'call_log':
-        return this.syncCallLog(item)
-      case 'contact_update':
-        return this.syncContactUpdate(item)
-      case 'event_checkin':
-        return this.syncEventCheckin(item)
-      default:
-        throw new Error(`Unknown sync type: ${item.type}`)
-    }
-  }
-
-  private async syncCallLog(item: SyncQueueItem) {
-    if (item.action !== 'create') {
-      throw new Error('Only create action is supported for call logs')
-    }
-
-    const user = await supabase.auth.getUser()
-    if (!user.data.user) throw new Error('Not authenticated')
-
-    // Get organization ID
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('organization_id')
-      .eq('id', user.data.user.id)
-      .single()
-
-    if (userError || !userData) throw new Error('Failed to get user data')
-
-    const callLog: Partial<CallLog> = {
-      ...item.data,
-      organization_id: userData.organization_id,
-      ringer_id: user.data.user!.id,
-    }
-
-    const { error } = await supabase
-      .from('call_logs')
-      .insert(callLog)
-
-    if (error) throw error
-  }
-
-  private async syncContactUpdate(item: SyncQueueItem) {
-    if (item.action !== 'update') {
-      throw new Error('Only update action is supported for contacts')
-    }
-
-    const { error } = await supabase
-      .from('contacts')
-      .update(item.data.updates)
-      .eq('id', item.data.contactId)
-
-    if (error) throw error
-  }
-
-  private async syncEventCheckin(item: SyncQueueItem) {
-    if (item.action !== 'update') {
-      throw new Error('Only update action is supported for event checkins')
-    }
-
-    const { error } = await supabase
-      .from('event_participants')
-      .update({
-        status: 'attended',
-        checked_in_at: new Date().toISOString(),
-      })
-      .eq('event_id', item.data.eventId)
-      .eq('contact_id', item.data.contactId)
-
-    if (error) throw error
-  }
-
-  // Batch sync for better performance
-  async batchSync(items: SyncQueueItem[]) {
-    // Group items by type and action
-    const grouped = items.reduce((acc, item) => {
-      const key = `${item.type}-${item.action}`
-      if (!acc[key]) acc[key] = []
-      acc[key].push(item)
-      return acc
-    }, {} as Record<string, SyncQueueItem[]>)
-
-    // Process each group
-    for (const [key, groupItems] of Object.entries(grouped)) {
-      const [type, action] = key.split('-')
+  // Process individual sync change
+  private async processSyncChange(change: SyncChange) {
+    switch (change.type) {
+      case 'contact':
+        await this.syncContact(change)
+        break
       
-      if (type === 'call_log' && action === 'create') {
-        await this.batchCreateCallLogs(groupItems)
-      }
-      // Add more batch operations as needed
+      case 'call_log':
+        await this.syncCallLog(change)
+        break
+      
+      case 'event_participant':
+        await this.syncEventParticipant(change)
+        break
+      
+      default:
+        console.warn(`Unknown sync type: ${change.type}`)
     }
   }
 
-  private async batchCreateCallLogs(items: SyncQueueItem[]) {
-    const user = await supabase.auth.getUser()
-    if (!user.data.user) throw new Error('Not authenticated')
+  // Sync contact changes
+  private async syncContact(change: SyncChange) {
+    const { action, data } = change
 
-    const { data: userData, error: userError } = await supabase
+    switch (action) {
+      case 'create':
+        await supabase.from('contacts').insert(data)
+        break
+      
+      case 'update':
+        await supabase.from('contacts').update(data).eq('id', data.id)
+        break
+      
+      case 'delete':
+        await supabase.from('contacts').delete().eq('id', data.id)
+        break
+    }
+  }
+
+  // Sync call log changes
+  private async syncCallLog(change: SyncChange) {
+    if (change.action === 'create') {
+      await supabase.from('call_logs').insert(change.data)
+    }
+  }
+
+  // Sync event participant changes
+  private async syncEventParticipant(change: SyncChange) {
+    const { action, data } = change
+
+    switch (action) {
+      case 'create':
+        await supabase.from('event_participants').insert(data)
+        break
+      
+      case 'update':
+        await supabase.from('event_participants').update(data).eq('id', data.id)
+        break
+    }
+  }
+
+  // Download latest data from Supabase
+  private async downloadLatestData() {
+    const { data: user } = await supabase.auth.getUser()
+    if (!user?.user) return
+
+    const { data: profile } = await supabase
       .from('users')
       .select('organization_id')
-      .eq('id', user.data.user.id)
+      .eq('id', user.user.id)
       .single()
 
-    if (userError || !userData) throw new Error('Failed to get user data')
+    if (!profile?.organization_id) return
 
-    const callLogs = items.map(item => ({
-      ...item.data,
-      organization_id: userData.organization_id,
-      ringer_id: user.data.user!.id,
-    }))
+    // Get last sync time from localStorage
+    const lastSyncKey = `lastSync_${profile.organization_id}`
+    const lastSync = localStorage.getItem(lastSyncKey)
+    const lastSyncDate = lastSync ? new Date(lastSync) : new Date(0)
 
-    const { error } = await supabase
-      .from('call_logs')
-      .insert(callLogs)
+    // Download contacts
+    const { data: contacts } = await supabase
+      .from('contacts')
+      .select('*')
+      .eq('organization_id', profile.organization_id)
+      .gte('updated_at', lastSyncDate.toISOString())
 
-    if (error) throw error
+    if (contacts && contacts.length > 0) {
+      await idb.saveContacts(contacts)
+    }
 
-    // Remove all successfully synced items
-    await Promise.all(items.map(item => this.removeFromQueue(item.id)))
+    // Download events
+    const { data: events } = await supabase
+      .from('events')
+      .select('*')
+      .eq('organization_id', profile.organization_id)
+      .gte('updated_at', lastSyncDate.toISOString())
+
+    if (events && events.length > 0) {
+      await idb.saveEvents(events)
+    }
+
+    // Update last sync time
+    localStorage.setItem(lastSyncKey, new Date().toISOString())
+  }
+
+  // Force full sync (clear local data and download everything)
+  async fullSync() {
+    await idb.clearAllData()
+    localStorage.removeItem('lastSync')
+    return this.sync()
+  }
+
+  // Get sync status
+  async getSyncStatus() {
+    const pendingChanges = await idb.getPendingSyncChanges()
+    const stats = await idb.getDatabaseStats()
+    
+    return {
+      isOnline: navigator.onLine,
+      isSyncing: this.syncInProgress,
+      pendingChanges: pendingChanges.length,
+      localData: stats,
+      lastSync: localStorage.getItem('lastSync')
+    }
   }
 }
 
-export const syncManager = new SyncManager()
+// Export singleton instance
+export const syncService = new SyncService()

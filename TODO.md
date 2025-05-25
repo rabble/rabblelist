@@ -55,6 +55,175 @@
 - [ ] Add call scheduling features
 - [ ] Implement do-not-call list handling
 
+### 5.1 Cloud Telephony Integration with AI Transcription
+**Goal**: Enable anonymous calling where ringers don't see contact numbers and calls are automatically transcribed, analyzed, and logged.
+
+#### Research & Planning Phase
+- [ ] Evaluate telephony providers:
+  - [ ] **Twilio** (Recommended): Test Proxy API for masked calling, Voice Insights API
+  - [ ] **Amazon Connect**: Evaluate all-in-one solution with built-in transcription
+  - [ ] **Vonage**: Test Voice API and Number Masking features
+  - [ ] Compare pricing models for expected call volume
+
+- [ ] Evaluate transcription services:
+  - [ ] **Google Cloud Speech-to-Text**: Test telephony model, evaluate 125+ language support
+  - [ ] **Amazon Transcribe**: Test real-time transcription with Amazon Connect
+  - [ ] **AssemblyAI**: Evaluate real-time WebSocket API (<600ms latency)
+  - [ ] **Deepgram**: Test Voice AI platform for real-time transcription
+  
+- [ ] Evaluate LLM integration for call analysis:
+  - [ ] **OpenAI GPT-4o-mini-realtime**: Test for real-time call analysis
+  - [ ] **Claude 3.7 Sonnet**: Evaluate for post-call comprehensive analysis
+  - [ ] Design prompts for extracting: sentiment, key topics, follow-up actions, call outcome
+
+#### Architecture Design
+- [ ] Design system architecture:
+  ```
+  User clicks "Call" → Twilio Proxy creates masked connection → 
+  Call audio streams to transcription service → 
+  Real-time transcript to LLM → 
+  Call summary & outcomes saved to Supabase
+  ```
+- [ ] Plan database schema extensions:
+  - [ ] `call_sessions` table: session_id, caller_id, contact_id, start_time, duration, recording_url
+  - [ ] `call_transcripts` table: transcript_id, session_id, language, raw_text, timestamps
+  - [ ] `call_analytics` table: session_id, sentiment, key_topics[], outcome, follow_up_actions[]
+  - [ ] Update `contact_interactions` to link with call_sessions
+
+#### Implementation Phase 1: Basic Anonymous Calling
+- [ ] Set up Twilio account and configure:
+  - [ ] Purchase phone numbers for each supported country
+  - [ ] Configure Proxy service for number masking
+  - [ ] Set up Voice webhooks for call events
+  - [ ] Implement JWT authentication for client SDK
+
+- [ ] Create calling UI components:
+  - [ ] In-app dialer interface with call controls
+  - [ ] Call status indicators (connecting, in-progress, ended)
+  - [ ] Mute, speaker, end call buttons
+  - [ ] Call duration timer
+  - [ ] Post-call feedback form
+
+- [ ] Implement backend calling service:
+  - [ ] Cloudflare Worker for Twilio webhook handling
+  - [ ] Session management for active calls
+  - [ ] Call routing logic based on user location
+  - [ ] Rate limiting and fraud prevention
+
+#### Implementation Phase 2: Real-time Transcription
+- [ ] Integrate transcription service:
+  - [ ] Set up Google Cloud Speech-to-Text API
+  - [ ] Configure streaming transcription for live calls
+  - [ ] Handle multiple language detection
+  - [ ] Implement fallback transcription service
+
+- [ ] Create real-time UI features:
+  - [ ] Live transcript display during calls
+  - [ ] Language indicator
+  - [ ] Confidence scores for transcription
+  - [ ] Speaker diarization (who said what)
+
+- [ ] Build transcription pipeline:
+  - [ ] Audio streaming from Twilio to transcription service
+  - [ ] WebSocket connection for real-time updates
+  - [ ] Transcript storage and versioning
+  - [ ] Post-call transcript cleanup and formatting
+
+#### Implementation Phase 3: AI Analysis & Automation
+- [ ] Implement LLM analysis pipeline:
+  - [ ] Real-time analysis using GPT-4o-mini for immediate insights
+  - [ ] Post-call comprehensive analysis with Claude 3.7
+  - [ ] Sentiment analysis throughout the call
+  - [ ] Key topic extraction
+  - [ ] Automatic outcome classification
+
+- [ ] Create automation features:
+  - [ ] Auto-fill call outcome based on AI analysis
+  - [ ] Suggested follow-up actions
+  - [ ] Automatic tag assignment based on conversation
+  - [ ] Next call scheduling recommendations
+  - [ ] Alert generation for important mentions
+
+- [ ] Build AI-powered features:
+  - [ ] Call summary generation
+  - [ ] Action items extraction
+  - [ ] Sentiment trend analysis
+  - [ ] Conversation quality scoring
+  - [ ] Coaching suggestions for ringers
+
+#### Implementation Phase 4: Multi-language Support
+- [ ] Configure language support:
+  - [ ] Set up transcription for top 20 languages initially
+  - [ ] Implement language detection
+  - [ ] Configure LLM prompts in multiple languages
+  - [ ] Handle code-switching (multiple languages in one call)
+
+- [ ] Localization features:
+  - [ ] Translate call summaries
+  - [ ] Multi-language UI for call interface
+  - [ ] RTL support for applicable languages
+  - [ ] Culturally appropriate AI responses
+
+#### Implementation Phase 5: Analytics & Reporting
+- [ ] Create analytics dashboard:
+  - [ ] Call volume by ringer, time, outcome
+  - [ ] Average call duration and sentiment
+  - [ ] Language distribution
+  - [ ] Conversion rates by call script
+  - [ ] Ringer performance metrics
+
+- [ ] Build reporting features:
+  - [ ] Exportable call reports
+  - [ ] Transcription search across all calls
+  - [ ] Trend analysis over time
+  - [ ] A/B testing for call scripts
+  - [ ] ROI calculations for calling campaigns
+
+#### Security & Compliance
+- [ ] Implement security measures:
+  - [ ] End-to-end encryption for calls
+  - [ ] Secure storage for recordings/transcripts
+  - [ ] Access control for sensitive data
+  - [ ] Audit logs for all call access
+
+- [ ] Ensure compliance:
+  - [ ] GDPR compliance for EU calls
+  - [ ] CCPA compliance for California
+  - [ ] TCPA compliance for US calling
+  - [ ] Local telecom regulations per country
+  - [ ] Consent recording mechanisms
+
+#### Testing & Quality Assurance
+- [ ] Comprehensive testing:
+  - [ ] Load testing for concurrent calls
+  - [ ] Transcription accuracy testing
+  - [ ] LLM response quality validation
+  - [ ] Multi-language testing with native speakers
+  - [ ] Edge case handling (poor connections, background noise)
+
+#### Deployment & Monitoring
+- [ ] Set up monitoring:
+  - [ ] Call quality metrics (MOS scores)
+  - [ ] Transcription accuracy monitoring
+  - [ ] LLM response time tracking
+  - [ ] Cost monitoring per service
+  - [ ] Error rate tracking and alerting
+
+#### Estimated Timeline & Resources
+- **Phase 1 (Basic Calling)**: 2-3 weeks
+- **Phase 2 (Transcription)**: 2-3 weeks  
+- **Phase 3 (AI Analysis)**: 3-4 weeks
+- **Phase 4 (Multi-language)**: 2 weeks
+- **Phase 5 (Analytics)**: 2 weeks
+- **Total**: 11-14 weeks
+
+#### Estimated Costs (Monthly)
+- **Twilio**: $0.022/min (US), varies by country
+- **Google Speech-to-Text**: $0.016/min for telephony
+- **OpenAI GPT-4o-mini**: ~$0.001 per call analysis
+- **Storage**: Included in Supabase plan
+- **Estimated for 10,000 mins/month**: ~$400-500
+
 ## 📱 PWA & Mobile Features
 
 ### 6. Complete PWA Implementation

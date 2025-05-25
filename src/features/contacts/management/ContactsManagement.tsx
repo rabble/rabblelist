@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
-import { useAuth } from '@/features/auth/AuthContext'
-import { supabase, isDemoMode } from '@/lib/supabase'
-import { mockDb } from '@/lib/mockData'
+import { useContactStore } from '@/stores/contactStore'
+import { ContactService } from '../contacts.service'
 import { 
   Plus,
   Search,
@@ -20,87 +19,52 @@ import {
   Calendar,
   Edit,
   Trash2,
-  Users
+  Users,
+  CheckSquare,
+  X
 } from 'lucide-react'
 import type { Contact } from '@/types'
 
 interface FilterOptions {
   tags: string[]
-  groups: string[]
   lastContactDate: string
   searchTerm: string
 }
 
 export function ContactsManagement() {
-  const { user } = useAuth()
   const navigate = useNavigate()
-  const [contacts, setContacts] = useState<Contact[]>([])
-  const [loading, setLoading] = useState(true)
+  const { 
+    contacts, 
+    totalContacts, 
+    isLoadingContacts, 
+    loadContacts, 
+    deleteContact 
+  } = useContactStore()
+
   const [selectedContacts, setSelectedContacts] = useState<string[]>([])
   const [filters, setFilters] = useState<FilterOptions>({
     tags: [],
-    groups: [],
     lastContactDate: '',
     searchTerm: ''
   })
   const [showFilters, setShowFilters] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 20
+
+  // Available tags - in production, this would come from the database
+  const availableTags = ['volunteer', 'donor', 'member', 'prospect', 'event_attendee']
 
   useEffect(() => {
-    loadContacts()
-  }, [filters])
+    loadContactsWithFilters()
+  }, [filters, currentPage])
 
-  const loadContacts = async () => {
-    try {
-      setLoading(true)
-      
-      if (isDemoMode) {
-        const result = await mockDb.contacts.list()
-        let filteredContacts = result.data || []
-        
-        // Apply filters
-        if (filters.searchTerm) {
-          const searchLower = filters.searchTerm.toLowerCase()
-          filteredContacts = filteredContacts.filter((c: Contact) => 
-            c.full_name.toLowerCase().includes(searchLower) ||
-            c.phone.includes(filters.searchTerm) ||
-            c.email?.toLowerCase().includes(searchLower)
-          )
-        }
-        
-        if (filters.tags.length > 0) {
-          filteredContacts = filteredContacts.filter((c: Contact) =>
-            filters.tags.some(tag => c.tags.includes(tag))
-          )
-        }
-        
-        setContacts(filteredContacts)
-      } else {
-        let query = supabase
-          .from('contacts')
-          .select('*')
-          .eq('organization_id', user?.organization_id)
-          .order('created_at', { ascending: false })
-        
-        // Apply search filter
-        if (filters.searchTerm) {
-          query = query.or(`full_name.ilike.%${filters.searchTerm}%,phone.ilike.%${filters.searchTerm}%,email.ilike.%${filters.searchTerm}%`)
-        }
-        
-        // Apply tag filter
-        if (filters.tags.length > 0) {
-          query = query.contains('tags', filters.tags)
-        }
-        
-        const { data, error } = await query
-        
-        if (error) throw error
-        setContacts(data || [])
-      }
-    } catch (error) {
-      console.error('Failed to load contacts:', error)
-    } finally {
-      setLoading(false)
-    }
+  const loadContactsWithFilters = () => {
+    loadContacts({
+      search: filters.searchTerm,
+      tags: filters.tags.length > 0 ? filters.tags : undefined,
+      limit: pageSize,
+      offset: (currentPage - 1) * pageSize
+    })
   }
 
   const handleSelectContact = (contactId: string) => {
@@ -121,41 +85,32 @@ export function ContactsManagement() {
   }
 
   const handleDeleteSelected = async () => {
-    if (!confirm(`Delete ${selectedContacts.length} contacts?`)) return
+    if (!confirm(`Delete ${selectedContacts.length} contact${selectedContacts.length !== 1 ? 's' : ''}?`)) return
     
     try {
-      if (isDemoMode) {
-        // Mock delete
-        setContacts(prev => prev.filter(c => !selectedContacts.includes(c.id)))
-        setSelectedContacts([])
-      } else {
-        const { error } = await supabase
-          .from('contacts')
-          .delete()
-          .in('id', selectedContacts)
-        
-        if (error) throw error
-        
-        await loadContacts()
-        setSelectedContacts([])
+      // Delete contacts one by one
+      for (const id of selectedContacts) {
+        await deleteContact(id)
       }
+      setSelectedContacts([])
     } catch (error) {
       console.error('Failed to delete contacts:', error)
-      alert('Failed to delete contacts')
+      alert('Failed to delete some contacts')
     }
   }
 
   const handleExport = () => {
     // Convert contacts to CSV
     const csv = [
-      ['Name', 'Phone', 'Email', 'Tags', 'Last Contact', 'Notes'],
+      ['Name', 'Phone', 'Email', 'Address', 'Tags', 'Last Contact', 'Events Attended'],
       ...contacts.map(c => [
         c.full_name,
         c.phone,
         c.email || '',
+        c.address || '',
         c.tags.join('; '),
-        c.last_contact_date || '',
-        c.notes || ''
+        c.last_contact_date ? new Date(c.last_contact_date).toLocaleDateString() : '',
+        c.total_events_attended.toString()
       ])
     ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n')
     
@@ -166,34 +121,36 @@ export function ContactsManagement() {
     a.href = url
     a.download = `contacts-${new Date().toISOString().split('T')[0]}.csv`
     a.click()
+    window.URL.revokeObjectURL(url)
   }
 
-  if (loading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-        </div>
-      </Layout>
-    )
+  const formatPhone = (phone: string) => {
+    // Format phone number for display
+    const cleaned = phone.replace(/\D/g, '')
+    if (cleaned.length === 10) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`
+    }
+    return phone
   }
+
+  const totalPages = Math.ceil(totalContacts / pageSize)
 
   return (
     <Layout>
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Contacts</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Contacts</h1>
               <p className="text-gray-600 mt-1">
-                Manage your organization's contacts and supporters
+                {totalContacts} total contacts
               </p>
             </div>
-            <div className="flex space-x-3">
-              <Button variant="outline" onClick={() => navigate('/import')}>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => navigate('/contacts/import')}>
                 <Upload className="w-4 h-4 mr-2" />
-                Import
+                <span className="hidden sm:inline">Import</span>
               </Button>
               <Button onClick={() => navigate('/contacts/new')}>
                 <Plus className="w-4 h-4 mr-2" />
@@ -213,9 +170,12 @@ export function ContactsManagement() {
                   <input
                     type="text"
                     placeholder="Search by name, phone, or email..."
-                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={filters.searchTerm}
-                    onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
+                    onChange={(e) => {
+                      setFilters(prev => ({ ...prev, searchTerm: e.target.value }))
+                      setCurrentPage(1)
+                    }}
                   />
                 </div>
               </div>
@@ -228,94 +188,70 @@ export function ContactsManagement() {
                 >
                   <Filter className="w-4 h-4 mr-2" />
                   Filters
-                  {(filters.tags.length > 0 || filters.groups.length > 0) && (
-                    <span className="ml-2 bg-primary-500 text-white text-xs px-2 py-0.5 rounded-full">
-                      {filters.tags.length + filters.groups.length}
+                  {filters.tags.length > 0 && (
+                    <span className="ml-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
+                      {filters.tags.length}
                     </span>
                   )}
                 </Button>
                 
-                <Button variant="outline" onClick={handleExport}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
-                </Button>
+                {contacts.length > 0 && (
+                  <Button variant="outline" onClick={handleExport}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Export
+                  </Button>
+                )}
               </div>
             </div>
             
             {/* Filter Options */}
             {showFilters && (
               <div className="mt-4 pt-4 border-t">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Tags
                     </label>
-                    <select
-                      multiple
-                      className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      value={filters.tags}
-                      onChange={(e) => {
-                        const selected = Array.from(e.target.selectedOptions, option => option.value)
-                        setFilters(prev => ({ ...prev, tags: selected }))
-                      }}
-                    >
-                      <option value="volunteer">Volunteer</option>
-                      <option value="donor">Donor</option>
-                      <option value="member">Member</option>
-                      <option value="leader">Leader</option>
-                    </select>
+                    <div className="flex flex-wrap gap-2">
+                      {availableTags.map(tag => (
+                        <label key={tag} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                            checked={filters.tags.includes(tag)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFilters(prev => ({ ...prev, tags: [...prev.tags, tag] }))
+                              } else {
+                                setFilters(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }))
+                              }
+                              setCurrentPage(1)
+                            }}
+                          />
+                          <span className="text-sm text-gray-700 capitalize">
+                            {tag.replace('_', ' ')}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Groups
-                    </label>
-                    <select
-                      multiple
-                      className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      value={filters.groups}
-                      onChange={(e) => {
-                        const selected = Array.from(e.target.selectedOptions, option => option.value)  
-                        setFilters(prev => ({ ...prev, groups: selected }))
+                  <div className="flex justify-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setFilters({
+                          tags: [],
+                          lastContactDate: '',
+                          searchTerm: ''
+                        })
+                        setCurrentPage(1)
                       }}
                     >
-                      <option value="climate-action">Climate Action</option>
-                      <option value="housing-justice">Housing Justice</option>
-                      <option value="youth-org">Youth Organizing</option>
-                    </select>
+                      Clear Filters
+                    </Button>
                   </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Last Contact
-                    </label>
-                    <select
-                      className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      value={filters.lastContactDate}
-                      onChange={(e) => setFilters(prev => ({ ...prev, lastContactDate: e.target.value }))}
-                    >
-                      <option value="">All Time</option>
-                      <option value="7">Last 7 days</option>
-                      <option value="30">Last 30 days</option>
-                      <option value="90">Last 90 days</option>
-                      <option value="never">Never contacted</option>
-                    </select>
-                  </div>
-                </div>
-                
-                <div className="mt-4 flex justify-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setFilters({
-                      tags: [],
-                      groups: [],
-                      lastContactDate: '',
-                      searchTerm: ''
-                    })}
-                  >
-                    Clear Filters
-                  </Button>
                 </div>
               </div>
             )}
@@ -329,13 +265,13 @@ export function ContactsManagement() {
               {selectedContacts.length} contact{selectedContacts.length !== 1 ? 's' : ''} selected
             </p>
             <div className="flex gap-2">
-              <Button size="sm" variant="outline">
-                <Tag className="w-4 h-4 mr-2" />
-                Add Tags
-              </Button>
-              <Button size="sm" variant="outline">
-                <Users className="w-4 h-4 mr-2" />
-                Assign to Group
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setSelectedContacts([])}
+              >
+                <X className="w-4 h-4 mr-2" />
+                Clear
               </Button>
               <Button 
                 size="sm" 
@@ -350,9 +286,41 @@ export function ContactsManagement() {
           </div>
         )}
 
-        {/* Contacts Table */}
-        <Card>
-          <CardContent className="p-0">
+        {/* Loading State */}
+        {isLoadingContacts ? (
+          <Card>
+            <CardContent className="p-12">
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : contacts.length === 0 ? (
+          // Empty State
+          <Card>
+            <CardContent className="p-12">
+              <div className="text-center">
+                <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No contacts found
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  {filters.searchTerm || filters.tags.length > 0
+                    ? 'Try adjusting your filters'
+                    : 'Get started by adding your first contact'}
+                </p>
+                {!filters.searchTerm && filters.tags.length === 0 && (
+                  <Button onClick={() => navigate('/contacts/new')}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Contact
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          // Contacts Table
+          <Card>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b">
@@ -360,7 +328,7 @@ export function ContactsManagement() {
                     <th className="p-4 text-left">
                       <input
                         type="checkbox"
-                        className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         checked={selectedContacts.length === contacts.length && contacts.length > 0}
                         onChange={handleSelectAll}
                       />
@@ -368,16 +336,16 @@ export function ContactsManagement() {
                     <th className="p-4 text-left text-sm font-medium text-gray-900">
                       Name
                     </th>
-                    <th className="p-4 text-left text-sm font-medium text-gray-900">
+                    <th className="p-4 text-left text-sm font-medium text-gray-900 hidden sm:table-cell">
                       Contact Info
                     </th>
-                    <th className="p-4 text-left text-sm font-medium text-gray-900">
+                    <th className="p-4 text-left text-sm font-medium text-gray-900 hidden md:table-cell">
                       Tags
                     </th>
-                    <th className="p-4 text-left text-sm font-medium text-gray-900">
+                    <th className="p-4 text-left text-sm font-medium text-gray-900 hidden lg:table-cell">
                       Last Contact
                     </th>
-                    <th className="p-4 text-left text-sm font-medium text-gray-900">
+                    <th className="p-4 text-right text-sm font-medium text-gray-900">
                       Actions
                     </th>
                   </tr>
@@ -388,7 +356,7 @@ export function ContactsManagement() {
                       <td className="p-4">
                         <input
                           type="checkbox"
-                          className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                           checked={selectedContacts.includes(contact.id)}
                           onChange={() => handleSelectContact(contact.id)}
                         />
@@ -398,31 +366,34 @@ export function ContactsManagement() {
                           <p className="font-medium text-gray-900">
                             {contact.full_name}
                           </p>
-                          {contact.address && (
-                            <p className="text-sm text-gray-600 flex items-center mt-1">
-                              <MapPin className="w-3 h-3 mr-1" />
-                              {contact.address}
-                            </p>
-                          )}
+                          <div className="sm:hidden text-sm text-gray-500 mt-1">
+                            {formatPhone(contact.phone)}
+                          </div>
                         </div>
                       </td>
-                      <td className="p-4">
+                      <td className="p-4 hidden sm:table-cell">
                         <div className="space-y-1">
-                          <p className="text-sm flex items-center">
+                          <a 
+                            href={`tel:${contact.phone}`}
+                            className="text-sm flex items-center hover:text-blue-600"
+                          >
                             <Phone className="w-3 h-3 mr-1 text-gray-400" />
-                            {contact.phone}
-                          </p>
+                            {formatPhone(contact.phone)}
+                          </a>
                           {contact.email && (
-                            <p className="text-sm flex items-center">
+                            <a 
+                              href={`mailto:${contact.email}`}
+                              className="text-sm flex items-center hover:text-blue-600"
+                            >
                               <Mail className="w-3 h-3 mr-1 text-gray-400" />
                               {contact.email}
-                            </p>
+                            </a>
                           )}
                         </div>
                       </td>
-                      <td className="p-4">
+                      <td className="p-4 hidden md:table-cell">
                         <div className="flex flex-wrap gap-1">
-                          {contact.tags.map((tag) => (
+                          {contact.tags.slice(0, 3).map((tag) => (
                             <span
                               key={tag}
                               className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700"
@@ -430,9 +401,14 @@ export function ContactsManagement() {
                               {tag}
                             </span>
                           ))}
+                          {contact.tags.length > 3 && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-200 text-gray-600">
+                              +{contact.tags.length - 3}
+                            </span>
+                          )}
                         </div>
                       </td>
-                      <td className="p-4">
+                      <td className="p-4 hidden lg:table-cell">
                         <div className="text-sm">
                           {contact.last_contact_date ? (
                             <div className="flex items-center text-gray-900">
@@ -445,7 +421,7 @@ export function ContactsManagement() {
                         </div>
                       </td>
                       <td className="p-4">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-end gap-2">
                           <Button
                             size="sm"
                             variant="outline"
@@ -453,50 +429,83 @@ export function ContactsManagement() {
                           >
                             View
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="p-2"
-                            onClick={() => navigate(`/contacts/${contact.id}/edit`)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="p-2"
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
+                          <div className="relative group">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="p-2"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
+                              <button
+                                className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
+                                onClick={() => navigate(`/contacts/${contact.id}/edit`)}
+                              >
+                                <Edit className="w-4 h-4 inline mr-2" />
+                                Edit
+                              </button>
+                              <button
+                                className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
+                                onClick={() => navigate(`/contacts/queue?contact=${contact.id}`)}
+                              >
+                                <Phone className="w-4 h-4 inline mr-2" />
+                                Call
+                              </button>
+                              <hr className="my-1" />
+                              <button
+                                className="block w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 text-left"
+                                onClick={async () => {
+                                  if (confirm(`Delete ${contact.full_name}?`)) {
+                                    await deleteContact(contact.id)
+                                  }
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4 inline mr-2" />
+                                Delete
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              
-              {contacts.length === 0 && (
-                <div className="p-12 text-center">
-                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No contacts found
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    {filters.searchTerm || filters.tags.length > 0
-                      ? 'Try adjusting your filters'
-                      : 'Get started by adding your first contact'}
-                  </p>
-                  {!filters.searchTerm && filters.tags.length === 0 && (
-                    <Button onClick={() => navigate('/contacts/new')}>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Contact
-                    </Button>
-                  )}
-                </div>
-              )}
             </div>
-          </CardContent>
-        </Card>
+            
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="px-4 py-3 border-t">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-700">
+                    Showing {((currentPage - 1) * pageSize) + 1} to{' '}
+                    {Math.min(currentPage * pageSize, totalContacts)} of{' '}
+                    {totalContacts} contacts
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
       </div>
     </Layout>
   )

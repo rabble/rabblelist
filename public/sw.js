@@ -1,129 +1,102 @@
-/// <reference lib="webworker" />
-import { clientsClaim } from 'workbox-core';
-import { ExpirationPlugin } from 'workbox-expiration';
-import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching';
-import { registerRoute, NavigationRoute } from 'workbox-routing';
-import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
+const CACHE_NAME = 'contact-manager-v1';
+const urlsToCache = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/vite.svg'
+];
 
-declare const self: ServiceWorkerGlobalScope;
+// Install event - cache essential files
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('Opened cache');
+        return cache.addAll(urlsToCache);
+      })
+      .then(() => self.skipWaiting())
+  );
+});
 
-// Self-activate immediately
-self.skipWaiting();
-clientsClaim();
+// Activate event - clean up old caches
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => self.clients.claim())
+  );
+});
 
-// Precache all static assets
-precacheAndRoute(self.__WB_MANIFEST);
+// Fetch event - serve from cache, fallback to network
+self.addEventListener('fetch', event => {
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') return;
 
-// Clean up old caches
-cleanupOutdatedCaches();
+  // Skip chrome-extension and other non-http(s) requests
+  if (!event.request.url.startsWith('http')) return;
 
-// Cache the offline page
-const OFFLINE_PAGE_URL = '/offline.html';
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Cache hit - return response
+        if (response) {
+          return response;
+        }
 
-// App Shell-style routing for navigation requests
-registerRoute(
-  new NavigationRoute(
-    createHandlerBoundToURL('/index.html'),
-    {
-      denylist: [/^\/_/, /\/[^/?]+\.[^/]+$/],
-    }
-  )
-);
+        // Clone the request
+        const fetchRequest = event.request.clone();
 
-// Cache strategy for API calls
-registerRoute(
-  ({ url }) => url.pathname.startsWith('/api/') || url.hostname.includes('supabase'),
-  new NetworkFirst({
-    cacheName: 'api-cache',
-    networkTimeoutSeconds: 5,
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 50,
-        maxAgeSeconds: 5 * 60, // 5 minutes
-        purgeOnQuotaError: true,
-      }),
-    ],
-  })
-);
+        return fetch(fetchRequest).then(response => {
+          // Check if valid response
+          if (!response || response.status !== 200 || response.type !== 'basic') {
+            return response;
+          }
 
-// Cache strategy for static assets
-registerRoute(
-  ({ request }) => request.destination === 'style' || request.destination === 'script',
-  new StaleWhileRevalidate({
-    cacheName: 'static-resources',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 60,
-        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
-      }),
-    ],
-  })
-);
+          // Clone the response
+          const responseToCache = response.clone();
 
-// Cache strategy for images
-registerRoute(
-  ({ request }) => request.destination === 'image',
-  new CacheFirst({
-    cacheName: 'images',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 60,
-        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
-      }),
-    ],
-  })
-);
+          // Cache dynamic content for offline use
+          caches.open(CACHE_NAME)
+            .then(cache => {
+              // Cache API responses and assets
+              if (event.request.url.includes('/api/') || 
+                  event.request.url.includes('.js') || 
+                  event.request.url.includes('.css') ||
+                  event.request.url.includes('.json')) {
+                cache.put(event.request, responseToCache);
+              }
+            });
 
-// Background sync for offline data
-self.addEventListener('sync', (event) => {
+          return response;
+        });
+      })
+      .catch(() => {
+        // Offline fallback for navigation requests
+        if (event.request.destination === 'document') {
+          return caches.match('/index.html');
+        }
+      })
+  );
+});
+
+// Background sync for offline actions
+self.addEventListener('sync', event => {
   if (event.tag === 'sync-contacts') {
     event.waitUntil(syncContacts());
   }
 });
 
 async function syncContacts() {
-  try {
-    // Get all pending changes from IndexedDB
-    const cache = await caches.open('sync-queue');
-    const requests = await cache.keys();
-    
-    for (const request of requests) {
-      try {
-        const response = await fetch(request);
-        if (response.ok) {
-          await cache.delete(request);
-        }
-      } catch (error) {
-        console.error('Sync failed for request:', request, error);
-      }
-    }
-  } catch (error) {
-    console.error('Background sync failed:', error);
-  }
+  // This will be called when connectivity is restored
+  console.log('Syncing contacts...');
+  // Implementation will depend on your sync strategy
 }
-
-// Handle push notifications
-self.addEventListener('push', (event) => {
-  const options = {
-    body: event.data?.text() || 'New notification',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
-    vibrate: [100, 50, 100],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: 1,
-    },
-  };
-
-  event.waitUntil(
-    self.registration.showNotification('Contact Manager', options)
-  );
-});
-
-// Handle notification clicks
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  event.waitUntil(
-    clients.openWindow('/')
-  );
-});

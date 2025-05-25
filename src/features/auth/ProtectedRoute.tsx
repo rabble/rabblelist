@@ -3,26 +3,26 @@ import { useAuth } from './AuthContext'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
-  allowedRoles?: string[]
+  allowedRoles?: Array<'admin' | 'ringer' | 'viewer'>
 }
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { user, isLoading } = useAuth()
+  const { user, profile, loading } = useAuth()
   const location = useLocation()
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
-  if (!user) {
+  if (!user || !profile) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && !allowedRoles.includes(profile.role)) {
     return <Navigate to="/unauthorized" replace />
   }
 

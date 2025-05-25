@@ -5,23 +5,16 @@ import { LoginPage } from '@/features/auth/LoginPage'
 import { ContactQueue } from '@/features/contacts/ContactQueue'
 import { Dashboard } from '@/features/dashboard/Dashboard'
 import { ContactsManagement } from '@/features/contacts/management/ContactsManagement'
+import { ContactForm } from '@/features/contacts/ContactForm'
+import { ContactDetail } from '@/features/contacts/ContactDetail'
+import { ContactImport } from '@/features/contacts/ContactImport'
 import { EventsManagement } from '@/features/events/EventsManagement'
 import { EventDetail } from '@/features/events/EventDetail'
 import { GroupsManagement } from '@/features/groups/GroupsManagement'
 import { PathwaysManagement } from '@/features/pathways/PathwaysManagement'
 import { AdminDashboard } from '@/features/admin/AdminDashboard'
-import { useEffect } from 'react'
 
 function App() {
-  useEffect(() => {
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-      })
-    }
-  }, [])
-
   return (
     <Router>
       <AuthProvider>
@@ -44,6 +37,46 @@ function App() {
             element={
               <ProtectedRoute>
                 <ContactsManagement />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Add New Contact */}
+          <Route
+            path="/contacts/new"
+            element={
+              <ProtectedRoute>
+                <ContactForm />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Contact Import */}
+          <Route
+            path="/contacts/import"
+            element={
+              <ProtectedRoute>
+                <ContactImport />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Contact Detail */}
+          <Route
+            path="/contacts/:id"
+            element={
+              <ProtectedRoute>
+                <ContactDetail />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Edit Contact */}
+          <Route
+            path="/contacts/:id/edit"
+            element={
+              <ProtectedRoute>
+                <ContactForm />
               </ProtectedRoute>
             }
           />

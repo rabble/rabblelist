@@ -1,123 +1,240 @@
-import { createContext, useContext, useEffect } from 'react'
-import type { ReactNode } from 'react'
-import { useAuthStore } from '@/stores/authStore'
-import { supabase, getCurrentUser, isDemoMode } from '@/lib/supabase'
-import { mockAuth } from '@/lib/mockData'
-import type { User } from '@/types'
+import React, { createContext, useContext, useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
+import type { Session, User as SupabaseUser } from '@supabase/supabase-js'
+import type { Tables } from '@/lib/database.types'
+
+type UserProfile = Tables<'users'>
 
 interface AuthContextType {
-  user: User | null
-  isLoading: boolean
+  user: SupabaseUser | null
+  profile: UserProfile | null
+  organization: Tables<'organizations'> | null
+  session: Session | null
+  loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
+  signUp: (email: string, password: string, fullName: string, organizationName?: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
+  updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: Error | null }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const { user, isLoading, setUser, setLoading } = useAuthStore()
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<SupabaseUser | null>(null)
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [organization, setOrganization] = useState<Tables<'organizations'> | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    // Check current session
-    checkUser()
-
-    if (!isDemoMode) {
-      // Listen for auth changes
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          await checkUser()
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null)
-        }
-      })
-
-      return () => {
-        subscription.unsubscribe()
-      }
-    }
-  }, [])
-
-  const checkUser = async () => {
+  // Load user profile and organization
+  const loadUserData = async (userId: string) => {
     try {
-      setLoading(true)
-      
-      if (isDemoMode) {
-        const result = await mockAuth.getUser()
-        if (result.data?.user) {
-          setUser(result.data.user as User)
-        } else {
-          setUser(null)
-        }
-      } else {
-        const authUser = await getCurrentUser()
-        
-        if (authUser) {
-          // Get full user data
-          const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', authUser.id)
-            .single()
-          
-          if (data && !error) {
-            setUser(data as User)
-          }
-        } else {
-          setUser(null)
-        }
+      // Get user profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      if (profileError) {
+        console.error('Error loading profile:', profileError)
+        return
       }
+
+      setProfile(profileData)
+
+      // Get organization
+      if (profileData?.organization_id) {
+        const { data: orgData, error: orgError } = await supabase
+          .from('organizations')
+          .select('*')
+          .eq('id', profileData.organization_id)
+          .single()
+
+        if (orgError) {
+          console.error('Error loading organization:', orgError)
+          return
+        }
+
+        setOrganization(orgData)
+      }
+
+      // Update last active
+      await supabase
+        .from('users')
+        .update({ last_active: new Date().toISOString() })
+        .eq('id', userId)
     } catch (error) {
-      console.error('Error checking user:', error)
-      setUser(null)
-    } finally {
-      setLoading(false)
+      console.error('Error in loadUserData:', error)
     }
   }
 
+  useEffect(() => {
+    // Check active sessions
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        loadUserData(session.user.id)
+      }
+      setLoading(false)
+    })
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      
+      if (session?.user) {
+        await loadUserData(session.user.id)
+      } else {
+        setProfile(null)
+        setOrganization(null)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
   const signIn = async (email: string, password: string) => {
     try {
-      if (isDemoMode) {
-        const result = await mockAuth.signIn(email, password)
-        if (result.error) throw result.error
-        if (result.data?.user) {
-          setUser(result.data.user as User)
-        }
-        return { error: null }
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-        
-        if (error) throw error
-        
-        // User data will be loaded by the auth state change listener
-        return { error: null }
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) return { error }
+
+      // Load user data after successful login
+      if (data.user) {
+        await loadUserData(data.user.id)
       }
+
+      return { error: null }
+    } catch (error) {
+      return { error: error as Error }
+    }
+  }
+
+  const signUp = async (email: string, password: string, fullName: string, organizationName?: string) => {
+    try {
+      // First create the auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          }
+        }
+      })
+
+      if (authError || !authData.user) return { error: authError }
+
+      // Create or find organization
+      let orgId: string
+
+      if (organizationName) {
+        // Create new organization
+        const { data: orgData, error: orgError } = await supabase
+          .from('organizations')
+          .insert({
+            name: organizationName,
+            country_code: 'US', // Default, should be configurable
+            settings: {},
+            features: {
+              calling: true,
+              events: true,
+              imports: true,
+              groups: true,
+              pathways: true
+            }
+          })
+          .select()
+          .single()
+
+        if (orgError || !orgData) return { error: orgError }
+        orgId = orgData.id
+      } else {
+        // For now, assign to the demo organization if no org specified
+        // In production, this would be handled differently
+        const { data: orgs } = await supabase
+          .from('organizations')
+          .select('id')
+          .limit(1)
+          .single()
+        
+        if (!orgs) return { error: new Error('No organization available') }
+        orgId = orgs.id
+      }
+
+      // Create user profile
+      const { error: profileError } = await supabase
+        .from('users')
+        .insert({
+          id: authData.user.id,
+          email,
+          full_name: fullName,
+          organization_id: orgId,
+          role: organizationName ? 'admin' : 'ringer', // Admin if creating new org
+          settings: {},
+        })
+
+      if (profileError) {
+        // If profile creation fails, we should clean up the auth user
+        // For now, just return the error
+        return { error: profileError }
+      }
+
+      return { error: null }
     } catch (error) {
       return { error: error as Error }
     }
   }
 
   const signOut = async () => {
+    await supabase.auth.signOut()
+    setUser(null)
+    setProfile(null)
+    setOrganization(null)
+    setSession(null)
+  }
+
+  const updateProfile = async (updates: Partial<UserProfile>) => {
+    if (!user) return { error: new Error('No user logged in') }
+
     try {
-      if (isDemoMode) {
-        await mockAuth.signOut()
-        setUser(null)
-      } else {
-        await supabase.auth.signOut()
-        setUser(null)
-      }
+      const { data, error } = await supabase
+        .from('users')
+        .update(updates)
+        .eq('id', user.id)
+        .select()
+        .single()
+
+      if (error) return { error }
+
+      setProfile(data)
+      return { error: null }
     } catch (error) {
-      console.error('Error signing out:', error)
+      return { error: error as Error }
     }
   }
 
-  return (
-    <AuthContext.Provider value={{ user, isLoading, signIn, signOut }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  const value = {
+    user,
+    profile,
+    organization,
+    session,
+    loading,
+    signIn,
+    signUp,
+    signOut,
+    updateProfile,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
