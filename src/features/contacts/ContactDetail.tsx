@@ -10,7 +10,6 @@ import {
   Mail,
   MapPin,
   Calendar,
-  Tag,
   Edit,
   Trash2,
   ArrowLeft,
@@ -27,7 +26,7 @@ import type { Contact, CallLog } from '@/types'
 export function ContactDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { profile } = useAuth()
+  const { } = useAuth()
   
   const [contact, setContact] = useState<Contact | null>(null)
   const [callHistory, setCallHistory] = useState<CallLog[]>([])
@@ -329,12 +328,6 @@ export function ContactDetail() {
                                 <Clock className="w-3 h-3 inline mr-1" />
                                 {new Date(call.called_at).toLocaleString()}
                               </div>
-                              {call.ringer && (
-                                <div className="text-sm text-gray-500 mt-1">
-                                  <User className="w-3 h-3 inline mr-1" />
-                                  {call.ringer.full_name}
-                                </div>
-                              )}
                             </div>
                           </div>
                           {call.duration_seconds && (

@@ -3,7 +3,7 @@
  * Handles Twilio webhooks, token generation, and call management
  */
 
-import { Twilio } from 'twilio';
+const Twilio = require('twilio');
 
 export interface Env {
   // Twilio credentials

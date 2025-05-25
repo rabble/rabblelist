@@ -1,36 +1,33 @@
 import { useEffect } from 'react'
 import { useContactStore } from '@/stores/contactStore'
 import { useAuthStore } from '@/stores/authStore'
-import { contactsService } from '@/features/contacts/contacts.service'
 
+/**
+ * Hook to manage the contact queue for the current user
+ * Automatically loads the queue when the user is authenticated
+ * 
+ * @returns Queue data and loading state
+ */
 export function useContactQueue() {
   const user = useAuthStore(state => state.user)
-  const {
-    setQueue,
-    setLoadingQueue,
-    setAssignments,
-  } = useContactStore()
+  const queue = useContactStore(state => state.queue)
+  const currentIndex = useContactStore(state => state.currentIndex)
+  const isLoadingQueue = useContactStore(state => state.isLoadingQueue)
+  const loadQueue = useContactStore(state => state.loadQueue)
 
   useEffect(() => {
     if (!user) return
 
-    const loadContacts = async () => {
-      try {
-        setLoadingQueue(true)
-        
-        // For now, we'll load contacts assigned to the ringer
-        // In a real app, this would use the call_assignments table
-        const contacts = await contactsService.getContactsForRinger(user.id)
-        
-        setQueue(contacts)
-      } catch (error) {
-        console.error('Failed to load contacts:', error)
-        // In production, show a user-friendly error
-      } finally {
-        setLoadingQueue(false)
-      }
-    }
+    // Load the queue when user is authenticated
+    loadQueue()
+  }, [user, loadQueue])
 
-    loadContacts()
-  }, [user, setQueue, setLoadingQueue, setAssignments])
+  return {
+    queue,
+    currentIndex,
+    isLoading: isLoadingQueue,
+    currentContact: queue[currentIndex] || null,
+    hasContacts: queue.length > 0,
+    totalContacts: queue.length
+  }
 }

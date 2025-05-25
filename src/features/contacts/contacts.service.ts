@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
-import type { Contact, CallLog, CallAssignment, Inserts } from '@/types'
+import type { Contact } from '@/types'
+import type { Inserts } from '@/lib/database.types'
 
 export class ContactService {
   // Get contacts for the current user's organization

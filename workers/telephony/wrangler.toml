@@ -6,8 +6,7 @@ account_id = "c84e7a9bf7ed99cb41b8e73566568c75"
 # KV Namespace for session storage
 [[kv_namespaces]]
 binding = "TELEPHONY_SESSIONS"
-id = "telephony_sessions_production"
-preview_id = "telephony_sessions_preview"
+id = "45df3d164c09462784e5b7de3eb6d7c0"
 
 # Environment configuration
 [env.production]

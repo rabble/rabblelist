@@ -7,7 +7,7 @@ import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { useContactStore } from '@/stores/contactStore'
-import { ContactService } from '../contacts.service'
+import { ContactService } from './contacts.service'
 import { 
   User,
   Phone,
@@ -18,7 +18,7 @@ import {
   ArrowLeft,
   Loader2
 } from 'lucide-react'
-import type { Contact, ContactFormData } from '@/types'
+import type { Contact } from '@/types'
 
 // Validation schema
 const contactSchema = z.object({
@@ -40,7 +40,7 @@ export function ContactForm() {
   const { createContact, updateContact } = useContactStore()
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [existingContact, setExistingContact] = useState<Contact | null>(null)
+  const [, setExistingContact] = useState<Contact | null>(null)
 
   // Available tags - in production, this would come from the database
   const availableTags = ['volunteer', 'donor', 'member', 'prospect', 'event_attendee']

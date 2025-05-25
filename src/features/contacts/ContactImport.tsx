@@ -390,7 +390,7 @@ Jane Smith,(555) 234-5678,jane@example.com,"456 Oak Ave, Town, State","donor,mem
                             <td className="px-3 py-2">{contact.phone}</td>
                             <td className="px-3 py-2">{contact.email || '-'}</td>
                             <td className="px-3 py-2">
-                              {contact.tags?.join(', ') || '-'}
+                              {(Array.isArray(contact.tags) ? contact.tags.join(', ') : contact.tags) || '-'}
                             </td>
                           </tr>
                         ))}

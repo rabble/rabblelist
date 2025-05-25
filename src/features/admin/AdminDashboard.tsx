@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Ca
 import { Button } from '@/components/common/Button'
 import { useAuth } from '@/features/auth/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { ContactService } from '@/features/contacts/contacts.service'
 import { Phone, Users, Calendar, TrendingUp, UserPlus, Upload, Loader2 } from 'lucide-react'
 import type { Contact } from '@/types'
 
@@ -18,7 +17,7 @@ interface Stats {
 
 export function AdminDashboard() {
   const navigate = useNavigate()
-  const { profile, organization } = useAuth()
+  const { organization } = useAuth()
   const [stats, setStats] = useState<Stats>({
     totalContacts: 0,
     totalCalls: 0,

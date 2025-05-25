@@ -4,8 +4,6 @@ import type { Contact, CallOutcome } from '@/types'
 import { ContactService } from './contacts.service'
 import { formatDistanceToNow } from '@/lib/utils'
 import * as idb from '@/lib/indexeddb'
-import { CallDialog } from '../telephony/components/CallDialog'
-import { telephonyService } from '../telephony/telephony.service'
 
 interface ContactCardProps {
   contact: Contact
@@ -17,8 +15,6 @@ export function ContactCard({ contact, onComplete, onNext }: ContactCardProps) {
   const [outcome, setOutcome] = useState<CallOutcome | null>(null)
   const [notes, setNotes] = useState('')
   const [isSaving, setIsSaving] = useState(false)
-  const [showCallDialog, setShowCallDialog] = useState(false)
-  const [isTelephonyAvailable, setIsTelephonyAvailable] = useState(false)
 
   const handleOutcomeSelect = (selectedOutcome: CallOutcome) => {
     setOutcome(selectedOutcome)
@@ -34,8 +30,9 @@ export function ContactCard({ contact, onComplete, onNext }: ContactCardProps) {
       const callLog = {
         contact_id: contact.id,
         outcome,
-        notes: notes || undefined,
-        called_at: new Date().toISOString()
+        notes: notes || null,
+        duration_seconds: null,
+        tags: [] as string[]
       }
       
       if (navigator.onLine) {
@@ -106,12 +103,8 @@ export function ContactCard({ contact, onComplete, onNext }: ContactCardProps) {
       {/* Call Button */}
       <button
         onClick={() => {
-          if (isTelephonyAvailable) {
-            setShowCallDialog(true)
-          } else {
-            // Fallback to native phone call
-            window.location.href = `tel:${contact.phone}`
-          }
+          // Native phone call
+          window.location.href = `tel:${contact.phone}`
         }}
         className="block w-full bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all"
       >
@@ -122,7 +115,7 @@ export function ContactCard({ contact, onComplete, onNext }: ContactCardProps) {
             </div>
             <div className="text-left">
               <p className="text-sm text-gray-600">
-                {isTelephonyAvailable ? 'Tap for anonymous call' : 'Tap to call'}
+                Tap to call
               </p>
               <p className="text-lg font-semibold text-gray-900">{contact.phone}</p>
             </div>
@@ -204,14 +197,6 @@ export function ContactCard({ contact, onComplete, onNext }: ContactCardProps) {
         </button>
       </div>
 
-      {/* Call Dialog */}
-      <CallDialog
-        isOpen={showCallDialog}
-        onClose={() => setShowCallDialog(false)}
-        contactId={contact.id}
-        contactName={contact.full_name}
-        contactPhone={contact.phone}
-      />
     </div>
   )
 }

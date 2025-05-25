@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 
 export function Header() {
-  const { user, signOut } = useAuth()
+  const { user, profile, signOut } = useAuth()
   const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
 
@@ -13,7 +13,7 @@ export function Header() {
     navigate('/login')
   }
 
-  if (!user) return null
+  if (!user || !profile) return null
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200">
@@ -29,7 +29,7 @@ export function Header() {
           >
             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
               <span className="text-sm font-semibold text-blue-600">
-                {user.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                {profile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
               </span>
             </div>
             <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showMenu ? 'rotate-180' : ''}`} />
@@ -43,8 +43,8 @@ export function Header() {
               />
               <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg overflow-hidden z-50 border border-gray-200">
                 <div className="p-4 border-b border-gray-200">
-                  <p className="font-semibold text-gray-900">{user.full_name}</p>
-                  <p className="text-sm text-gray-500 capitalize">{user.role}</p>
+                  <p className="font-semibold text-gray-900">{profile.full_name}</p>
+                  <p className="text-sm text-gray-500 capitalize">{profile.role}</p>
                 </div>
                 
                 <div className="p-2">
