@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clear Storage</title>
+</head>
+<body>
+  <h1>Clear All Storage</h1>
+  <button onclick="clearAll()">Clear Everything</button>
+  <pre id="output"></pre>
+  
+  <script>
+    const output = document.getElementById('output');
+    
+    function log(msg) {
+      output.textContent += msg + '\n';
+    }
+    
+    async function clearAll() {
+      log('Clearing all storage...\n');
+      
+      // Clear localStorage
+      try {
+        const localKeys = Object.keys(localStorage);
+        log(`Found ${localKeys.length} localStorage keys`);
+        localKeys.forEach(key => {
+          log(`  - ${key}: ${localStorage[key].substring(0, 50)}...`);
+        });
+        localStorage.clear();
+        log('✓ localStorage cleared\n');
+      } catch (e) {
+        log('✗ localStorage error: ' + e.message + '\n');
+      }
+      
+      // Clear sessionStorage
+      try {
+        const sessionKeys = Object.keys(sessionStorage);
+        log(`Found ${sessionKeys.length} sessionStorage keys`);
+        sessionStorage.clear();
+        log('✓ sessionStorage cleared\n');
+      } catch (e) {
+        log('✗ sessionStorage error: ' + e.message + '\n');
+      }
+      
+      // Clear cookies
+      try {
+        document.cookie.split(";").forEach(function(c) { 
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+        log('✓ Cookies cleared\n');
+      } catch (e) {
+        log('✗ Cookie error: ' + e.message + '\n');
+      }
+      
+      // Clear IndexedDB
+      try {
+        const databases = await indexedDB.databases();
+        log(`Found ${databases.length} IndexedDB databases`);
+        for (const db of databases) {
+          log(`  - Deleting ${db.name}`);
+          await indexedDB.deleteDatabase(db.name);
+        }
+        log('✓ IndexedDB cleared\n');
+      } catch (e) {
+        log('✗ IndexedDB error: ' + e.message + '\n');
+      }
+      
+      log('\nAll storage cleared! Refresh the page to start fresh.');
+    }
+  </script>
+</body>
+</html>

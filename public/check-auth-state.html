@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Check Auth State</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <h1>Checking Auth State</h1>
+  <div id="output" style="white-space: pre-wrap; font-family: monospace; background: #f5f5f5; padding: 20px;"></div>
+  
+  <script>
+    const output = document.getElementById('output');
+    function log(msg) {
+      console.log(msg);
+      output.textContent += msg + '\n';
+    }
+
+    const supabaseUrl = 'https://oxtjonaiubulnggytezf.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94dGpvbmFpdWJ1bG5nZ3l0ZXpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgxOTM4ODgsImV4cCI6MjA2Mzc2OTg4OH0.9EsXc65D-5qgXLtu48d1E1Bll_AjaCt-a2-oPhZzUQU';
+
+    const { createClient } = supabase;
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+
+    async function checkAuth() {
+      log('1. Getting session...');
+      const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+      
+      if (sessionError) {
+        log('Session error: ' + JSON.stringify(sessionError));
+      } else if (session) {
+        log('Session found!');
+        log('User ID: ' + session.user.id);
+        log('Email: ' + session.user.email);
+        
+        // Check if we can query the users table
+        log('\n2. Checking user profile...');
+        const { data: profile, error: profileError } = await supabaseClient
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+          
+        if (profileError) {
+          log('Profile error: ' + JSON.stringify(profileError));
+        } else {
+          log('Profile found: ' + JSON.stringify(profile, null, 2));
+        }
+        
+        // Test a simple query
+        log('\n3. Testing contacts query...');
+        const { data: contacts, error: contactsError } = await supabaseClient
+          .from('contacts')
+          .select('id, full_name')
+          .limit(3);
+          
+        if (contactsError) {
+          log('Contacts error: ' + JSON.stringify(contactsError));
+        } else {
+          log('Contacts found: ' + JSON.stringify(contacts, null, 2));
+        }
+      } else {
+        log('No session found');
+      }
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>

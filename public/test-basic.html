@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Basic Supabase Test</title>
+</head>
+<body>
+  <h1>Basic Supabase Test</h1>
+  <pre id="output"></pre>
+  
+  <script type="module">
+    const output = document.getElementById('output');
+    function log(msg) {
+      console.log(msg);
+      output.textContent += msg + '\n';
+    }
+
+    log('1. Starting basic test...');
+    
+    // Test 1: Simple fetch to Supabase
+    try {
+      log('\n2. Testing direct fetch to Supabase...');
+      const response = await fetch('https://oxtjonaiubulnggytezf.supabase.co/rest/v1/', {
+        headers: {
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94dGpvbmFpdWJ1bG5nZ3l0ZXpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgxOTM4ODgsImV4cCI6MjA2Mzc2OTg4OH0.9EsXc65D-5qgXLtu48d1E1Bll_AjaCt-a2-oPhZzUQU'
+        }
+      });
+      log('Response status: ' + response.status);
+    } catch (e) {
+      log('Fetch error: ' + e.message);
+    }
+
+    // Test 2: Load Supabase from CDN
+    try {
+      log('\n3. Loading Supabase client from CDN...');
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/@supabase/supabase-js@2';
+      
+      await new Promise((resolve, reject) => {
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+      
+      log('Supabase script loaded successfully');
+      
+      // Test 3: Create client
+      log('\n4. Creating Supabase client...');
+      const { createClient } = window.supabase;
+      const client = createClient(
+        'https://oxtjonaiubulnggytezf.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94dGpvbmFpdWJ1bG5nZ3l0ZXpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgxOTM4ODgsImV4cCI6MjA2Mzc2OTg4OH0.9EsXc65D-5qgXLtu48d1E1Bll_AjaCt-a2-oPhZzUQU'
+      );
+      log('Client created');
+      
+      // Test 4: Check auth with timeout
+      log('\n5. Checking auth session (with 3 second timeout)...');
+      const timeoutPromise = new Promise((resolve) => 
+        setTimeout(() => resolve({ error: 'Timeout after 3 seconds' }), 3000)
+      );
+      
+      const authPromise = client.auth.getSession();
+      const result = await Promise.race([authPromise, timeoutPromise]);
+      
+      if (result.error) {
+        log('Auth check failed: ' + result.error);
+      } else {
+        log('Auth check completed!');
+        log('Session exists: ' + (result.data?.session ? 'Yes' : 'No'));
+      }
+      
+    } catch (e) {
+      log('Error: ' + e.message);
+      log('Stack: ' + e.stack);
+    }
+    
+    log('\n6. Test complete');
+  </script>
+</body>
+</html>

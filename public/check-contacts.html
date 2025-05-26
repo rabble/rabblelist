@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Check Contacts</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <h1>Check Contacts Table</h1>
+  <pre id="output"></pre>
+  
+  <script>
+    const output = document.getElementById('output');
+    function log(msg) {
+      console.log(msg);
+      output.textContent += msg + '\n';
+    }
+
+    const supabaseUrl = 'https://oxtjonaiubulnggytezf.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94dGpvbmFpdWJ1bG5nZ3l0ZXpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgxOTM4ODgsImV4cCI6MjA2Mzc2OTg4OH0.9EsXc65D-5qgXLtu48d1E1Bll_AjaCt-a2-oPhZzUQU';
+
+    const { createClient } = supabase;
+    const client = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      }
+    });
+
+    async function check() {
+      log('Checking contacts table...\n');
+      
+      try {
+        // Query 1: Get contacts with full_name
+        log('1. Querying with full_name column:');
+        const { data: data1, error: error1 } = await client
+          .from('contacts')
+          .select('id, full_name, email, phone')
+          .limit(5);
+          
+        if (error1) {
+          log('Error: ' + JSON.stringify(error1));
+        } else {
+          log('Success! Found ' + (data1?.length || 0) + ' contacts');
+          log(JSON.stringify(data1, null, 2));
+        }
+      } catch (e) {
+        log('Exception: ' + e.message);
+      }
+      
+      try {
+        // Query 2: Get all columns
+        log('\n2. Getting all columns:');
+        const { data: data2, error: error2 } = await client
+          .from('contacts')
+          .select('*')
+          .limit(1);
+          
+        if (error2) {
+          log('Error: ' + JSON.stringify(error2));
+        } else if (data2 && data2.length > 0) {
+          log('Columns in contacts table:');
+          Object.keys(data2[0]).forEach(key => {
+            log('  - ' + key + ': ' + typeof data2[0][key]);
+          });
+        }
+      } catch (e) {
+        log('Exception: ' + e.message);
+      }
+      
+      try {
+        // Query 3: Count total contacts
+        log('\n3. Counting total contacts:');
+        const { count, error: error3 } = await client
+          .from('contacts')
+          .select('*', { count: 'exact', head: true });
+          
+        if (error3) {
+          log('Error: ' + JSON.stringify(error3));
+        } else {
+          log('Total contacts in database: ' + count);
+        }
+      } catch (e) {
+        log('Exception: ' + e.message);
+      }
+    }
+
+    check();
+  </script>
+</body>
+</html>

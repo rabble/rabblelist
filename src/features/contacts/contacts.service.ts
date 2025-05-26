@@ -24,7 +24,7 @@ export class ContactService {
       query = query.order(orderBy, { ascending: orderDirection })
 
       if (filters?.search) {
-        query = query.or(`first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,phone.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
+        query = query.or(`full_name.ilike.%${filters.search}%,phone.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
       }
 
       if (filters?.tags && filters.tags.length > 0) {
@@ -79,8 +79,9 @@ export class ContactService {
   static async createContact(contact: Inserts<'contacts'>) {
     try {
       return await withRetry(async () => {
-        const { data: org } = await supabase.rpc('organization_id')
-        if (!org) throw new Error('No organization found')
+        // Use demo org ID for now
+      const org = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
+        
 
         const { data, error } = await supabase
           .from('contacts')
@@ -191,8 +192,9 @@ export class ContactService {
       const { data: userId } = await supabase.auth.getUser()
       if (!userId?.user) throw new Error('Not authenticated')
 
-      const { data: org } = await supabase.rpc('organization_id')
-      if (!org) throw new Error('No organization found')
+      // Use demo org ID for now
+      const org = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
+      
 
       const { data, error } = await supabase
         .from('call_logs')
@@ -248,8 +250,9 @@ export class ContactService {
   // Bulk import contacts
   static async bulkImportContacts(contacts: Inserts<'contacts'>[]) {
     try {
-      const { data: org } = await supabase.rpc('organization_id')
-      if (!org) throw new Error('No organization found')
+      // Use demo org ID for now
+      const org = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
+      
 
       // Add organization_id to all contacts
       const contactsWithOrg = contacts.map(contact => ({
@@ -285,8 +288,9 @@ export class ContactService {
   // Get contact stats
   static async getContactStats() {
     try {
-      const { data: org } = await supabase.rpc('organization_id')
-      if (!org) throw new Error('No organization found')
+      // Use demo org ID for now
+      const org = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
+      
 
       // Get total contacts
       const { count: totalContacts } = await supabase
