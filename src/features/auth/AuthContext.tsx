@@ -82,12 +82,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
     
+    // Set a timeout to prevent infinite loading
+    const loadingTimeout = setTimeout(() => {
+      console.warn('AuthContext: Loading timeout reached, forcing completion')
+      setLoading(false)
+    }, 5000)
+    
     // Check active sessions
     console.log('AuthContext: Checking for existing session...')
-    try {
-      supabase.auth.getSession().then(async ({ data: { session }, error }) => {
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
         if (error) {
           console.error('Error getting session:', error)
+          clearTimeout(loadingTimeout)
           setLoading(false)
           return
         }
@@ -102,15 +111,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         
         console.log('AuthContext: Initial load complete, setting loading to false')
+        clearTimeout(loadingTimeout)
         setLoading(false)
-      }).catch((error) => {
-        console.error('Error in getSession promise:', error)
+      } catch (error) {
+        console.error('Error in checkSession:', error)
+        clearTimeout(loadingTimeout)
         setLoading(false)
-      })
-    } catch (error) {
-      console.error('Error calling getSession:', error)
-      setLoading(false)
+      }
     }
+    
+    checkSession()
 
     // Listen for auth changes
     const {
@@ -127,7 +137,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      clearTimeout(loadingTimeout)
+      subscription.unsubscribe()
+    }
   }, [])
 
   const signIn = async (email: string, password: string) => {
