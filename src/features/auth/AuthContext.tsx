@@ -25,6 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [organization, setOrganization] = useState<Tables<'organizations'> | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isInitialized, setIsInitialized] = useState(false)
 
   // Load user profile and organization
   const loadUserData = async (userId: string) => {
@@ -79,25 +80,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!supabaseUrl || !supabaseAnonKey) {
       console.error('Supabase is not configured! Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env.local file')
       setLoading(false)
+      setIsInitialized(true)
       return
     }
     
-    // Set a timeout to prevent infinite loading
-    const loadingTimeout = setTimeout(() => {
-      console.warn('AuthContext: Loading timeout reached, forcing completion')
-      setLoading(false)
-    }, 5000)
+    let mounted = true
     
     // Check active sessions
     console.log('AuthContext: Checking for existing session...')
-    const checkSession = async () => {
+    const initializeAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
         
+        if (!mounted) return
+        
         if (error) {
           console.error('Error getting session:', error)
-          clearTimeout(loadingTimeout)
           setLoading(false)
+          setIsInitialized(true)
           return
         }
         
@@ -110,27 +110,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await loadUserData(session.user.id)
         }
         
-        console.log('AuthContext: Initial load complete, setting loading to false')
-        clearTimeout(loadingTimeout)
-        setLoading(false)
+        if (mounted) {
+          console.log('AuthContext: Initial load complete')
+          setLoading(false)
+          setIsInitialized(true)
+        }
       } catch (error) {
-        console.error('Error in checkSession:', error)
-        clearTimeout(loadingTimeout)
-        setLoading(false)
+        console.error('Error in initializeAuth:', error)
+        if (mounted) {
+          setLoading(false)
+          setIsInitialized(true)
+        }
       }
     }
     
-    checkSession()
+    initializeAuth()
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('AuthContext: Auth state changed:', event, !!session)
+      
+      if (!mounted) return
+      
       setSession(session)
       setUser(session?.user ?? null)
       
       if (session?.user) {
+        setLoading(true)
         await loadUserData(session.user.id)
+        if (mounted) {
+          setLoading(false)
+        }
       } else {
         setProfile(null)
         setOrganization(null)
@@ -138,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => {
-      clearTimeout(loadingTimeout)
+      mounted = false
       subscription.unsubscribe()
     }
   }, [])
@@ -340,7 +352,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile,
     organization,
     session,
-    loading,
+    loading: !isInitialized || loading,
     signIn,
     signUp,
     signOut,
