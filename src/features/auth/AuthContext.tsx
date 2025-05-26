@@ -242,24 +242,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: profileError }
       }
 
-      // Automatically sign in the user after successful signup
-      console.log('Signing in user after signup...')
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      // In development, we can try to sign in immediately
+      // In production with email confirmation required, this might fail
+      console.log('Attempting auto sign-in after signup...')
+      
+      // Small delay to ensure the user is created in the auth system
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password
       })
 
       if (signInError) {
-        console.error('Auto sign-in failed:', signInError)
-        // Even if auto sign-in fails, the signup was successful
+        console.log('Auto sign-in not available (email confirmation may be required):', signInError.message)
+        // Return success anyway - the signup itself was successful
+        // User will need to confirm email and then sign in manually
       } else {
-        console.log('Auto sign-in successful')
-        // Update the auth state
-        setSession(signInData.session)
-        setUser(signInData.user)
-        if (signInData.user) {
-          await loadUserData(signInData.user.id)
-        }
+        console.log('Auto sign-in successful!')
+        // The auth state change listener will handle updating the state
       }
 
       return { error: null }

@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database schema for call sessions and transcripts
 - Password reset functionality with email recovery
 - User registration with organization creation
+- Demo account functionality with pre-populated data
+- "Try Demo Account" button on login page showing credentials
+- Setup script to create demo user (npm run setup:demo)
 
 ### Changed
 - Updated environment configuration for Supabase and Twilio

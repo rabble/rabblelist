@@ -22,6 +22,33 @@ export function LoginPage() {
   
   const from = (location.state as any)?.from?.pathname || '/'
 
+  const handleDemoLogin = async () => {
+    setError(null)
+    setSuccess(null)
+    setIsLoading(true)
+    setEmail('demo@example.com')
+    setPassword('demo123')
+    
+    console.log('Attempting demo login...')
+    
+    try {
+      const { error } = await signIn('demo@example.com', 'demo123')
+      
+      if (error) {
+        console.error('Demo login error:', error)
+        setError('Demo login failed. Please ensure the demo user is set up.')
+      } else {
+        console.log('Demo login successful, navigating to dashboard')
+        navigate(from, { replace: true })
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err)
+      setError('An unexpected error occurred')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -75,8 +102,16 @@ export function LoginPage() {
           }
         } else {
           console.log('Sign up successful!')
-          // Navigate to dashboard - the user is automatically signed in
-          navigate(from, { replace: true })
+          // Since email confirmation is required, show success message and switch to sign in
+          setSuccess('Account created successfully! Please check your email to confirm your account before signing in.')
+          setPassword('')
+          setFullName('')
+          setOrganizationName('')
+          setCreateNewOrg(false)
+          // Switch to signin mode after showing the message
+          setTimeout(() => {
+            setMode('signin')
+          }, 3000)
         }
       }
     } catch (err) {
@@ -227,7 +262,7 @@ export function LoginPage() {
                 )}
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 space-y-3">
                 <Button
                   type="submit"
                   fullWidth
@@ -236,6 +271,34 @@ export function LoginPage() {
                 >
                   {mode === 'signin' ? 'Sign In' : 'Create Account'}
                 </Button>
+                
+                {mode === 'signin' && (
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-300" />
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-white text-gray-500">Or</span>
+                    </div>
+                  </div>
+                )}
+                
+                {mode === 'signin' && (
+                  <button
+                    type="button"
+                    onClick={handleDemoLogin}
+                    disabled={isLoading}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Try Demo Account
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Email: demo@example.com | Password: demo123</p>
+                  </button>
+                )}
               </div>
 
               <div className="text-center pt-2 space-y-2">

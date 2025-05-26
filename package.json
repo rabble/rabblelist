@@ -12,7 +12,8 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "setup:twilio": "node scripts/setup-twilio.js",
-    "setup:cloudflare-secrets": "./scripts/setup-cloudflare-secrets.sh"
+    "setup:cloudflare-secrets": "./scripts/setup-cloudflare-secrets.sh",
+    "setup:demo": "node scripts/setup-demo-user.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
