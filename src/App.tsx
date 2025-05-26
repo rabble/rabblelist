@@ -16,6 +16,7 @@ import { EventForm } from '@/features/events/EventForm'
 import { GroupsManagement } from '@/features/groups/GroupsManagement'
 import { PathwaysManagement } from '@/features/pathways/PathwaysManagement'
 import { AdminDashboard } from '@/features/admin/AdminDashboard'
+import { CustomFieldsConfig } from '@/features/admin/CustomFieldsConfig'
 
 function App() {
   return (
@@ -171,6 +172,16 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Custom Fields Configuration */}
+          <Route
+            path="/admin/custom-fields"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <CustomFieldsConfig />
               </ProtectedRoute>
             }
           />

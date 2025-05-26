@@ -29,7 +29,7 @@
 - [x] Implement advanced search and filtering
 - [x] Add contact sorting options (by name, date created, last contact, events attended)
 - [x] Implement tag management UI (create, rename, delete, merge tags)
-- [ ] Add custom fields configuration
+- [x] Add custom fields configuration (UI for creating, editing, deleting custom fields)
 - [x] Create contact import from CSV with field mapping
 - [x] Add contact export functionality
 - [ ] Implement contact deduplication logic

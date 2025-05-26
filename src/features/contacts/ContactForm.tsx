@@ -7,6 +7,7 @@ import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { useContactStore } from '@/stores/contactStore'
+import { useAuth } from '@/features/auth/AuthContext'
 import { ContactService } from './contacts.service'
 import { 
   User,
@@ -37,10 +38,12 @@ export function ContactForm() {
   const { id } = useParams()
   const isEditing = !!id
   
+  const { organization } = useAuth()
   const { createContact, updateContact } = useContactStore()
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [, setExistingContact] = useState<Contact | null>(null)
+  const [customFields, setCustomFields] = useState<any[]>([])
 
   // Available tags - in production, this would come from the database
   const availableTags = ['volunteer', 'donor', 'member', 'prospect', 'event_attendee']
@@ -66,10 +69,15 @@ export function ContactForm() {
   const selectedTags = watch('tags') || []
 
   useEffect(() => {
+    // Load custom fields from organization settings
+    if (organization?.settings?.custom_fields) {
+      setCustomFields(organization.settings.custom_fields as any[])
+    }
+    
     if (isEditing && id) {
       loadContact()
     }
-  }, [id])
+  }, [id, organization])
 
   const loadContact = async () => {
     if (!id) return
@@ -148,6 +156,72 @@ export function ContactForm() {
       setValue('tags', currentTags.filter(t => t !== tag))
     } else {
       setValue('tags', [...currentTags, tag])
+    }
+  }
+
+  const renderCustomField = (field: any) => {
+    const fieldKey = field.name.replace(/\s+/g, '_').toLowerCase()
+    const fieldValue = watch(`custom_fields.${fieldKey}`) || ''
+    
+    switch (field.type) {
+      case 'text':
+        return (
+          <input
+            value={fieldValue}
+            onChange={(e) => setValue(`custom_fields.${fieldKey}`, e.target.value)}
+            type="text"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        )
+      
+      case 'number':
+        return (
+          <input
+            value={fieldValue}
+            onChange={(e) => setValue(`custom_fields.${fieldKey}`, e.target.value)}
+            type="number"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        )
+      
+      case 'date':
+        return (
+          <input
+            value={fieldValue}
+            onChange={(e) => setValue(`custom_fields.${fieldKey}`, e.target.value)}
+            type="date"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        )
+      
+      case 'select':
+        return (
+          <select
+            value={fieldValue}
+            onChange={(e) => setValue(`custom_fields.${fieldKey}`, e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select...</option>
+            {field.options?.map((option: string) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        )
+      
+      case 'checkbox':
+        return (
+          <input
+            checked={fieldValue === true || fieldValue === 'true'}
+            onChange={(e) => setValue(`custom_fields.${fieldKey}`, e.target.checked)}
+            type="checkbox"
+            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+        )
+      
+      default:
+        return null
     }
   }
 
@@ -286,6 +360,21 @@ export function ContactForm() {
                   ))}
                 </div>
               </div>
+
+              {/* Custom Fields */}
+              {customFields.length > 0 && (
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="text-sm font-medium text-gray-900">Additional Information</h3>
+                  {customFields.map((field) => (
+                    <div key={field.name}>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {field.name} {field.required && '*'}
+                      </label>
+                      {renderCustomField(field)}
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Actions */}
               <div className="flex gap-3 pt-4">
