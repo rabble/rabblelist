@@ -26,11 +26,15 @@ export function LoginPage() {
     setError(null)
     setIsLoading(true)
 
+    console.log('Form submitted:', { mode, email, fullName, organizationName, createNewOrg })
+
     try {
       if (mode === 'signin') {
+        console.log('Attempting sign in...')
         const { error } = await signIn(email, password)
         
         if (error) {
+          console.error('Sign in error:', error)
           // Provide user-friendly error messages
           if (error.message.includes('Invalid login credentials')) {
             setError('Invalid email or password. Please try again.')
@@ -42,10 +46,12 @@ export function LoginPage() {
             setError(error.message)
           }
         } else {
+          console.log('Sign in successful, navigating to:', from)
           navigate(from, { replace: true })
         }
       } else {
         // Sign up
+        console.log('Attempting sign up...')
         const { error } = await signUp(
           email, 
           password, 
@@ -54,6 +60,7 @@ export function LoginPage() {
         )
         
         if (error) {
+          console.error('Sign up error:', error)
           // Provide user-friendly error messages for signup
           if (error.message.includes('already registered')) {
             setError('An account with this email already exists. Please sign in instead.')
@@ -65,6 +72,7 @@ export function LoginPage() {
             setError(error.message)
           }
         } else {
+          console.log('Sign up successful!')
           // Show success message
           setError(null)
           setMode('signin')
@@ -74,6 +82,7 @@ export function LoginPage() {
         }
       }
     } catch (err) {
+      console.error('Unexpected error:', err)
       setError('An unexpected error occurred')
     } finally {
       setIsLoading(false)

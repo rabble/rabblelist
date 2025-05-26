@@ -164,6 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signUp = async (email: string, password: string, fullName: string, organizationName?: string) => {
+    console.log('AuthContext.signUp called with:', { email, fullName, organizationName })
     try {
       // First create the auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -176,6 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       })
 
+      console.log('Auth signup result:', { authData, authError })
       if (authError || !authData.user) return { error: authError }
 
       // Create or find organization
@@ -183,6 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (organizationName) {
         // Create new organization
+        console.log('Creating new organization:', organizationName)
         const { data: orgData, error: orgError } = await supabase
           .from('organizations')
           .insert({
@@ -200,23 +203,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .select()
           .single()
 
+        console.log('Organization creation result:', { orgData, orgError })
         if (orgError || !orgData) return { error: orgError }
         orgId = orgData.id
       } else {
         // For now, assign to the demo organization if no org specified
         // In production, this would be handled differently
-        const { data: orgs } = await supabase
+        console.log('Looking for existing organization')
+        const { data: orgs, error: orgError } = await supabase
           .from('organizations')
           .select('id')
           .limit(1)
           .single()
         
-        if (!orgs) return { error: new Error('No organization available') }
+        console.log('Organization lookup result:', { orgs, orgError })
+        if (orgError || !orgs) return { error: orgError || new Error('No organization available') }
         orgId = orgs.id
       }
 
       // Create user profile
-      const { error: profileError } = await supabase
+      console.log('Creating user profile with orgId:', orgId)
+      const { data: profileData, error: profileError } = await supabase
         .from('users')
         .insert({
           id: authData.user.id,
@@ -226,7 +233,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: organizationName ? 'admin' : 'ringer', // Admin if creating new org
           settings: {},
         })
+        .select()
 
+      console.log('Profile creation result:', { profileData, profileError })
       if (profileError) {
         // If profile creation fails, we should clean up the auth user
         // For now, just return the error
@@ -235,6 +244,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return { error: null }
     } catch (error) {
+      console.error('Unexpected error in signUp:', error)
       return { error: error as Error }
     }
   }
