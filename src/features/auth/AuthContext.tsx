@@ -84,28 +84,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Check active sessions
     console.log('AuthContext: Checking for existing session...')
-    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
-      if (error) {
-        console.error('Error getting session:', error)
+    try {
+      supabase.auth.getSession().then(async ({ data: { session }, error }) => {
+        if (error) {
+          console.error('Error getting session:', error)
+          setLoading(false)
+          return
+        }
+        
+        console.log('AuthContext: Session found:', !!session)
+        setSession(session)
+        setUser(session?.user ?? null)
+        
+        if (session?.user) {
+          console.log('AuthContext: Loading user data for:', session.user.id)
+          await loadUserData(session.user.id)
+        }
+        
+        console.log('AuthContext: Initial load complete, setting loading to false')
         setLoading(false)
-        return
-      }
-      
-      console.log('AuthContext: Session found:', !!session)
-      setSession(session)
-      setUser(session?.user ?? null)
-      
-      if (session?.user) {
-        console.log('AuthContext: Loading user data for:', session.user.id)
-        await loadUserData(session.user.id)
-      }
-      
-      console.log('AuthContext: Initial load complete, setting loading to false')
+      }).catch((error) => {
+        console.error('Error in getSession promise:', error)
+        setLoading(false)
+      })
+    } catch (error) {
+      console.error('Error calling getSession:', error)
       setLoading(false)
-    }).catch((error) => {
-      console.error('Error in getSession:', error)
-      setLoading(false)
-    })
+    }
 
     // Listen for auth changes
     const {

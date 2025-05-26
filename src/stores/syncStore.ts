@@ -34,12 +34,12 @@ export interface SyncState {
 // Constants
 // ============================================================================
 
-const INITIAL_STATE = {
+const INITIAL_STATE: Pick<SyncState, 'pendingChanges' | 'isSyncing' | 'lastSyncTime' | 'syncErrors'> = {
   pendingChanges: [],
   isSyncing: false,
   lastSyncTime: null,
   syncErrors: []
-} as const
+}
 
 const MAX_ERROR_HISTORY = 10
 const STORAGE_KEY = 'sync-storage'
