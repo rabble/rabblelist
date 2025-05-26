@@ -212,11 +212,17 @@ CREATE INDEX idx_call_sessions_contact ON call_sessions(contact_id);
 -- Helper function to get user's organization
 CREATE OR REPLACE FUNCTION get_user_organization_id()
 RETURNS UUID AS $$
+DECLARE
+  current_user_id UUID;
 BEGIN
+  -- Get the current user ID from auth context
+  current_user_id := auth.uid();
+  
+  -- Return the organization ID for this user
   RETURN (
     SELECT organization_id 
     FROM users 
-    WHERE id = auth.uid()
+    WHERE id = current_user_id
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
