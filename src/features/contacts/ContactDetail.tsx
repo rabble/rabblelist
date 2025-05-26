@@ -4,7 +4,6 @@ import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { ContactService } from './contacts.service'
-import { useAuth } from '@/features/auth/AuthContext'
 import { 
   Phone,
   Mail,
@@ -18,14 +17,14 @@ import {
   Loader2,
   CheckCircle,
   XCircle,
-  Voicemail
+  Voicemail,
+  Plus
 } from 'lucide-react'
 import type { Contact, CallLog } from '@/types'
 
 export function ContactDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { } = useAuth()
   
   const [contact, setContact] = useState<Contact | null>(null)
   const [callHistory, setCallHistory] = useState<CallLog[]>([])
@@ -46,8 +45,9 @@ export function ContactDetail() {
       const { data, error } = await ContactService.getContact(id)
       
       if (error || !data) {
-        alert('Contact not found')
-        navigate('/contacts')
+        console.error('Contact not found:', id)
+        setIsLoading(false)
+        // Don't navigate away immediately - show error state
         return
       }
       
@@ -125,17 +125,45 @@ export function ContactDetail() {
     )
   }
 
-  if (!contact) {
+  if (!isLoading && !contact) {
     return (
       <Layout>
-        <div className="text-center py-12">
-          <p className="text-gray-600">Contact not found</p>
-          <Button onClick={() => navigate('/contacts')} className="mt-4">
-            Back to Contacts
-          </Button>
+        <div className="max-w-2xl mx-auto p-6">
+          <Card>
+            <CardContent className="text-center py-12">
+              <div className="mb-4">
+                <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">Contact Not Found</h2>
+                <p className="text-gray-600 mb-2">
+                  The contact you're looking for doesn't exist or has been deleted.
+                </p>
+                {id && !id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i) && (
+                  <p className="text-sm text-gray-500 mt-4 p-4 bg-gray-50 rounded-lg">
+                    <strong>Note:</strong> The ID "{id}" is not a valid format. Contact IDs should be UUIDs.
+                    This might be an old link or bookmark.
+                  </p>
+                )}
+              </div>
+              <div className="flex gap-3 justify-center">
+                <Button onClick={() => navigate('/contacts')}>
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Contacts
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/contacts/new')}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Contact
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </Layout>
     )
+  }
+
+  // TypeScript guard - contact is definitely not null here
+  if (!contact) {
+    return null
   }
 
   return (

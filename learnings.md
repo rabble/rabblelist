@@ -79,6 +79,11 @@ contact-manager-pwa/
 - **Logout Enhancement**: Proper logout that clears all local data including IndexedDB
 - **Test Suite**: Fixed all test failures - 105 tests now passing
 - **Auth Loading State**: Fixed endless loading issue by properly handling auth state and profile loading errors
+- **Demo Login**: Fixed demo account setup and login functionality
+  - Updated `setup-demo-user.js` script to use proper UUIDs
+  - Fixed organization ID to match the UUID in database migrations
+  - Handled existing user updates properly
+  - Demo login now works with email: demo@example.com, password: demo123
 
 ### ❌ Not Implemented / Using Mocks
 - **Contact Management**: List view exists but no CRUD operations

@@ -37,12 +37,13 @@ async function setupDemoUser() {
   try {
     console.log('Setting up demo user...')
 
-    // Step 1: Create demo organization
+    // Step 1: Create demo organization with proper UUID
     console.log('Creating demo organization...')
+    const demoOrgId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' // Fixed UUID from migrations
     const { data: orgData, error: orgError } = await supabase
       .from('organizations')
       .upsert({
-        id: 'demo-org-123',
+        id: demoOrgId,
         name: 'Demo Organization',
         country_code: 'US',
         settings: { demo: true },
@@ -66,6 +67,7 @@ async function setupDemoUser() {
 
     // Step 2: Create auth user
     console.log('Creating demo auth user...')
+    let userId = null
     const { data: userData, error: userError } = await supabase.auth.admin.createUser({
       email: 'demo@example.com',
       password: 'demo123',
@@ -83,6 +85,7 @@ async function setupDemoUser() {
         if (!listError && users) {
           const demoUser = users.users.find(u => u.email === 'demo@example.com')
           if (demoUser) {
+            userId = demoUser.id
             const { error: updateError } = await supabase.auth.admin.updateUserById(
               demoUser.id,
               { password: 'demo123' }
@@ -98,18 +101,21 @@ async function setupDemoUser() {
         console.error('Error creating user:', userError)
         return
       }
-    } else if (userData.user) {
+    } else if (userData?.user) {
+      userId = userData.user.id
       console.log('✓ Demo auth user created')
-      
-      // Step 3: Create user profile
+    }
+
+    // Step 3: Create user profile
+    if (userId) {
       console.log('Creating user profile...')
       const { error: profileError } = await supabase
         .from('users')
         .upsert({
-          id: userData.user.id,
+          id: userId,
           email: 'demo@example.com',
           full_name: 'Demo User',
-          organization_id: 'demo-org-123',
+          organization_id: demoOrgId,
           role: 'admin',
           settings: { demo: true },
           phone: '+1234567890',
@@ -138,8 +144,8 @@ async function setupDemoUser() {
         .from('contacts')
         .upsert({
           ...contact,
-          organization_id: 'demo-org-123',
-          created_by: userData?.user?.id || 'demo-user-456'
+          organization_id: demoOrgId,
+          created_by: userId
         })
       
       if (error) {
@@ -162,8 +168,8 @@ async function setupDemoUser() {
         .from('events')
         .upsert({
           ...event,
-          organization_id: 'demo-org-123',
-          created_by: userData?.user?.id || 'demo-user-456',
+          organization_id: demoOrgId,
+          created_by: userId,
           event_date: new Date(Date.now() + (i + 1) * 7 * 24 * 60 * 60 * 1000).toISOString() // 7, 14, 21 days from now
         })
       
