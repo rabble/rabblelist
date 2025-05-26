@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type { Contact } from '@/types'
 import type { Inserts } from '@/lib/database.types'
+import { withRetry } from '@/lib/retryUtils'
 
 export class ContactService {
   // Get contacts for the current user's organization
@@ -70,24 +71,31 @@ export class ContactService {
   // Create a new contact
   static async createContact(contact: Inserts<'contacts'>) {
     try {
-      const { data: org } = await supabase.rpc('organization_id')
-      if (!org) throw new Error('No organization found')
+      return await withRetry(async () => {
+        const { data: org } = await supabase.rpc('organization_id')
+        if (!org) throw new Error('No organization found')
 
-      const { data, error } = await supabase
-        .from('contacts')
-        .insert({
-          ...contact,
-          organization_id: org,
-          tags: contact.tags || [],
-          custom_fields: contact.custom_fields || {},
-          total_events_attended: 0
-        })
-        .select()
-        .single()
+        const { data, error } = await supabase
+          .from('contacts')
+          .insert({
+            ...contact,
+            organization_id: org,
+            tags: contact.tags || [],
+            custom_fields: contact.custom_fields || {},
+            total_events_attended: 0
+          })
+          .select()
+          .single()
 
-      if (error) throw error
+        if (error) throw error
 
-      return { data, error: null }
+        return { data, error: null }
+      }, {
+        maxAttempts: 3,
+        onRetry: (error, attempt) => {
+          console.warn(`Retrying contact creation (attempt ${attempt}):`, error)
+        }
+      })
     } catch (error) {
       console.error('Error creating contact:', error)
       return { data: null, error }
@@ -97,16 +105,23 @@ export class ContactService {
   // Update a contact
   static async updateContact(id: string, updates: Partial<Contact>) {
     try {
-      const { data, error } = await supabase
-        .from('contacts')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single()
+      return await withRetry(async () => {
+        const { data, error } = await supabase
+          .from('contacts')
+          .update(updates)
+          .eq('id', id)
+          .select()
+          .single()
 
-      if (error) throw error
+        if (error) throw error
 
-      return { data, error: null }
+        return { data, error: null }
+      }, {
+        maxAttempts: 3,
+        onRetry: (error, attempt) => {
+          console.warn(`Retrying contact update (attempt ${attempt}):`, error)
+        }
+      })
     } catch (error) {
       console.error('Error updating contact:', error)
       return { data: null, error }
