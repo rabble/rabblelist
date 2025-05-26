@@ -31,15 +31,8 @@ export function LoginPage() {
     
     console.log('Attempting demo login...')
     
-    // Set a timeout for the login attempt
-    const timeoutId = setTimeout(() => {
-      setError('Login timeout - please check your connection and try again')
-      setIsLoading(false)
-    }, 10000) // 10 second timeout
-    
     try {
       const { error } = await signIn('demo@example.com', 'demo123')
-      clearTimeout(timeoutId)
       
       if (error) {
         console.error('Demo login error:', error)
@@ -50,7 +43,6 @@ export function LoginPage() {
         navigate(from, { replace: true })
       }
     } catch (err) {
-      clearTimeout(timeoutId)
       console.error('Unexpected error:', err)
       setError(`Unexpected error: ${err instanceof Error ? err.message : 'Please try again'}`)
       setIsLoading(false)
@@ -65,17 +57,10 @@ export function LoginPage() {
 
     console.log('Form submitted:', { mode, email, fullName, organizationName, createNewOrg })
 
-    // Set a timeout for all auth operations
-    const timeoutId = setTimeout(() => {
-      setError('Operation timeout - please check your connection and try again')
-      setIsLoading(false)
-    }, 15000) // 15 second timeout
-
     try {
       if (mode === 'signin') {
         console.log('Attempting sign in...')
         const { error } = await signIn(email, password)
-        clearTimeout(timeoutId)
         
         if (error) {
           console.error('Sign in error:', error)
@@ -116,6 +101,7 @@ export function LoginPage() {
           } else {
             setError(error.message)
           }
+          setIsLoading(false)
         } else {
           console.log('Sign up successful!')
           // Since email confirmation is required, show success message and switch to sign in
@@ -131,7 +117,6 @@ export function LoginPage() {
         }
       }
     } catch (err) {
-      clearTimeout(timeoutId)
       console.error('Unexpected error:', err)
       setError(`Error: ${err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.'}`)
       setIsLoading(false)
