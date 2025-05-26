@@ -189,3 +189,20 @@ contact-manager-pwa/
 - Potential SMS/calling service integration
 - CSV import/export functionality
 - Push notification service
+
+## Deployment Learnings
+
+### Cloudflare Pages Deployment
+- Successfully deployed to Cloudflare Pages using `wrangler pages deploy`
+- Production URL: https://contact-manager-pwa.pages.dev
+- Build output directory: `dist/`
+- Environment variables need to be set in Cloudflare dashboard separately from wrangler.toml
+
+### TypeScript Build Fixes
+- Fixed error handling in catch blocks by properly typing errors:
+  - Changed `err.message` to `err instanceof Error ? err.message : 'fallback'`
+  - This prevents TypeScript TS18046 errors for unknown types in catch blocks
+
+### Character Encoding Issues
+- Terminal output may show Unicode/encoding issues when using wrangler CLI
+- The deployment still works correctly despite display issues
