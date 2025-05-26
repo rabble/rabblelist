@@ -18,13 +18,11 @@ import { GroupsManagement } from '@/features/groups/GroupsManagement'
 import { PathwaysManagement } from '@/features/pathways/PathwaysManagement'
 import { AdminDashboard } from '@/features/admin/AdminDashboard'
 import { CustomFieldsConfig } from '@/features/admin/CustomFieldsConfig'
-import { DebugAuth } from '@/components/DebugAuth'
 
 function App() {
   return (
     <Router>
       <AuthProvider>
-        <DebugAuth />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-password" element={<ResetPassword />} />
