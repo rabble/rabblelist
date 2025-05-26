@@ -181,7 +181,7 @@ export async function markSynced(id: string): Promise<void> {
 export async function deleteSyncedChanges(): Promise<void> {
   const db = await getDB()
   const tx = db.transaction('sync_queue', 'readwrite')
-  const synced = await tx.store.index('by-synced').getAllKeys(true)
+  const synced = await tx.store.index('by-synced').getAllKeys(IDBKeyRange.only(1))
   
   await Promise.all([
     ...synced.map(key => tx.store.delete(key)),
@@ -203,7 +203,6 @@ export async function clearAllData(): Promise<void> {
 
 // Check if we have offline data
 export async function hasOfflineData(): Promise<boolean> {
-  const db = await getDB()
   const pendingChanges = await getPendingSyncChanges()
   return pendingChanges.length > 0
 }

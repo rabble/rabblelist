@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 // Types
 // ============================================================================
 
-type OnlineStatusListener = () => void
 
 // ============================================================================
 // Constants

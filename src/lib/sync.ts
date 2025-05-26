@@ -1,10 +1,10 @@
 import { supabase } from './supabase'
 import * as idb from './indexeddb'
-import type { Contact, CallLog, Event, SyncChange } from '@/types'
+import type { SyncChange } from '@/types'
 
 class SyncService {
   private syncInProgress = false
-  private syncInterval: NodeJS.Timer | null = null
+  private syncInterval: ReturnType<typeof setInterval> | null = null
   private onlineListener: (() => void) | null = null
   private offlineListener: (() => void) | null = null
 

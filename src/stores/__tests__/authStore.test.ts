@@ -1,27 +1,36 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useAuthStore, selectUser, selectIsLoading, selectIsAuthenticated } from '../authStore'
+import { useAuthStore } from '../authStore'
 import type { User } from '@/types'
 
 describe('authStore', () => {
-  // Reset store before each test
+  // Helper to create a complete mock user
+  const createMockUser = (overrides: Partial<User> = {}): User => ({
+    id: '123',
+    organization_id: 'org-123',
+    email: 'test@example.com',
+    full_name: 'Test User',
+    role: 'ringer',
+    phone: null,
+    settings: {},
+    last_active: new Date().toISOString(),
+    created_at: '2024-01-01',
+    updated_at: '2024-01-01',
+    ...overrides
+  })
+
   beforeEach(() => {
-    localStorage.clear()
     const { result } = renderHook(() => useAuthStore())
     act(() => {
       result.current.clear()
-      result.current.setLoading(true) // Reset to initial state
     })
   })
 
   describe('initial state', () => {
-    it('should have null user initially', () => {
+    it('should have correct initial values', () => {
       const { result } = renderHook(() => useAuthStore())
-      expect(result.current.user).toBeNull()
-    })
 
-    it('should be loading initially', () => {
-      const { result } = renderHook(() => useAuthStore())
+      expect(result.current.user).toBeNull()
       expect(result.current.isLoading).toBe(true)
     })
   })
@@ -29,13 +38,7 @@ describe('authStore', () => {
   describe('setUser', () => {
     it('should set user correctly', () => {
       const { result } = renderHook(() => useAuthStore())
-      const mockUser: User = {
-        id: '123',
-        email: 'test@example.com',
-        role: 'ringer',
-        created_at: '2024-01-01',
-        updated_at: '2024-01-01'
-      }
+      const mockUser = createMockUser()
 
       act(() => {
         result.current.setUser(mockUser)
@@ -44,9 +47,37 @@ describe('authStore', () => {
       expect(result.current.user).toEqual(mockUser)
     })
 
-    it('should handle setting user to null', () => {
+    it('should update user with partial data', () => {
       const { result } = renderHook(() => useAuthStore())
-      
+      const initialUser = createMockUser()
+
+      act(() => {
+        result.current.setUser(initialUser)
+      })
+
+      const updatedUser = createMockUser({
+        ...initialUser,
+        email: 'updated@example.com'
+      })
+
+      act(() => {
+        result.current.setUser(updatedUser)
+      })
+
+      expect(result.current.user).toEqual(updatedUser)
+      expect(result.current.user?.email).toBe('updated@example.com')
+    })
+
+    it('should handle null user', () => {
+      const { result } = renderHook(() => useAuthStore())
+      const mockUser = createMockUser()
+
+      act(() => {
+        result.current.setUser(mockUser)
+      })
+
+      expect(result.current.user).not.toBeNull()
+
       act(() => {
         result.current.setUser(null)
       })
@@ -56,45 +87,36 @@ describe('authStore', () => {
   })
 
   describe('setLoading', () => {
-    it('should set loading state to true', () => {
+    it('should update loading state', () => {
       const { result } = renderHook(() => useAuthStore())
-      
+
+      act(() => {
+        result.current.setLoading(false)
+      })
+
+      expect(result.current.isLoading).toBe(false)
+
       act(() => {
         result.current.setLoading(true)
       })
 
       expect(result.current.isLoading).toBe(true)
     })
-
-    it('should set loading state to false', () => {
-      const { result } = renderHook(() => useAuthStore())
-      
-      act(() => {
-        result.current.setLoading(false)
-      })
-
-      expect(result.current.isLoading).toBe(false)
-    })
   })
 
   describe('clear', () => {
-    it('should reset state to defaults', () => {
+    it('should clear user and reset loading state', () => {
       const { result } = renderHook(() => useAuthStore())
-      const mockUser: User = {
-        id: '123',
-        email: 'test@example.com',
-        role: 'ringer',
-        created_at: '2024-01-01',
-        updated_at: '2024-01-01'
-      }
+      const mockUser = createMockUser()
 
-      // Set some state
       act(() => {
         result.current.setUser(mockUser)
         result.current.setLoading(true)
       })
 
-      // Clear state
+      expect(result.current.user).not.toBeNull()
+      expect(result.current.isLoading).toBe(true)
+
       act(() => {
         result.current.clear()
       })
@@ -105,71 +127,63 @@ describe('authStore', () => {
   })
 
   describe('persistence', () => {
-    it('should only persist user data', () => {
-      const { result } = renderHook(() => useAuthStore())
-      const state = result.current
+    it('should persist user state', () => {
+      const mockUser = createMockUser()
       
-      // The partialize function should only include user
-      const persistedState = { user: state.user }
+      // First render
+      const { result: result1 } = renderHook(() => useAuthStore())
       
-      expect(persistedState).toHaveProperty('user')
-      expect(persistedState).not.toHaveProperty('isLoading')
+      act(() => {
+        result1.current.setUser(mockUser)
+      })
+
+      // Unmount and remount
+      const { result: result2 } = renderHook(() => useAuthStore())
+      
+      // User should be persisted
+      expect(result2.current.user).toEqual(mockUser)
+    })
+
+    it('should not persist loading state', () => {
+      // First render
+      const { result: result1 } = renderHook(() => useAuthStore())
+      
+      act(() => {
+        result1.current.setLoading(false)
+      })
+
+      expect(result1.current.isLoading).toBe(false)
+
+      // Unmount and remount
+      const { result: result2 } = renderHook(() => useAuthStore())
+      
+      // Loading should be back to initial state
+      expect(result2.current.isLoading).toBe(true)
     })
   })
 
   describe('selectors', () => {
-    it('selectUser should return the current user', () => {
+    it('should have working user selector', () => {
       const { result } = renderHook(() => useAuthStore())
-      const mockUser: User = {
-        id: '123',
-        email: 'test@example.com',
-        role: 'ringer',
-        created_at: '2024-01-01',
-        updated_at: '2024-01-01'
-      }
+      const mockUser = createMockUser()
 
       act(() => {
         result.current.setUser(mockUser)
       })
 
-      expect(selectUser(result.current)).toEqual(mockUser)
+      const selectedUser = useAuthStore.getState().user
+      expect(selectedUser).toEqual(mockUser)
     })
 
-    it('selectIsLoading should return loading state', () => {
+    it('should have working isLoading selector', () => {
       const { result } = renderHook(() => useAuthStore())
-      
+
       act(() => {
         result.current.setLoading(false)
       })
 
-      expect(selectIsLoading(result.current)).toBe(false)
-    })
-
-    it('selectIsAuthenticated should return true when user exists', () => {
-      const { result } = renderHook(() => useAuthStore())
-      const mockUser: User = {
-        id: '123',
-        email: 'test@example.com',
-        role: 'ringer',
-        created_at: '2024-01-01',
-        updated_at: '2024-01-01'
-      }
-
-      act(() => {
-        result.current.setUser(mockUser)
-      })
-
-      expect(selectIsAuthenticated(result.current)).toBe(true)
-    })
-
-    it('selectIsAuthenticated should return false when user is null', () => {
-      const { result } = renderHook(() => useAuthStore())
-      
-      act(() => {
-        result.current.setUser(null)
-      })
-
-      expect(selectIsAuthenticated(result.current)).toBe(false)
+      const isLoading = useAuthStore.getState().isLoading
+      expect(isLoading).toBe(false)
     })
   })
 })

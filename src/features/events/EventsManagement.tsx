@@ -22,7 +22,7 @@ import {
 
 export function EventsManagement() {
   const navigate = useNavigate()
-  const { events, totalEvents, isLoadingEvents, loadEvents, deleteEvent } = useEventStore()
+  const { events, isLoadingEvents, loadEvents, deleteEvent } = useEventStore()
   const [searchTerm, setSearchTerm] = useState('')
   const [showUpcoming, setShowUpcoming] = useState(true)
   const [stats, setStats] = useState({

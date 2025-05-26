@@ -27,7 +27,7 @@
 - [x] Implement contact deletion with confirmation
 - [x] Add bulk operations (select multiple, bulk delete/tag)
 - [x] Implement advanced search and filtering
-- [ ] Add contact sorting options
+- [x] Add contact sorting options (by name, date created, last contact, events attended)
 - [ ] Implement tag management UI
 - [ ] Add custom fields configuration
 - [x] Create contact import from CSV with field mapping

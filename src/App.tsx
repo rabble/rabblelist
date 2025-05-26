@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from '@/features/auth/AuthContext'
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute'
-import { PermissionGuard } from '@/features/auth/PermissionGuard'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { ResetPassword } from '@/features/auth/ResetPassword'
 import { ContactQueue } from '@/features/contacts/ContactQueue'

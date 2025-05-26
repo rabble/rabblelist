@@ -20,7 +20,14 @@ interface ContactStore {
   updateContact: (id: string, updates: Partial<Contact>) => Promise<void>
   
   // Actions - Contacts
-  loadContacts: (filters?: { search?: string; tags?: string[]; limit?: number; offset?: number }) => Promise<void>
+  loadContacts: (filters?: { 
+    search?: string; 
+    tags?: string[]; 
+    limit?: number; 
+    offset?: number;
+    orderBy?: string;
+    orderDirection?: 'asc' | 'desc';
+  }) => Promise<void>
   createContact: (contact: Partial<Contact>) => Promise<Contact | null>
   deleteContact: (id: string) => Promise<boolean>
   
@@ -134,8 +141,9 @@ export const useContactStore = create<ContactStore>((set, get) => ({
         email: contactData.email,
         address: contactData.address,
         tags: contactData.tags || [],
-        custom_fields: contactData.custom_fields || {}
-      })
+        custom_fields: contactData.custom_fields || {},
+        organization_id: '' // Will be set by the service
+      } as any)
       
       if (!error && data) {
         // Reload contacts list

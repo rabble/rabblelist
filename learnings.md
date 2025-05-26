@@ -74,6 +74,9 @@ contact-manager-pwa/
 - **Supabase Integration**: All data operations now use real Supabase, mockData.ts removed
 - **Contact Service**: Fully implemented with Supabase integration
 - **Admin Dashboard**: Shows real statistics from Supabase
+- **Contact Sorting**: Added sorting by name, date created, last contact, and events attended
+- **Password Reset**: Implemented complete password reset flow with email
+- **Logout Enhancement**: Proper logout that clears all local data including IndexedDB
 
 ### ❌ Not Implemented / Using Mocks
 - **Contact Management**: List view exists but no CRUD operations

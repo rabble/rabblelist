@@ -17,13 +17,24 @@ import {
   Edit,
   Trash2,
   Users,
-  X
+  X,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react'
 
 interface FilterOptions {
   tags: string[]
   lastContactDate: string
   searchTerm: string
+}
+
+type SortField = 'full_name' | 'created_at' | 'last_contact_date' | 'total_events_attended'
+type SortDirection = 'asc' | 'desc'
+
+interface SortOption {
+  field: SortField
+  direction: SortDirection
 }
 
 export function ContactsManagement() {
@@ -44,6 +55,10 @@ export function ContactsManagement() {
   })
   const [showFilters, setShowFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [sortOption, setSortOption] = useState<SortOption>({
+    field: 'created_at',
+    direction: 'desc'
+  })
   const pageSize = 20
 
   // Available tags - in production, this would come from the database
@@ -51,15 +66,34 @@ export function ContactsManagement() {
 
   useEffect(() => {
     loadContactsWithFilters()
-  }, [filters, currentPage])
+  }, [filters, currentPage, sortOption])
 
   const loadContactsWithFilters = () => {
     loadContacts({
       search: filters.searchTerm,
       tags: filters.tags.length > 0 ? filters.tags : undefined,
       limit: pageSize,
-      offset: (currentPage - 1) * pageSize
+      offset: (currentPage - 1) * pageSize,
+      orderBy: sortOption.field,
+      orderDirection: sortOption.direction
     })
+  }
+
+  const handleSort = (field: SortField) => {
+    setSortOption(prev => ({
+      field,
+      direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc'
+    }))
+    setCurrentPage(1)
+  }
+
+  const getSortIcon = (field: SortField) => {
+    if (sortOption.field !== field) {
+      return <ArrowUpDown className="w-4 h-4 text-gray-400" />
+    }
+    return sortOption.direction === 'asc' 
+      ? <ArrowUp className="w-4 h-4 text-blue-600" />
+      : <ArrowDown className="w-4 h-4 text-blue-600" />
   }
 
   const handleSelectContact = (contactId: string) => {
@@ -176,6 +210,25 @@ export function ContactsManagement() {
               </div>
               
               <div className="flex gap-3">
+                <select
+                  className="px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={`${sortOption.field}_${sortOption.direction}`}
+                  onChange={(e) => {
+                    const [field, direction] = e.target.value.split('_') as [SortField, SortDirection]
+                    setSortOption({ field, direction })
+                    setCurrentPage(1)
+                  }}
+                >
+                  <option value="created_at_desc">Newest First</option>
+                  <option value="created_at_asc">Oldest First</option>
+                  <option value="full_name_asc">Name (A-Z)</option>
+                  <option value="full_name_desc">Name (Z-A)</option>
+                  <option value="last_contact_date_desc">Recently Contacted</option>
+                  <option value="last_contact_date_asc">Least Recently Contacted</option>
+                  <option value="total_events_attended_desc">Most Active</option>
+                  <option value="total_events_attended_asc">Least Active</option>
+                </select>
+
                 <Button
                   variant="outline"
                   onClick={() => setShowFilters(!showFilters)}
@@ -328,8 +381,14 @@ export function ContactsManagement() {
                         onChange={handleSelectAll}
                       />
                     </th>
-                    <th className="p-4 text-left text-sm font-medium text-gray-900">
-                      Name
+                    <th className="p-4 text-left">
+                      <button
+                        className="flex items-center gap-1 text-sm font-medium text-gray-900 hover:text-gray-700"
+                        onClick={() => handleSort('full_name')}
+                      >
+                        Name
+                        {getSortIcon('full_name')}
+                      </button>
                     </th>
                     <th className="p-4 text-left text-sm font-medium text-gray-900 hidden sm:table-cell">
                       Contact Info
@@ -337,8 +396,14 @@ export function ContactsManagement() {
                     <th className="p-4 text-left text-sm font-medium text-gray-900 hidden md:table-cell">
                       Tags
                     </th>
-                    <th className="p-4 text-left text-sm font-medium text-gray-900 hidden lg:table-cell">
-                      Last Contact
+                    <th className="p-4 text-left hidden lg:table-cell">
+                      <button
+                        className="flex items-center gap-1 text-sm font-medium text-gray-900 hover:text-gray-700"
+                        onClick={() => handleSort('last_contact_date')}
+                      >
+                        Last Contact
+                        {getSortIcon('last_contact_date')}
+                      </button>
                     </th>
                     <th className="p-4 text-right text-sm font-medium text-gray-900">
                       Actions

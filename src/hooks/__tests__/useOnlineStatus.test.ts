@@ -232,7 +232,6 @@ describe('useOnlineStatus', () => {
       unmount()
 
       // Should have same number of remove calls as add calls
-      const addCalls = mockAddEventListener.mock.calls.length
       const removeCalls = mockRemoveEventListener.mock.calls.length
       
       expect(removeCalls).toBe(2) // Should only have 2 removes (online and offline)

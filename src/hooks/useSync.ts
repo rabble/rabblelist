@@ -46,7 +46,7 @@ export function useSync() {
     }
   }
 
-  const addPendingChange = async (change: any) => {
+  const addPendingChange = async () => {
     // This is now handled internally by the sync service
     // But we'll keep the interface for compatibility
     const status = await syncService.getSyncStatus()

@@ -9,12 +9,18 @@ export class ContactService {
     tags?: string[]
     limit?: number
     offset?: number
+    orderBy?: string
+    orderDirection?: 'asc' | 'desc'
   }) {
     try {
       let query = supabase
         .from('contacts')
         .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
+
+      // Apply dynamic ordering
+      const orderBy = filters?.orderBy || 'created_at'
+      const orderDirection = filters?.orderDirection === 'asc'
+      query = query.order(orderBy, { ascending: orderDirection })
 
       if (filters?.search) {
         query = query.or(`full_name.ilike.%${filters.search}%,phone.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)

@@ -4,7 +4,6 @@ import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { useAuth } from '@/features/auth/AuthContext'
-import { supabase } from '@/lib/supabase'
 import { 
   Plus,
   Users,
@@ -47,7 +46,7 @@ interface GroupMember {
 }
 
 export function GroupsManagement() {
-  const { profile } = useAuth()
+  const { } = useAuth()
   const navigate = useNavigate()
   const [groups, setGroups] = useState<Group[]>([])
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null)
@@ -161,48 +160,24 @@ export function GroupsManagement() {
     try {
       setLoading(true)
       
-      if (true) { // Using mock data for now
-        let filtered = [...mockGroups]
-        
-        if (filterType !== 'all') {
-          filtered = filtered.filter(g => g.type === filterType)
-        }
-        
-        if (searchTerm) {
-          const search = searchTerm.toLowerCase()
-          filtered = filtered.filter(g => 
-            g.name.toLowerCase().includes(search) ||
-            g.description.toLowerCase().includes(search)
-          )
-        }
-        
-        setGroups(filtered)
-        if (filtered.length > 0 && !selectedGroup) {
-          setSelectedGroup(filtered[0])
-        }
-      } else {
-        let query = supabase
-          .from('groups')
-          .select('*')
-          .eq('organization_id', profile?.organization_id || '')
-          .eq('active', true)
-          .order('name')
-        
-        if (filterType !== 'all') {
-          query = query.eq('type', filterType)
-        }
-        
-        if (searchTerm) {
-          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
-        }
-        
-        const { data, error } = await query
-        
-        if (error) throw error
-        setGroups(data || [])
-        if (data && data.length > 0 && !selectedGroup) {
-          setSelectedGroup(data[0])
-        }
+      // Using mock data for now
+      let filtered = [...mockGroups]
+      
+      if (filterType !== 'all') {
+        filtered = filtered.filter(g => g.type === filterType)
+      }
+      
+      if (searchTerm) {
+        const search = searchTerm.toLowerCase()
+        filtered = filtered.filter(g => 
+          g.name.toLowerCase().includes(search) ||
+          g.description.toLowerCase().includes(search)
+        )
+      }
+      
+      setGroups(filtered)
+      if (filtered.length > 0 && !selectedGroup) {
+        setSelectedGroup(filtered[0])
       }
     } catch (error) {
       console.error('Failed to load groups:', error)
@@ -213,9 +188,11 @@ export function GroupsManagement() {
 
   const loadGroupMembers = async (groupId: string) => {
     try {
-      if (true) { // Using mock data for now
-        const members = mockMembers.filter(m => m.group_id === groupId)
-        setGroupMembers(members)
+      // Using mock data for now
+      const members = mockMembers.filter(m => m.group_id === groupId)
+      setGroupMembers(members)
+      
+      /* Real implementation for later:
       } else {
         const { data, error } = await supabase
           .from('group_members')
@@ -232,7 +209,7 @@ export function GroupsManagement() {
         
         if (error) throw error
         setGroupMembers(data || [])
-      }
+      */
     } catch (error) {
       console.error('Failed to load group members:', error)
     }
@@ -242,11 +219,13 @@ export function GroupsManagement() {
     if (!confirm('Are you sure you want to delete this group? This action cannot be undone.')) return
     
     try {
-      if (true) { // Using mock data for now
-        setGroups(prev => prev.filter(g => g.id !== groupId))
-        if (selectedGroup?.id === groupId) {
-          setSelectedGroup(null)
-        }
+      // Using mock data for now
+      setGroups(prev => prev.filter(g => g.id !== groupId))
+      if (selectedGroup?.id === groupId) {
+        setSelectedGroup(null)
+      }
+      
+      /* Real implementation for later:
       } else {
         const { error } = await supabase
           .from('groups')
@@ -255,7 +234,7 @@ export function GroupsManagement() {
         
         if (error) throw error
         await loadGroups()
-      }
+      */
     } catch (error) {
       console.error('Failed to delete group:', error)
       alert('Failed to delete group')

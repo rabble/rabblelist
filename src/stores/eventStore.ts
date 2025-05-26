@@ -64,10 +64,10 @@ export const useEventStore = create<EventStore>((set, get) => ({
         start_time: eventData.start_time,
         end_time: eventData.end_time || null,
         location: eventData.location,
-        is_virtual: eventData.is_virtual || false,
         capacity: eventData.capacity || null,
-        settings: eventData.settings || {}
-      })
+        settings: eventData.settings || {},
+        organization_id: '' // Will be set by the service
+      } as any)
       
       if (!error && data) {
         // Reload events list
