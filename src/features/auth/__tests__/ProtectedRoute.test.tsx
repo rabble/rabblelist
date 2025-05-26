@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { MemoryRouter, useLocation } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 import { ProtectedRoute } from '../ProtectedRoute'
 import * as AuthContext from '../AuthContext'
 
@@ -14,7 +14,7 @@ vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
   return {
     ...actual,
-    Navigate: ({ to, state }: any) => {
+    Navigate: ({ to }: any) => {
       return <div data-testid="navigate">Navigate to {to}</div>
     }
   }
@@ -121,6 +121,7 @@ describe('ProtectedRoute', () => {
         full_name: 'Test User',
         organization_id: 'test-org',
         role: 'ringer',
+        phone: null,
         settings: {},
         last_active: new Date().toISOString(),
         created_at: new Date().toISOString(),
@@ -159,6 +160,7 @@ describe('ProtectedRoute', () => {
         full_name: 'Test User',
         organization_id: 'test-org',
         role: 'ringer',
+        phone: null,
         settings: {},
         last_active: new Date().toISOString(),
         created_at: new Date().toISOString(),
@@ -197,6 +199,7 @@ describe('ProtectedRoute', () => {
         full_name: 'Test User',
         organization_id: 'test-org',
         role: 'admin',
+        phone: null,
         settings: {},
         last_active: new Date().toISOString(),
         created_at: new Date().toISOString(),

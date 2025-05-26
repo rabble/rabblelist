@@ -168,7 +168,12 @@ describe('AuthContext', () => {
     // Mock session error
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
-      error: new Error('Session error')
+      error: {
+        message: 'Session error',
+        code: 'session_error',
+        status: 400,
+        __isAuthError: true
+      } as any
     })
 
     const { result } = renderHook(() => useAuth(), {
@@ -344,7 +349,12 @@ describe('AuthContext', () => {
     })
 
     // Mock sign in error
-    const signInError = new Error('Invalid credentials')
+    const signInError = {
+      message: 'Invalid credentials',
+      code: 'invalid_credentials',
+      status: 400,
+      __isAuthError: true
+    } as any
     vi.mocked(supabase.auth.signInWithPassword).mockResolvedValue({
       data: { user: null, session: null },
       error: signInError

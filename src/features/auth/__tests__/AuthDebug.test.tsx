@@ -156,7 +156,7 @@ describe('AuthContext Debug', () => {
 
     // Mock profile fetch failure
     const fromMock = vi.mocked(supabase.from)
-    fromMock.mockImplementation((table) => {
+    fromMock.mockImplementation(() => {
       const chainMock = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),

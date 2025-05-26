@@ -1,6 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { MemoryRouter } from 'react-router-dom'
 import App from '@/App'
 import { supabase } from '@/lib/supabase'
 
@@ -55,7 +54,12 @@ describe('App Loading Issue', () => {
     // Simulate an error getting the session
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
-      error: new Error('Failed to get session')
+      error: {
+        message: 'Failed to get session',
+        code: 'session_error',
+        status: 400,
+        __isAuthError: true
+      } as any
     })
 
     render(<App />)
