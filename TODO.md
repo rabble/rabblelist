@@ -35,7 +35,7 @@
 - [x] Implement contact deduplication logic (find by phone/email/name, merge data)
 
 ### 4. Complete Offline Sync System
-- [ ] Implement IndexedDB schema matching Supabase
+- [x] Implement IndexedDB schema matching Supabase
 - [ ] Create proper sync queue management
 - [ ] Add conflict resolution for offline changes
 - [ ] Implement background sync when online
