@@ -128,6 +128,30 @@ contact-manager-pwa/
 - `wrangler.toml`: Cloudflare Workers configuration
 - Multiple README files with setup instructions
 
+## Recent Implementations
+
+### Retry Logic
+- Created `retryUtils.ts` with exponential backoff and jitter
+- Intelligent retry that skips auth/permission/validation errors
+- Applied to ContactService and can be used across all services
+
+### Organization Switching
+- Created `OrganizationSwitcher` component for multi-org users
+- Added migration for `user_organizations` junction table
+- Simulated multi-org access for admin users
+
+### Custom Fields
+- `CustomFieldsConfig` component for admin management
+- Supports text, number, date, select, and checkbox types
+- Fields stored in organization settings JSON
+- Integrated into ContactForm with dynamic rendering
+
+### Contact Deduplication
+- `ContactDeduplication` component finds duplicates by phone/email/name
+- Merges all data into primary (oldest) contact
+- Updates all references in related tables
+- Batch merge capability for multiple groups
+
 ## UI/UX Considerations
 - Mobile-first design approach
 - Touch-optimized interfaces

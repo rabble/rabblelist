@@ -10,6 +10,7 @@ import { TagsManagement } from '@/features/contacts/management/TagsManagement'
 import { ContactForm } from '@/features/contacts/ContactForm'
 import { ContactDetail } from '@/features/contacts/ContactDetail'
 import { ContactImport } from '@/features/contacts/ContactImport'
+import { ContactDeduplication } from '@/features/contacts/ContactDeduplication'
 import { EventsManagement } from '@/features/events/EventsManagement'
 import { EventDetail } from '@/features/events/EventDetail'
 import { EventForm } from '@/features/events/EventForm'
@@ -72,6 +73,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <TagsManagement />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Contact Deduplication */}
+          <Route
+            path="/contacts/deduplicate"
+            element={
+              <ProtectedRoute>
+                <ContactDeduplication />
               </ProtectedRoute>
             }
           />

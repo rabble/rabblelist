@@ -21,7 +21,8 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  Tag
+  Tag,
+  Merge
 } from 'lucide-react'
 
 interface FilterOptions {
@@ -181,6 +182,10 @@ export function ContactsManagement() {
               <Button variant="outline" onClick={() => navigate('/contacts/tags')}>
                 <Tag className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Tags</span>
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/contacts/deduplicate')}>
+                <Merge className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Dedupe</span>
               </Button>
               <Button variant="outline" onClick={() => navigate('/contacts/import')}>
                 <Upload className="w-4 h-4 mr-2" />

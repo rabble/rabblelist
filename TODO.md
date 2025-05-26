@@ -32,7 +32,7 @@
 - [x] Add custom fields configuration (UI for creating, editing, deleting custom fields)
 - [x] Create contact import from CSV with field mapping
 - [x] Add contact export functionality
-- [ ] Implement contact deduplication logic
+- [x] Implement contact deduplication logic (find by phone/email/name, merge data)
 
 ### 4. Complete Offline Sync System
 - [ ] Implement IndexedDB schema matching Supabase
