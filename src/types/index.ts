@@ -45,6 +45,16 @@ export interface SyncChange {
   retries?: number
 }
 
+export interface SyncQueueItem {
+  id: string
+  type: 'create' | 'update' | 'delete'
+  table: string
+  recordId?: string
+  data?: any
+  retries: number
+  created_at: string
+}
+
 // Form types
 export interface ContactFormData {
   full_name: string
@@ -187,12 +197,3 @@ export interface PaginationState {
   total: number
 }
 
-// Sync queue for offline support
-export interface SyncQueueItem {
-  id: string
-  type: 'call_log' | 'contact_update' | 'event_checkin'
-  action: 'create' | 'update' | 'delete'  
-  data: any
-  retries: number
-  created_at: string
-}
