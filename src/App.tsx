@@ -18,15 +18,11 @@ import { GroupsManagement } from '@/features/groups/GroupsManagement'
 import { PathwaysManagement } from '@/features/pathways/PathwaysManagement'
 import { AdminDashboard } from '@/features/admin/AdminDashboard'
 import { CustomFieldsConfig } from '@/features/admin/CustomFieldsConfig'
-// Temporary diagnostic component
-import { AuthDiagnostic } from '@/components/AuthDiagnostic'
 
 function App() {
   return (
     <Router>
       <AuthProvider>
-        {/* Temporary diagnostic component - remove after debugging */}
-        <AuthDiagnostic />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-password" element={<ResetPassword />} />

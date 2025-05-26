@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Service Workers</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+        }
+        .error {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+        .success {
+            background: #f0fdf4;
+            border-color: #86efac;
+            color: #16a34a;
+        }
+        pre {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Service Worker Cleanup</h1>
+        <p>This page will help you clear all service workers and caches for the Contact Manager app.</p>
+        
+        <button onclick="clearEverything()">Clear All Service Workers & Caches</button>
+        <button onclick="checkStatus()">Check Status</button>
+        <button onclick="window.location.href='/'">Return to App</button>
+        
+        <div id="status" class="status" style="display: none;"></div>
+    </div>
+
+    <script>
+        function updateStatus(message, isError = false) {
+            const statusEl = document.getElementById('status');
+            statusEl.style.display = 'block';
+            statusEl.className = 'status ' + (isError ? 'error' : 'success');
+            statusEl.innerHTML = message;
+        }
+
+        async function clearEverything() {
+            let messages = [];
+            
+            try {
+                // 1. Unregister all service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    messages.push(`Found ${registrations.length} service worker(s)`);
+                    
+                    for (const registration of registrations) {
+                        await registration.unregister();
+                        messages.push(`✓ Unregistered: ${registration.scope}`);
+                    }
+                }
+                
+                // 2. Clear all caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    messages.push(`<br>Found ${cacheNames.length} cache(s)`);
+                    
+                    for (const cacheName of cacheNames) {
+                        await caches.delete(cacheName);
+                        messages.push(`✓ Deleted cache: ${cacheName}`);
+                    }
+                }
+                
+                // 3. Clear localStorage
+                localStorage.clear();
+                messages.push('<br>✓ Cleared localStorage');
+                
+                // 4. Clear sessionStorage
+                sessionStorage.clear();
+                messages.push('✓ Cleared sessionStorage');
+                
+                // 5. Clear IndexedDB
+                if ('indexedDB' in window) {
+                    try {
+                        const databases = await indexedDB.databases();
+                        for (const db of databases) {
+                            if (db.name) {
+                                indexedDB.deleteDatabase(db.name);
+                                messages.push(`✓ Deleted IndexedDB: ${db.name}`);
+                            }
+                        }
+                    } catch (e) {
+                        // Fallback for browsers that don't support databases()
+                        try {
+                            indexedDB.deleteDatabase('contact-manager-db');
+                            messages.push('✓ Deleted IndexedDB: contact-manager-db');
+                        } catch (err) {
+                            messages.push('⚠ Could not clear IndexedDB');
+                        }
+                    }
+                }
+                
+                messages.push('<br><strong>All cleanup completed successfully!</strong>');
+                messages.push('You can now return to the app.');
+                
+                updateStatus(messages.join('<br>'));
+                
+            } catch (error) {
+                updateStatus(`Error during cleanup: ${error.message}`, true);
+            }
+        }
+
+        async function checkStatus() {
+            let status = [];
+            
+            try {
+                // Check service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    status.push(`<strong>Service Workers:</strong> ${registrations.length} active`);
+                    registrations.forEach(reg => {
+                        status.push(`&nbsp;&nbsp;- ${reg.scope} (${reg.active ? 'active' : 'inactive'})`);
+                    });
+                }
+                
+                // Check caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    status.push(`<br><strong>Caches:</strong> ${cacheNames.length} active`);
+                    cacheNames.forEach(name => {
+                        status.push(`&nbsp;&nbsp;- ${name}`);
+                    });
+                }
+                
+                // Check localStorage
+                status.push(`<br><strong>LocalStorage:</strong> ${localStorage.length} items`);
+                
+                // Check sessionStorage
+                status.push(`<strong>SessionStorage:</strong> ${sessionStorage.length} items`);
+                
+                updateStatus(status.join('<br>'));
+                
+            } catch (error) {
+                updateStatus(`Error checking status: ${error.message}`, true);
+            }
+        }
+
+        // Check status on page load
+        window.addEventListener('load', checkStatus);
+    </script>
+</body>
+</html>
