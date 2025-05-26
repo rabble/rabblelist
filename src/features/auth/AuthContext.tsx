@@ -38,13 +38,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (profileError) {
         console.error('Error loading profile:', profileError)
-        return
+        // If profile doesn't exist, the user might not be fully set up
+        // This shouldn't prevent the app from loading
+        setProfile(null)
+      } else {
+        setProfile(profileData)
       }
 
-      setProfile(profileData)
-
-      // Get organization
-      if (profileData?.organization_id) {
+      // Get organization - only if we successfully loaded a profile
+      if (!profileError && profileData?.organization_id) {
         const { data: orgData, error: orgError } = await supabase
           .from('organizations')
           .select('*')
@@ -53,10 +55,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (orgError) {
           console.error('Error loading organization:', orgError)
-          return
+          setOrganization(null)
+        } else {
+          setOrganization(orgData)
         }
-
-        setOrganization(orgData)
       }
 
       // Update last active
@@ -70,13 +72,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
+    // Check if Supabase is properly configured
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('Supabase is not configured! Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env.local file')
+      setLoading(false)
+      return
+    }
+    
     // Check active sessions
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    console.log('AuthContext: Checking for existing session...')
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
+      if (error) {
+        console.error('Error getting session:', error)
+        setLoading(false)
+        return
+      }
+      
+      console.log('AuthContext: Session found:', !!session)
       setSession(session)
       setUser(session?.user ?? null)
+      
       if (session?.user) {
-        loadUserData(session.user.id)
+        console.log('AuthContext: Loading user data for:', session.user.id)
+        await loadUserData(session.user.id)
       }
+      
+      console.log('AuthContext: Initial load complete, setting loading to false')
+      setLoading(false)
+    }).catch((error) => {
+      console.error('Error in getSession:', error)
       setLoading(false)
     })
 

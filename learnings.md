@@ -77,6 +77,8 @@ contact-manager-pwa/
 - **Contact Sorting**: Added sorting by name, date created, last contact, and events attended
 - **Password Reset**: Implemented complete password reset flow with email
 - **Logout Enhancement**: Proper logout that clears all local data including IndexedDB
+- **Test Suite**: Fixed all test failures - 105 tests now passing
+- **Auth Loading State**: Fixed endless loading issue by properly handling auth state and profile loading errors
 
 ### ❌ Not Implemented / Using Mocks
 - **Contact Management**: List view exists but no CRUD operations
