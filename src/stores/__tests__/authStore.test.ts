@@ -20,10 +20,8 @@ describe('authStore', () => {
   })
 
   beforeEach(() => {
-    const { result } = renderHook(() => useAuthStore())
-    act(() => {
-      result.current.clear()
-    })
+    // Reset localStorage to ensure clean state
+    localStorage.clear()
   })
 
   describe('initial state', () => {
@@ -146,7 +144,7 @@ describe('authStore', () => {
 
     it('should not persist loading state', () => {
       // First render
-      const { result: result1 } = renderHook(() => useAuthStore())
+      const { result: result1, unmount } = renderHook(() => useAuthStore())
       
       act(() => {
         result1.current.setLoading(false)
@@ -154,7 +152,13 @@ describe('authStore', () => {
 
       expect(result1.current.isLoading).toBe(false)
 
-      // Unmount and remount
+      // Unmount first hook
+      unmount()
+      
+      // Clear localStorage to simulate fresh app start
+      localStorage.clear()
+      
+      // Mount new hook - should have initial loading state
       const { result: result2 } = renderHook(() => useAuthStore())
       
       // Loading should be back to initial state

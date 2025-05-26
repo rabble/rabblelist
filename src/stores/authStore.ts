@@ -32,7 +32,7 @@ const createAuthActions = (
 ): AuthActions => ({
   setUser: (user) => set({ user }),
   setLoading: (isLoading) => set({ isLoading }),
-  clear: () => set(createInitialState()),
+  clear: () => set({ user: null, isLoading: false }),
 })
 
 // Persistence configuration
@@ -50,7 +50,15 @@ export const useAuthStore = create<AuthStore>()(
       ...createInitialState(),
       ...createAuthActions(set),
     }),
-    persistConfig
+    {
+      ...persistConfig,
+      onRehydrateStorage: () => (state) => {
+        // Ensure isLoading is always reset to true on rehydration
+        if (state) {
+          state.isLoading = DEFAULT_LOADING_STATE
+        }
+      },
+    }
   )
 )
 
