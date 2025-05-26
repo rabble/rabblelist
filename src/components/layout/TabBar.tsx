@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Home, Users, Phone, Calendar, Settings } from 'lucide-react'
+import { Home, Users, Megaphone, Calendar, Settings, Activity, Target } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthContext'
 
@@ -25,10 +25,11 @@ interface TabButtonProps {
 // ============================================================================
 
 const TAB_CONFIGS: TabConfig[] = [
-  { path: '/', label: 'Home', icon: Home },
+  { path: '/dashboard', label: 'Home', icon: Home },
   { path: '/contacts', label: 'Contacts', icon: Users },
-  { path: '/contacts/queue', label: 'Queue', icon: Phone },
-  { path: '/events', label: 'Events', icon: Calendar },
+  { path: '/campaigns', label: 'Campaigns', icon: Megaphone },
+  { path: '/pathways', label: 'Pathways', icon: Target },
+  { path: '/engagement', label: 'Engage', icon: Activity },
   { path: '/admin', label: 'Admin', icon: Settings, adminOnly: true },
 ]
 

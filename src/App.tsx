@@ -5,6 +5,10 @@ import { ContactsPage } from './ContactsPage'
 import { Dashboard } from '@/features/dashboard/Dashboard'
 import { EventsManagement } from '@/features/events/EventsManagement'
 import { GroupsManagement } from '@/features/groups/GroupsManagement'
+import { PathwaysManagement } from '@/features/pathways/PathwaysManagement'
+import { PathwayForm } from '@/features/pathways/PathwayForm'
+import { EngagementDashboard } from '@/features/engagement/EngagementDashboard'
+import { CampaignManagement } from '@/features/campaigns/CampaignManagement'
 import { AdminDashboard } from '@/features/admin/AdminDashboard'
 
 function App() {
@@ -37,6 +41,27 @@ function App() {
           <Route path="/groups" element={
             <Layout>
               <GroupsManagement />
+            </Layout>
+          } />
+          
+          <Route path="/pathways" element={
+            <Layout>
+              <PathwaysManagement />
+            </Layout>
+          } />
+          
+          <Route path="/pathways/new" element={<PathwayForm />} />
+          <Route path="/pathways/:id/edit" element={<PathwayForm />} />
+          
+          <Route path="/engagement" element={
+            <Layout>
+              <EngagementDashboard />
+            </Layout>
+          } />
+          
+          <Route path="/campaigns" element={
+            <Layout>
+              <CampaignManagement />
             </Layout>
           } />
           
