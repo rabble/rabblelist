@@ -6,6 +6,7 @@ import { ResetPassword } from '@/features/auth/ResetPassword'
 import { ContactQueue } from '@/features/contacts/ContactQueue'
 import { Dashboard } from '@/features/dashboard/Dashboard'
 import { ContactsManagement } from '@/features/contacts/management/ContactsManagement'
+import { TagsManagement } from '@/features/contacts/management/TagsManagement'
 import { ContactForm } from '@/features/contacts/ContactForm'
 import { ContactDetail } from '@/features/contacts/ContactDetail'
 import { ContactImport } from '@/features/contacts/ContactImport'
@@ -60,6 +61,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <ContactImport />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Tags Management */}
+          <Route
+            path="/contacts/tags"
+            element={
+              <ProtectedRoute>
+                <TagsManagement />
               </ProtectedRoute>
             }
           />

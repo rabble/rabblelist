@@ -20,7 +20,8 @@ import {
   X,
   ArrowUpDown,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  Tag
 } from 'lucide-react'
 
 interface FilterOptions {
@@ -177,6 +178,10 @@ export function ContactsManagement() {
               </p>
             </div>
             <div className="flex gap-3">
+              <Button variant="outline" onClick={() => navigate('/contacts/tags')}>
+                <Tag className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Tags</span>
+              </Button>
               <Button variant="outline" onClick={() => navigate('/contacts/import')}>
                 <Upload className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Import</span>
