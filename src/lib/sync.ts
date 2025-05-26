@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import * as idb from './indexeddb'
+import { indexedDb } from './indexeddb'
 import type { SyncChange } from '@/types'
 
 class SyncService {
@@ -70,7 +70,11 @@ class SyncService {
       await this.downloadLatestData()
 
       // 3. Clean up synced changes
-      await idb.deleteSyncedChanges()
+      // Clear sync queue after successful sync
+      const syncQueue = await indexedDb.getSyncQueue()
+      for (const item of syncQueue) {
+        await indexedDb.removeSyncQueueItem(item.id)
+      }
 
       return { success: true }
     } catch (error) {
@@ -83,25 +87,33 @@ class SyncService {
 
   // Upload pending changes to Supabase
   private async uploadPendingChanges() {
-    const pendingChanges = await idb.getPendingSyncChanges()
+    const pendingChanges = await indexedDb.getSyncQueue()
 
     for (const change of pendingChanges) {
       try {
-        await this.processSyncChange(change)
-        await idb.markSynced(change.id)
+        // Convert sync_queue format to SyncChange format
+        const syncChange: SyncChange = {
+          id: change.id,
+          type: change.table as any, // 'contacts', 'call_logs', etc.
+          action: change.type as any, // 'create', 'update', 'delete'
+          data: change.data,
+          timestamp: change.created_at,
+          retries: change.retries
+        }
+        
+        await this.processSyncChange(syncChange)
+        await indexedDb.removeSyncQueueItem(change.id)
       } catch (error) {
         console.error(`Failed to sync change ${change.id}:`, error)
         
         // Increment retry count
-        const updatedChange: SyncChange = {
-          ...change,
-          retries: (change.retries || 0) + 1
-        }
-        
-        // If too many retries, mark as synced to avoid infinite loop
-        if (updatedChange.retries! > 3) {
-          console.error(`Giving up on change ${change.id} after ${updatedChange.retries} retries`)
-          await idb.markSynced(change.id)
+        if (change.retries < 3) {
+          await indexedDb.updateSyncQueueItem(change.id, {
+            retries: change.retries + 1
+          })
+        } else {
+          console.error(`Giving up on change ${change.id} after ${change.retries + 1} retries`)
+          await indexedDb.removeSyncQueueItem(change.id)
         }
       }
     }
@@ -110,15 +122,15 @@ class SyncService {
   // Process individual sync change
   private async processSyncChange(change: SyncChange) {
     switch (change.type) {
-      case 'contact':
+      case 'contacts':
         await this.syncContact(change)
         break
       
-      case 'call_log':
+      case 'call_logs':
         await this.syncCallLog(change)
         break
       
-      case 'event_participant':
+      case 'event_participants':
         await this.syncEventParticipant(change)
         break
       
@@ -194,7 +206,7 @@ class SyncService {
       .gte('updated_at', lastSyncDate.toISOString())
 
     if (contacts && contacts.length > 0) {
-      await idb.saveContacts(contacts)
+      await indexedDb.saveContacts(contacts)
     }
 
     // Download events
@@ -205,7 +217,7 @@ class SyncService {
       .gte('updated_at', lastSyncDate.toISOString())
 
     if (events && events.length > 0) {
-      await idb.saveEvents(events)
+      await indexedDb.saveEvents(events)
     }
 
     // Update last sync time
@@ -214,15 +226,15 @@ class SyncService {
 
   // Force full sync (clear local data and download everything)
   async fullSync() {
-    await idb.clearAllData()
+    await indexedDb.clearAll()
     localStorage.removeItem('lastSync')
     return this.sync()
   }
 
   // Get sync status
   async getSyncStatus() {
-    const pendingChanges = await idb.getPendingSyncChanges()
-    const stats = await idb.getDatabaseStats()
+    const pendingChanges = await indexedDb.getSyncQueue()
+    const stats = await indexedDb.getDatabaseSize()
     
     return {
       isOnline: navigator.onLine,

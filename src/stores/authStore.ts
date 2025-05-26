@@ -32,7 +32,7 @@ const createAuthActions = (
 ): AuthActions => ({
   setUser: (user) => set({ user }),
   setLoading: (isLoading) => set({ isLoading }),
-  clear: () => set({ user: null, isLoading: false }),
+  clear: () => set(createInitialState()),
 })
 
 // Persistence configuration

@@ -3,7 +3,7 @@ import { Phone, Check, X, Voicemail, Clock, Calendar } from 'lucide-react'
 import type { Contact, CallOutcome } from '@/types'
 import { ContactService } from './contacts.service'
 import { formatDistanceToNow } from '@/lib/utils'
-import * as idb from '@/lib/indexeddb'
+import { indexedDb } from '@/lib/indexeddb'
 
 interface ContactCardProps {
   contact: Contact
@@ -40,11 +40,10 @@ export function ContactCard({ contact, onComplete, onNext }: ContactCardProps) {
         await ContactService.logCall(callLog as any)
       } else {
         // If offline, add to sync queue
-        await idb.addToSyncQueue({
-          type: 'call_log',
-          action: 'create',
-          data: callLog,
-          timestamp: new Date().toISOString()
+        await indexedDb.addToSyncQueue({
+          type: 'create',
+          table: 'call_logs',
+          data: callLog
         })
       }
       

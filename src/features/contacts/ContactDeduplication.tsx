@@ -6,12 +6,9 @@ import { supabase } from '@/lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { 
   Users,
-  Search,
   Merge,
   ChevronRight,
   AlertTriangle,
-  Check,
-  X,
   Phone,
   Mail,
   Calendar,
@@ -201,9 +198,20 @@ export function ContactDeduplication() {
         mergedData.tags = Array.from(allTags)
 
         // Merge custom fields
+        const primaryCustomFields = typeof mergedData.custom_fields === 'object' && 
+                                   mergedData.custom_fields !== null && 
+                                   !Array.isArray(mergedData.custom_fields) 
+                                   ? mergedData.custom_fields as Record<string, any>
+                                   : {}
+        const contactCustomFields = typeof contact.custom_fields === 'object' && 
+                                   contact.custom_fields !== null && 
+                                   !Array.isArray(contact.custom_fields)
+                                   ? contact.custom_fields as Record<string, any>
+                                   : {}
+        
         mergedData.custom_fields = {
-          ...(mergedData.custom_fields || {}),
-          ...(contact.custom_fields || {})
+          ...primaryCustomFields,
+          ...contactCustomFields
         }
 
         // Use most recent contact date

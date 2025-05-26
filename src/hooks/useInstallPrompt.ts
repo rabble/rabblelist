@@ -15,8 +15,6 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
-type InstallOutcome = 'accepted' | 'dismissed'
-
 interface UseInstallPromptReturn {
   /** Whether the app is already installed */
   isInstalled: boolean

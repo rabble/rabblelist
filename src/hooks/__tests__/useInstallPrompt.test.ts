@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { renderHook, act, waitFor } from '@testing-library/react'
+import { renderHook, act } from '@testing-library/react'
 import { useInstallPrompt } from '../useInstallPrompt'
 
 // Mock BeforeInstallPromptEvent
 class MockBeforeInstallPromptEvent extends Event {
   prompt = vi.fn()
-  userChoice = Promise.resolve({ outcome: 'accepted' as const })
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
   
   constructor(outcome: 'accepted' | 'dismissed' = 'accepted') {
     super('beforeinstallprompt')

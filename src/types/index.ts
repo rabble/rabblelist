@@ -37,7 +37,7 @@ export type SyncAction = 'create' | 'update' | 'delete'
 
 export interface SyncChange {
   id: string
-  type: 'contact' | 'call_log' | 'event_participant' | 'call_assignment'
+  type: 'contacts' | 'call_logs' | 'event_participants' | 'call_assignments'
   action: SyncAction
   data: any
   timestamp: string

@@ -1,4 +1,5 @@
-import { openDB, DBSchema, IDBPDatabase } from 'idb'
+import { openDB } from 'idb'
+import type { DBSchema, IDBPDatabase } from 'idb'
 import type { Contact, CallLog, Event, EventParticipant } from '@/types'
 
 // Define the database schema
@@ -74,7 +75,7 @@ class IndexedDBService {
     if (this.db) return
 
     this.db = await openDB<ContactManagerDB>(this.DB_NAME, this.DB_VERSION, {
-      upgrade(db, oldVersion, newVersion, transaction) {
+      upgrade(db) {
         // Create contacts store
         if (!db.objectStoreNames.contains('contacts')) {
           const contactStore = db.createObjectStore('contacts', { keyPath: 'id' })

@@ -44,7 +44,12 @@ export function CustomFieldsConfig() {
     setIsLoading(true)
     try {
       // Load custom fields from organization settings
-      const customFields = organization.settings?.custom_fields || []
+      const settings = typeof organization.settings === 'object' && 
+                      organization.settings !== null && 
+                      !Array.isArray(organization.settings)
+                      ? organization.settings as Record<string, any>
+                      : {}
+      const customFields = Array.isArray(settings.custom_fields) ? settings.custom_fields : []
       setFields(customFields.map((field: any, index: number) => ({
         id: field.id || crypto.randomUUID(),
         name: field.name,
@@ -66,11 +71,17 @@ export function CustomFieldsConfig() {
     setIsSaving(true)
     try {
       // Update organization settings with new custom fields
+      const currentSettings = typeof organization.settings === 'object' && 
+                            organization.settings !== null && 
+                            !Array.isArray(organization.settings)
+                            ? organization.settings as Record<string, any>
+                            : {}
+      
       const { error } = await supabase
         .from('organizations')
         .update({
           settings: {
-            ...organization.settings,
+            ...currentSettings,
             custom_fields: fields.map(({ id, ...field }) => field)
           }
         })

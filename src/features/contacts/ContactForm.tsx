@@ -70,8 +70,15 @@ export function ContactForm() {
 
   useEffect(() => {
     // Load custom fields from organization settings
-    if (organization?.settings?.custom_fields) {
-      setCustomFields(organization.settings.custom_fields as any[])
+    if (organization?.settings) {
+      const settings = typeof organization.settings === 'object' && 
+                      organization.settings !== null && 
+                      !Array.isArray(organization.settings)
+                      ? organization.settings as Record<string, any>
+                      : {}
+      if (Array.isArray(settings.custom_fields)) {
+        setCustomFields(settings.custom_fields)
+      }
     }
     
     if (isEditing && id) {
