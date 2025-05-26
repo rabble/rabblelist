@@ -13,6 +13,7 @@ export function LoginPage() {
   const [organizationName, setOrganizationName] = useState('')
   const [createNewOrg, setCreateNewOrg] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   
   const { signIn, signUp } = useAuth()
@@ -24,6 +25,7 @@ export function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setSuccess(null)
     setIsLoading(true)
 
     console.log('Form submitted:', { mode, email, fullName, organizationName, createNewOrg })
@@ -73,12 +75,8 @@ export function LoginPage() {
           }
         } else {
           console.log('Sign up successful!')
-          // Show success message
-          setError(null)
-          setMode('signin')
-          setPassword('')
-          // Note: User needs to confirm email before signing in
-          alert('Account created! Please check your email to confirm your account before signing in.')
+          // Navigate to dashboard - the user is automatically signed in
+          navigate(from, { replace: true })
         }
       }
     } catch (err) {
@@ -114,6 +112,13 @@ export function LoginPage() {
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-2">
                   <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
                   <p className="text-sm">{error}</p>
+                </div>
+              )}
+
+              {success && (
+                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-start gap-2">
+                  <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm">{success}</p>
                 </div>
               )}
 
@@ -239,6 +244,7 @@ export function LoginPage() {
                   onClick={() => {
                     setMode(mode === 'signin' ? 'signup' : 'signin')
                     setError(null)
+                    setSuccess(null)
                   }}
                   className="text-sm text-blue-600 hover:text-blue-700 font-medium block w-full"
                 >

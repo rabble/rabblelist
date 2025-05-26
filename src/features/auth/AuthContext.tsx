@@ -242,6 +242,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: profileError }
       }
 
+      // Automatically sign in the user after successful signup
+      console.log('Signing in user after signup...')
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (signInError) {
+        console.error('Auto sign-in failed:', signInError)
+        // Even if auto sign-in fails, the signup was successful
+      } else {
+        console.log('Auto sign-in successful')
+        // Update the auth state
+        setSession(signInData.session)
+        setUser(signInData.user)
+        if (signInData.user) {
+          await loadUserData(signInData.user.id)
+        }
+      }
+
       return { error: null }
     } catch (error) {
       console.error('Unexpected error in signUp:', error)
