@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created missing offline.html page
 - Fixed TypeScript compilation errors
 - Removed unused imports
+- Fixed app loading issues caused by stale service workers intercepting network requests
+- Added service worker cleanup code to unregister old workers and clear caches on startup
+- Resolved "Failed to convert value to 'Response'" errors in the browser console
+- Temporarily disabled service worker registration until proper implementation is complete
 
 ### Security
 - Added Row Level Security policies for all database tables
