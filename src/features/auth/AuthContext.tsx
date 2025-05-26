@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js'
 import type { Tables } from '@/lib/database.types'
-import { withRetry } from '@/lib/retryUtils'
 
 type UserProfile = Tables<'users'>
 

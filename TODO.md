@@ -19,7 +19,7 @@
 - [x] Create proper logout that clears all local data
 - [x] Add authentication error messages and UI feedback
 - [x] Implement role-based access control (admin/ringer/viewer)
-- [ ] Add organization switching for multi-org users
+- [x] Add organization switching for multi-org users (UI + migration for proper multi-org)
 
 ### 3. Finish Contact Management Features
 - [x] Implement contact creation UI and logic

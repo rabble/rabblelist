@@ -2,6 +2,7 @@ import { useAuth } from '@/features/auth/AuthContext'
 import { LogOut, ChevronDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { OrganizationSwitcher } from '@/features/auth/OrganizationSwitcher'
 
 export function Header() {
   const { user, profile, signOut } = useAuth()
@@ -22,7 +23,10 @@ export function Header() {
           Contact Manager
         </h1>
         
-        <div className="relative">
+        <div className="flex items-center gap-4">
+          <OrganizationSwitcher />
+          
+          <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
@@ -59,6 +63,7 @@ export function Header() {
               </div>
             </>
           )}
+          </div>
         </div>
       </div>
     </header>
