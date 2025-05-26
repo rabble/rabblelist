@@ -24,7 +24,7 @@ export class ContactService {
       query = query.order(orderBy, { ascending: orderDirection })
 
       if (filters?.search) {
-        query = query.or(`full_name.ilike.%${filters.search}%,phone.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
+        query = query.or(`first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,phone.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
       }
 
       if (filters?.tags && filters.tags.length > 0) {
@@ -40,6 +40,13 @@ export class ContactService {
       }
 
       const { data, error, count } = await query
+
+      console.log('🔍 ContactService.getContacts result:', { 
+        dataLength: data?.length, 
+        count, 
+        error,
+        firstContact: data?.[0]
+      })
 
       if (error) throw error
 

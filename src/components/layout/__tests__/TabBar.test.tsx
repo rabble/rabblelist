@@ -37,7 +37,8 @@ describe('TabBar', () => {
     signIn: vi.fn(),
     signUp: vi.fn(),
     signOut: vi.fn(),
-    updateProfile: vi.fn(),
+    resetPassword: vi.fn(),
+    updatePassword: vi.fn(),
     loading: false
   })
 
@@ -57,7 +58,8 @@ describe('TabBar', () => {
         signIn: vi.fn(),
         signUp: vi.fn(),
         signOut: vi.fn(),
-        updateProfile: vi.fn(),
+        resetPassword: vi.fn(),
+        updatePassword: vi.fn(),
         loading: false
       })
 
@@ -79,7 +81,8 @@ describe('TabBar', () => {
         signIn: vi.fn(),
         signUp: vi.fn(),
         signOut: vi.fn(),
-        updateProfile: vi.fn(),
+        resetPassword: vi.fn(),
+        updatePassword: vi.fn(),
         loading: false
       })
 
@@ -105,7 +108,8 @@ describe('TabBar', () => {
         signIn: vi.fn(),
         signUp: vi.fn(),
         signOut: vi.fn(),
-        updateProfile: vi.fn(),
+        resetPassword: vi.fn(),
+        updatePassword: vi.fn(),
         loading: false
       })
 

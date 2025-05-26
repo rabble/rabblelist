@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct Database Test</title>
+</head>
+<body>
+    <h1>Direct Supabase Test</h1>
+    <div id="output"></div>
+    
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+        
+        const output = document.getElementById('output');
+        
+        function log(msg) {
+            output.innerHTML += `<p>${msg}</p>`;
+            console.log(msg);
+        }
+        
+        log('Starting test...');
+        
+        const supabaseUrl = 'https://oxtjonaiubulnggytezf.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94dGpvbmFpdWJ1bG5nZ3l0ZXpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgxOTM4ODgsImV4cCI6MjA2Mzc2OTg4OH0.9EsXc65D-5qgXLtu48d1E1Bll_AjaCt-a2-oPhZzUQU';
+        
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        
+        // Test 1: Simple query
+        log('Test 1: Querying organizations...');
+        try {
+            const { data, error } = await supabase
+                .from('organizations')
+                .select('*');
+                
+            if (error) {
+                log(`ERROR: ${JSON.stringify(error)}`);
+            } else {
+                log(`SUCCESS: Found ${data?.length || 0} organizations`);
+                log(`Data: ${JSON.stringify(data)}`);
+            }
+        } catch (e) {
+            log(`EXCEPTION: ${e}`);
+        }
+        
+        // Test 2: Auth status
+        log('<br>Test 2: Checking auth...');
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            log(`Session: ${session ? 'Logged in' : 'Not logged in'}`);
+        } catch (e) {
+            log(`AUTH ERROR: ${e}`);
+        }
+        
+        log('<br>Tests complete.');
+    </script>
+</body>
+</html>

@@ -15,7 +15,7 @@ interface UserOrganization {
 }
 
 export function OrganizationSwitcher() {
-  const { profile, organization, updateProfile } = useAuth()
+  const { profile, organization } = useAuth()
   const navigate = useNavigate()
   const [userOrganizations, setUserOrganizations] = useState<UserOrganization[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -82,16 +82,10 @@ export function OrganizationSwitcher() {
 
     try {
       // Update user's current organization
-      const { error } = await updateProfile({ organization_id: orgId })
-      
-      if (error) {
-        console.error('Error switching organization:', error)
-        alert('Failed to switch organization')
-        return
-      }
-
-      // Reload the page to refresh all data
-      window.location.href = '/'
+      // TODO: Implement organization switching
+      console.log('Organization switching not implemented yet')
+      alert('Organization switching is not implemented yet')
+      setShowDropdown(false)
     } catch (error) {
       console.error('Error switching organization:', error)
       alert('Failed to switch organization')

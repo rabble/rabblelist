@@ -84,6 +84,11 @@ contact-manager-pwa/
   - Fixed organization ID to match the UUID in database migrations
   - Handled existing user updates properly
   - Demo login now works with email: demo@example.com, password: demo123
+- **RLS Infinite Recursion**: Fixed Row Level Security policies causing infinite recursion
+  - Issue: `get_user_organization_id()` function was querying the users table with RLS enabled
+  - Users table RLS policies were calling the same function, creating a loop
+  - Solution: Rewrote user policies to avoid recursive function calls
+  - Created SQL script to fix the issue: `fix-rls-recursion.sql`
 
 ### ❌ Not Implemented / Using Mocks
 - **Contact Management**: List view exists but no CRUD operations

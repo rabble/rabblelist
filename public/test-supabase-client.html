@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Supabase Client</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <h1>Testing Supabase Client</h1>
+  <div id="output" style="white-space: pre-wrap; font-family: monospace;"></div>
+  
+  <script>
+    const output = document.getElementById('output');
+    function log(msg) {
+      console.log(msg);
+      output.textContent += msg + '\n';
+    }
+
+    const supabaseUrl = 'https://oxtjonaiubulnggytezf.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94dGpvbmFpdWJ1bG5nZ3l0ZXpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgxOTM4ODgsImV4cCI6MjA2Mzc2OTg4OH0.9EsXc65D-5qgXLtu48d1E1Bll_AjaCt-a2-oPhZzUQU';
+
+    const { createClient } = supabase;
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+
+    async function test() {
+      try {
+        log('1. Testing organizations query...');
+        const start = Date.now();
+        
+        // Add timeout
+        const timeout = new Promise((resolve) => {
+          setTimeout(() => resolve({ error: 'Query timed out after 5 seconds' }), 5000);
+        });
+        
+        const query = supabaseClient.from('organizations').select('*');
+        const result = await Promise.race([query, timeout]);
+        
+        const elapsed = Date.now() - start;
+        log(`Query took ${elapsed}ms`);
+        
+        if (result.error) {
+          log('Error: ' + JSON.stringify(result.error, null, 2));
+        } else {
+          log('Success! Data: ' + JSON.stringify(result.data, null, 2));
+        }
+      } catch (error) {
+        log('Caught error: ' + error.message);
+        log('Stack: ' + error.stack);
+      }
+
+      try {
+        log('\n2. Testing raw fetch...');
+        const response = await fetch(`${supabaseUrl}/rest/v1/organizations`, {
+          headers: {
+            'apikey': supabaseAnonKey,
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        log('Fetch status: ' + response.status);
+        const data = await response.json();
+        log('Fetch data: ' + JSON.stringify(data, null, 2));
+      } catch (error) {
+        log('Fetch error: ' + error.message);
+      }
+    }
+
+    log('Starting tests...');
+    test();
+  </script>
+</body>
+</html>

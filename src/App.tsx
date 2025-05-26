@@ -18,6 +18,8 @@ import { GroupsManagement } from '@/features/groups/GroupsManagement'
 import { PathwaysManagement } from '@/features/pathways/PathwaysManagement'
 import { AdminDashboard } from '@/features/admin/AdminDashboard'
 import { CustomFieldsConfig } from '@/features/admin/CustomFieldsConfig'
+import { DatabaseDump } from '@/features/debug/DatabaseDump'
+import { SimpleDebug } from '@/features/debug/SimpleDebug'
 
 function App() {
   return (
@@ -26,6 +28,8 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/debug" element={<DatabaseDump />} />
+          <Route path="/simple-debug" element={<SimpleDebug />} />
           
           {/* Main Dashboard */}
           <Route

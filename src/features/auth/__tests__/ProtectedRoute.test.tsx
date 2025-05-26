@@ -37,7 +37,8 @@ describe('ProtectedRoute', () => {
       signIn: vi.fn(),
       signUp: vi.fn(),
       signOut: vi.fn(),
-      updateProfile: vi.fn()
+      resetPassword: vi.fn(),
+      updatePassword: vi.fn()
     })
 
     render(
@@ -66,7 +67,8 @@ describe('ProtectedRoute', () => {
       signIn: vi.fn(),
       signUp: vi.fn(),
       signOut: vi.fn(),
-      updateProfile: vi.fn()
+      resetPassword: vi.fn(),
+      updatePassword: vi.fn()
     })
 
     render(
@@ -94,7 +96,8 @@ describe('ProtectedRoute', () => {
       signIn: vi.fn(),
       signUp: vi.fn(),
       signOut: vi.fn(),
-      updateProfile: vi.fn()
+      resetPassword: vi.fn(),
+      updatePassword: vi.fn()
     })
 
     render(
@@ -133,7 +136,8 @@ describe('ProtectedRoute', () => {
       signIn: vi.fn(),
       signUp: vi.fn(),
       signOut: vi.fn(),
-      updateProfile: vi.fn()
+      resetPassword: vi.fn(),
+      updatePassword: vi.fn()
     })
 
     render(
@@ -172,7 +176,8 @@ describe('ProtectedRoute', () => {
       signIn: vi.fn(),
       signUp: vi.fn(),
       signOut: vi.fn(),
-      updateProfile: vi.fn()
+      resetPassword: vi.fn(),
+      updatePassword: vi.fn()
     })
 
     render(
@@ -211,7 +216,8 @@ describe('ProtectedRoute', () => {
       signIn: vi.fn(),
       signUp: vi.fn(),
       signOut: vi.fn(),
-      updateProfile: vi.fn()
+      resetPassword: vi.fn(),
+      updatePassword: vi.fn()
     })
 
     render(
@@ -239,7 +245,8 @@ describe('ProtectedRoute', () => {
       signIn: vi.fn(),
       signUp: vi.fn(),
       signOut: vi.fn(),
-      updateProfile: vi.fn()
+      resetPassword: vi.fn(),
+      updatePassword: vi.fn()
     })
 
     render(

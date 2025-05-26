@@ -34,8 +34,6 @@ export function Dashboard() {
   }, [profile])
 
   const loadDashboardData = async () => {
-    if (!profile) return
-
     try {
       setLoading(true)
 
@@ -60,10 +58,10 @@ export function Dashboard() {
       const uniqueRingers = new Set(activeRingerData?.map(log => log.ringer_id) || [])
 
       setStats({
-        totalContacts: contactStats.totalContacts,
-        contactsCalledToday: contactStats.contactsCalledToday,
+        totalContacts: contactStats?.totalContacts || 0,
+        contactsCalledToday: contactStats?.contactsCalledToday || 0,
         upcomingEvents: eventsCount || 0,
-        activeRingers: uniqueRingers.size
+        activeRingers: uniqueRingers?.size || 0
       })
 
       // Get recent calls

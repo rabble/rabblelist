@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from './AuthContext'
 import { Button } from '@/components/common/Button'
@@ -16,11 +16,20 @@ export function LoginPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   
-  const { signIn, signUp } = useAuth()
+  const { signIn, signUp, user, loading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   
+  // Don't redirect back to login page!
   const from = (location.state as any)?.from?.pathname || '/'
+  const redirectTo = from === '/login' ? '/' : from
+
+  // If already logged in, redirect to dashboard
+  useEffect(() => {
+    if (!loading && user) {
+      navigate(redirectTo, { replace: true })
+    }
+  }, [loading, user, navigate, redirectTo])
 
   const handleDemoLogin = async () => {
     setError(null)
@@ -40,7 +49,7 @@ export function LoginPage() {
         setIsLoading(false)
       } else {
         console.log('Demo login successful, navigating to dashboard')
-        navigate(from, { replace: true })
+        navigate(redirectTo, { replace: true })
       }
     } catch (err) {
       console.error('Unexpected error:', err)
@@ -77,7 +86,7 @@ export function LoginPage() {
           setIsLoading(false)
         } else {
           console.log('Sign in successful, navigating to:', from)
-          navigate(from, { replace: true })
+          navigate(redirectTo, { replace: true })
         }
       } else {
         // Sign up
@@ -85,8 +94,7 @@ export function LoginPage() {
         const { error } = await signUp(
           email, 
           password, 
-          fullName,
-          createNewOrg ? organizationName : undefined
+          fullName
         )
         
         if (error) {
