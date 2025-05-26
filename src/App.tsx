@@ -103,6 +103,31 @@ function App() {
     }
   }
 
+  const exportToCSV = () => {
+    const headers = ['Name', 'Email', 'Phone', 'Tags']
+    const rows = contacts.map(contact => [
+      contact.full_name || '',
+      contact.email || '',
+      contact.phone || '',
+      (contact.tags || []).join('; ')
+    ])
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `contacts-${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
   const deleteContact = async (id: string) => {
     try {
       const response = await fetch(`${supabaseUrl}/rest/v1/contacts?id=eq.${id}`, {
@@ -145,7 +170,17 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Simple Contact Manager</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Simple Contact Manager</h1>
+          {contacts.length > 0 && (
+            <button
+              onClick={exportToCSV}
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+            >
+              Export CSV
+            </button>
+          )}
+        </div>
         
         {/* Error Message */}
         {error && (
