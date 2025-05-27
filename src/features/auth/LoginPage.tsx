@@ -21,8 +21,8 @@ export function LoginPage() {
   const location = useLocation()
   
   // Don't redirect back to login page!
-  const from = (location.state as any)?.from?.pathname || '/'
-  const redirectTo = from === '/login' ? '/' : from
+  const from = (location.state as any)?.from?.pathname || '/dashboard'
+  const redirectTo = from === '/login' ? '/dashboard' : from
 
   // If already logged in, redirect to dashboard
   useEffect(() => {

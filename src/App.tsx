@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider } from '@/features/auth/AuthContext'
+import { AuthProvider, useAuth } from '@/features/auth/AuthContext'
 import { Layout } from '@/components/layout/Layout'
 import { ContactsPage } from './ContactsPage'
 import { Dashboard } from '@/features/dashboard/Dashboard'
@@ -18,10 +18,25 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
+        <AppRoutes />
+      </AuthProvider>
+    </Router>
+  )
+}
+
+// Separate component that can use useAuth
+function AppRoutes() {
+  const { user, loading } = useAuth()
+  
+  return (
+    <Routes>
+      {/* Public routes */}
+      <Route path="/" element={
+        loading ? <div>Loading...</div> : 
+        user ? <Navigate to="/dashboard" replace /> : 
+        <LandingPage />
+      } />
+      <Route path="/login" element={<LoginPage />} />
           
           {/* Protected routes */}
           <Route path="/dashboard" element={
@@ -99,11 +114,9 @@ function App() {
             </ProtectedRoute>
           } />
           
-          {/* Catch all - redirect to landing page */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AuthProvider>
-    </Router>
+      {/* Catch all - redirect to landing page */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 
