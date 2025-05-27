@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
+import { useCampaignStore } from '@/stores/campaignStore'
 import { 
   Plus,
   Users,
@@ -14,106 +15,26 @@ import {
   Share2,
   Megaphone,
   Vote,
-  Heart
+  Heart,
+  Loader2,
+  Trash2
 } from 'lucide-react'
-
-interface Campaign {
-  id: string
-  title: string
-  type: 'petition' | 'event' | 'donation' | 'email_blast' | 'phone_bank' | 'canvas' | 'social'
-  status: 'draft' | 'active' | 'scheduled' | 'completed' | 'archived'
-  description: string
-  goal?: number
-  progress?: number
-  startDate?: Date
-  endDate?: Date
-  stats: {
-    participants: number
-    conversions: number
-    shares: number
-    newContacts: number
-  }
-  tags: string[]
-}
 
 export function CampaignManagement() {
   const navigate = useNavigate()
   const [selectedType, setSelectedType] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
+  const [searchTerm] = useState('')
+  
+  const { campaigns, isLoadingCampaigns, loadCampaigns, deleteCampaign } = useCampaignStore()
 
-  // Mock campaigns data
-  const campaigns: Campaign[] = [
-    {
-      id: '1',
-      title: 'Climate Action Now Petition',
-      type: 'petition',
-      status: 'active',
-      description: 'Demand immediate action on climate change from local representatives',
-      goal: 2000,
-      progress: 1847,
-      startDate: new Date('2024-02-01'),
-      stats: {
-        participants: 1847,
-        conversions: 423,
-        shares: 567,
-        newContacts: 267
-      },
-      tags: ['climate', 'urgent', 'featured']
-    },
-    {
-      id: '2',
-      title: 'March 15 Day of Action',
-      type: 'event',
-      status: 'scheduled',
-      description: 'Nationwide day of action for housing justice',
-      goal: 500,
-      progress: 124,
-      startDate: new Date('2024-03-15'),
-      endDate: new Date('2024-03-15'),
-      stats: {
-        participants: 124,
-        conversions: 45,
-        shares: 89,
-        newContacts: 34
-      },
-      tags: ['housing', 'mobilization']
-    },
-    {
-      id: '3',
-      title: 'Emergency Relief Fund',
-      type: 'donation',
-      status: 'active',
-      description: 'Support families affected by recent flooding',
-      goal: 50000,
-      progress: 32450,
-      startDate: new Date('2024-02-10'),
-      stats: {
-        participants: 287,
-        conversions: 287,
-        shares: 145,
-        newContacts: 89
-      },
-      tags: ['emergency', 'mutual-aid']
-    },
-    {
-      id: '4',
-      title: 'Voter Registration Drive',
-      type: 'canvas',
-      status: 'completed',
-      description: 'Door-to-door voter registration in key districts',
-      goal: 1000,
-      progress: 1234,
-      startDate: new Date('2024-01-15'),
-      endDate: new Date('2024-02-01'),
-      stats: {
-        participants: 89,
-        conversions: 1234,
-        shares: 45,
-        newContacts: 1234
-      },
-      tags: ['voting', 'fieldwork']
-    }
-  ]
+  useEffect(() => {
+    loadCampaigns({
+      type: selectedType,
+      status: selectedStatus,
+      search: searchTerm
+    })
+  }, [selectedType, selectedStatus, searchTerm, loadCampaigns])
 
   const campaignTypes = [
     { value: 'petition', label: 'Petition', icon: <FileText className="w-4 h-4" /> },
@@ -141,11 +62,20 @@ export function CampaignManagement() {
     }
   }
 
-  const filteredCampaigns = campaigns.filter(campaign => {
-    if (selectedType !== 'all' && campaign.type !== selectedType) return false
-    if (selectedStatus !== 'all' && campaign.status !== selectedStatus) return false
-    return true
-  })
+  const handleDeleteCampaign = async (id: string, title: string) => {
+    if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) return
+    
+    const success = await deleteCampaign(id)
+    if (!success) {
+      alert('Failed to delete campaign')
+    }
+  }
+
+  const getProgress = (campaign: any) => {
+    if (!campaign.goal) return 0
+    const current = campaign.stats?.participants || 0
+    return Math.round((current / campaign.goal) * 100)
+  }
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -211,9 +141,16 @@ export function CampaignManagement() {
           </div>
         </div>
 
-        {/* Campaign Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCampaigns.map(campaign => (
+        {/* Loading State */}
+        {isLoadingCampaigns ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+          </div>
+        ) : (
+          <>
+            {/* Campaign Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {campaigns.map(campaign => (
             <Card key={campaign.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -245,20 +182,16 @@ export function CampaignManagement() {
                   <div className="mb-4">
                     <div className="flex items-center justify-between text-sm mb-1">
                       <span className="text-gray-600">Progress</span>
-                      <span className="font-medium">
-                        {Math.round((campaign.progress! / campaign.goal) * 100)}%
-                      </span>
+                      <span className="font-medium">{getProgress(campaign)}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div 
                         className="bg-primary-500 h-2 rounded-full"
-                        style={{ 
-                          width: `${Math.min(100, (campaign.progress! / campaign.goal) * 100)}%` 
-                        }}
+                        style={{ width: `${Math.min(100, getProgress(campaign))}%` }}
                       />
                     </div>
                     <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
-                      <span>{campaign.progress?.toLocaleString()}</span>
+                      <span>{campaign.campaign_stats?.[0]?.participants?.toLocaleString() || 0}</span>
                       <span>Goal: {campaign.goal.toLocaleString()}</span>
                     </div>
                   </div>
@@ -267,11 +200,11 @@ export function CampaignManagement() {
                 {/* Stats */}
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="text-center p-2 bg-gray-50 rounded">
-                    <p className="text-lg font-bold">{campaign.stats.participants}</p>
+                    <p className="text-lg font-bold">{campaign.campaign_stats?.[0]?.participants || 0}</p>
                     <p className="text-xs text-gray-600">Participants</p>
                   </div>
                   <div className="text-center p-2 bg-gray-50 rounded">
-                    <p className="text-lg font-bold">{campaign.stats.shares}</p>
+                    <p className="text-lg font-bold">{campaign.campaign_stats?.[0]?.shares || 0}</p>
                     <p className="text-xs text-gray-600">Shares</p>
                   </div>
                 </div>
@@ -285,11 +218,27 @@ export function CampaignManagement() {
                   >
                     View Details
                   </Button>
-                  <Button size="sm" variant="outline">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => navigate(`/campaigns/${campaign.id}/analytics`)}
+                  >
                     <BarChart3 className="w-4 h-4" />
                   </Button>
-                  <Button size="sm" variant="outline">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => navigate(`/campaigns/${campaign.id}/edit`)}
+                  >
                     <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    className="text-red-600 hover:bg-red-50"
+                    onClick={() => handleDeleteCampaign(campaign.id, campaign.title)}
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
               </CardContent>
@@ -297,14 +246,16 @@ export function CampaignManagement() {
           ))}
         </div>
 
-        {filteredCampaigns.length === 0 && (
-          <div className="text-center py-12">
-            <Megaphone className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-            <p className="text-lg text-gray-600 mb-4">No campaigns found</p>
-            <Button onClick={() => navigate('/campaigns/new')}>
-              Create Your First Campaign
-            </Button>
-          </div>
+            {campaigns.length === 0 && (
+              <div className="text-center py-12">
+                <Megaphone className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                <p className="text-lg text-gray-600 mb-4">No campaigns found</p>
+                <Button onClick={() => navigate('/campaigns/new')}>
+                  Create Your First Campaign
+                </Button>
+              </div>
+            )}
+          </>
         )}
 
         {/* Campaign Templates */}

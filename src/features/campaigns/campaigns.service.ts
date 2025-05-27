@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import { retryWithBackoff } from '@/lib/retryUtils'
+import { withRetry } from '@/lib/retryUtils'
 import type { Campaign, CampaignStats, CampaignAsset, Petition, PetitionSignature } from './campaign.types'
 
 export class CampaignService {
@@ -34,27 +34,30 @@ export class CampaignService {
       query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
     }
 
-    return retryWithBackoff(() => query)
+    const { data, error } = await query
+    if (error) throw error
+    return data
   }
 
   // Get single campaign with full details
   static async getCampaign(id: string) {
-    return retryWithBackoff(() =>
-      supabase
-        .from('campaigns')
-        .select(`
-          *,
-          campaign_stats (*),
-          campaign_assets (*),
-          campaign_contacts (count),
-          created_by:users!campaigns_created_by_fkey (
-            full_name,
-            email
-          )
-        `)
-        .eq('id', id)
-        .single()
-    )
+    const { data, error } = await supabase
+      .from('campaigns')
+      .select(`
+        *,
+        campaign_stats (*),
+        campaign_assets (*),
+        campaign_contacts (count),
+        created_by:users!campaigns_created_by_fkey (
+          full_name,
+          email
+        )
+      `)
+      .eq('id', id)
+      .single()
+    
+    if (error) throw error
+    return data
   }
 
   // Create new campaign
@@ -70,8 +73,8 @@ export class CampaignService {
       throw new Error('Organization not found')
     }
 
-    return retryWithBackoff(() =>
-      supabase
+    return withRetry(async () => {
+      const { data, error } = await supabase
         .from('campaigns')
         .insert({
           ...campaign,
@@ -80,13 +83,16 @@ export class CampaignService {
         })
         .select()
         .single()
-    )
+      
+      if (error) throw error
+      return data
+    })
   }
 
   // Update campaign
   static async updateCampaign(id: string, updates: Partial<Campaign>) {
-    return retryWithBackoff(() =>
-      supabase
+    return withRetry(async () => {
+      const { data, error } = await supabase
         .from('campaigns')
         .update({
           ...updates,
@@ -95,17 +101,22 @@ export class CampaignService {
         .eq('id', id)
         .select()
         .single()
-    )
+      
+      if (error) throw error
+      return data
+    })
   }
 
   // Delete campaign
   static async deleteCampaign(id: string) {
-    return retryWithBackoff(() =>
-      supabase
+    return withRetry(async () => {
+      const { error } = await supabase
         .from('campaigns')
         .delete()
         .eq('id', id)
-    )
+      
+      if (error) throw error
+    })
   }
 
   // Add contacts to campaign
@@ -115,11 +126,13 @@ export class CampaignService {
       contact_id: contactId
     }))
 
-    return retryWithBackoff(() =>
-      supabase
+    return withRetry(async () => {
+      const { error } = await supabase
         .from('campaign_contacts')
         .upsert(inserts, { onConflict: 'campaign_id,contact_id' })
-    )
+      
+      if (error) throw error
+    })
   }
 
   // Get campaign statistics
@@ -136,40 +149,45 @@ export class CampaignService {
         .lte('date', dateRange.end.toISOString())
     }
 
-    return retryWithBackoff(() => query)
+    const { data, error } = await query
+    if (error) throw error
+    return data
   }
 
   // Update campaign statistics
   static async updateCampaignStats(campaignId: string, stats: Partial<CampaignStats>) {
     const today = new Date().toISOString().split('T')[0]
     
-    return retryWithBackoff(() =>
-      supabase
+    return withRetry(async () => {
+      const { error } = await supabase
         .from('campaign_stats')
         .upsert({
           campaign_id: campaignId,
           date: today,
           ...stats
         }, { onConflict: 'campaign_id,date' })
-    )
+      
+      if (error) throw error
+    })
   }
 
   // Campaign assets management
   static async getCampaignAssets(campaignId: string) {
-    return retryWithBackoff(() =>
-      supabase
-        .from('campaign_assets')
-        .select('*')
-        .eq('campaign_id', campaignId)
-        .order('created_at', { ascending: false })
-    )
+    const { data, error } = await supabase
+      .from('campaign_assets')
+      .select('*')
+      .eq('campaign_id', campaignId)
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return data
   }
 
   static async createCampaignAsset(asset: Partial<CampaignAsset>) {
     const { data: user } = await supabase.auth.getUser()
     
-    return retryWithBackoff(() =>
-      supabase
+    return withRetry(async () => {
+      const { data, error } = await supabase
         .from('campaign_assets')
         .insert({
           ...asset,
@@ -177,12 +195,15 @@ export class CampaignService {
         })
         .select()
         .single()
-    )
+      
+      if (error) throw error
+      return data
+    })
   }
 
   static async updateCampaignAsset(id: string, updates: Partial<CampaignAsset>) {
-    return retryWithBackoff(() =>
-      supabase
+    return withRetry(async () => {
+      const { data, error } = await supabase
         .from('campaign_assets')
         .update({
           ...updates,
@@ -191,38 +212,44 @@ export class CampaignService {
         .eq('id', id)
         .select()
         .single()
-    )
+      
+      if (error) throw error
+      return data
+    })
   }
 
   static async deleteCampaignAsset(id: string) {
-    return retryWithBackoff(() =>
-      supabase
+    return withRetry(async () => {
+      const { error } = await supabase
         .from('campaign_assets')
         .delete()
         .eq('id', id)
-    )
+      
+      if (error) throw error
+    })
   }
 
   // Petition specific methods
   static async getPetition(id: string) {
-    return retryWithBackoff(() =>
-      supabase
-        .from('petitions')
-        .select(`
-          *,
-          signatures:petition_signatures (count),
-          recent_signatures:petition_signatures (
-            id,
-            signer_name,
-            comment,
-            signed_at
-          )
-        `)
-        .eq('id', id)
-        .order('recent_signatures.signed_at', { ascending: false })
-        .limit(10, { foreignTable: 'recent_signatures' })
-        .single()
-    )
+    const { data, error } = await supabase
+      .from('petitions')
+      .select(`
+        *,
+        signatures:petition_signatures (count),
+        recent_signatures:petition_signatures (
+          id,
+          signer_name,
+          comment,
+          signed_at
+        )
+      `)
+      .eq('id', id)
+      .order('recent_signatures.signed_at', { ascending: false })
+      .limit(10, { foreignTable: 'recent_signatures' })
+      .single()
+    
+    if (error) throw error
+    return data
   }
 
   static async createPetition(petition: Partial<Petition>) {
@@ -237,8 +264,8 @@ export class CampaignService {
       throw new Error('Organization not found')
     }
 
-    return retryWithBackoff(() =>
-      supabase
+    return withRetry(async () => {
+      const { data, error } = await supabase
         .from('petitions')
         .insert({
           ...petition,
@@ -246,12 +273,15 @@ export class CampaignService {
         })
         .select()
         .single()
-    )
+      
+      if (error) throw error
+      return data
+    })
   }
 
   static async signPetition(petitionId: string, signature: Partial<PetitionSignature>) {
-    return retryWithBackoff(() =>
-      supabase
+    return withRetry(async () => {
+      const { data, error } = await supabase
         .from('petition_signatures')
         .insert({
           petition_id: petitionId,
@@ -261,17 +291,21 @@ export class CampaignService {
         })
         .select()
         .single()
-    )
+      
+      if (error) throw error
+      return data
+    })
   }
 
   static async getPetitionSignatures(petitionId: string, limit = 100, offset = 0) {
-    return retryWithBackoff(() =>
-      supabase
-        .from('petition_signatures')
-        .select('*', { count: 'exact' })
-        .eq('petition_id', petitionId)
-        .order('signed_at', { ascending: false })
-        .range(offset, offset + limit - 1)
-    )
+    const { data, error } = await supabase
+      .from('petition_signatures')
+      .select('*', { count: 'exact' })
+      .eq('petition_id', petitionId)
+      .order('signed_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+    
+    if (error) throw error
+    return data
   }
 }

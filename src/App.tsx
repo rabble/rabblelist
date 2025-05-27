@@ -4,16 +4,20 @@ import { Layout } from '@/components/layout/Layout'
 import { ContactsPage } from './ContactsPage'
 import { Dashboard } from '@/features/dashboard/Dashboard'
 import { EventsManagement } from '@/features/events/EventsManagement'
+import { EventDetail } from '@/features/events/EventDetail'
 import { GroupsManagement } from '@/features/groups/GroupsManagement'
 import { PathwaysManagement } from '@/features/pathways/PathwaysManagement'
 import { PathwayForm } from '@/features/pathways/PathwayForm'
 import { EngagementDashboard } from '@/features/engagement/EngagementDashboard'
 import { CampaignManagement } from '@/features/campaigns/CampaignManagement'
+import { CampaignForm } from '@/features/campaigns/CampaignForm'
+import { CampaignDetail } from '@/features/campaigns/CampaignDetail'
 import { AdminDashboard } from '@/features/admin/AdminDashboard'
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute'
 import { LoginPage } from '@/features/auth/LoginPage'
 import LandingPage from '@/features/landing/LandingPage'
 import AboutPage from '@/features/landing/AboutPage'
+import EventRegistrationForm from '@/features/events/EventRegistrationForm'
 
 function App() {
   return (
@@ -33,6 +37,7 @@ function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/events/:eventId/register" element={<EventRegistrationForm />} />
           
           {/* Protected routes */}
           <Route path="/dashboard" element={
@@ -56,6 +61,12 @@ function AppRoutes() {
               <Layout>
                 <EventsManagement />
               </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/events/:id" element={
+            <ProtectedRoute>
+              <EventDetail />
             </ProtectedRoute>
           } />
           
@@ -99,6 +110,24 @@ function AppRoutes() {
               <Layout>
                 <CampaignManagement />
               </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/campaigns/new" element={
+            <ProtectedRoute>
+              <CampaignForm />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/campaigns/:id/edit" element={
+            <ProtectedRoute>
+              <CampaignForm />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/campaigns/:id" element={
+            <ProtectedRoute>
+              <CampaignDetail />
             </ProtectedRoute>
           } />
           
