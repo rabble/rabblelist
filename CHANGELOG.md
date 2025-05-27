@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Organized content following SaaS landing page patterns
   - Improved visual hierarchy and information architecture
   - Maintained powerful organizing narrative while improving professionalism
+  - Added all 4 demo screenshots (dashboard, contacts, campaigns, pathways)
+  - Created alternating left/right layout for visual variety
+  - Detailed feature descriptions for each platform component
 
 ### Added
 - **About Page** - New marketing page explaining organizing theory and theory of change

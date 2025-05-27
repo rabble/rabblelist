@@ -338,8 +338,9 @@ const LandingPage = () => {
             </p>
           </div>
 
-          {/* Crisis Response Dashboard */}
-          <div className="mb-16">
+          {/* Platform Screenshots */}
+          <div className="space-y-16 mb-16">
+            {/* Dashboard */}
             <div className="bg-white rounded-xl shadow-lg overflow-hidden">
               <div className="p-6 bg-gray-50 border-b">
                 <h3 className="text-2xl font-bold text-gray-900">Crisis Response Dashboard</h3>
@@ -349,9 +350,9 @@ const LandingPage = () => {
                 <img 
                   src="/dashboard.png"
                   alt="Dashboard showing organizing metrics"
-                  className="w-full rounded-lg shadow-md"
+                  className="w-full rounded-lg shadow-md mb-6"
                 />
-                <div className="mt-6 grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-4">
                   <div className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
                     <div>
@@ -362,25 +363,113 @@ const LandingPage = () => {
                   <div className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-gray-900">Smart assignment</h4>
-                      <p className="text-sm text-gray-600">Auto-route contacts to available organizers</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900">One-click calling</h4>
-                      <p className="text-sm text-gray-600">Start conversations with guided prompts</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900">Progress tracking</h4>
-                      <p className="text-sm text-gray-600">Monitor conversion rates and goals</p>
+                      <h4 className="font-semibold text-gray-900">Quick actions</h4>
+                      <p className="text-sm text-gray-600">Start calling, add contacts, or view events with one click</p>
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Contact Management */}
+            <div className="flex flex-col lg:flex-row items-center gap-8">
+              <div className="flex-1 order-2 lg:order-1">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Smart Contact Organization</h3>
+                <p className="text-gray-600 mb-6">
+                  Manage thousands of contacts with powerful tagging, filtering, and search capabilities. 
+                  Track engagement history and identify your most committed supporters.
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-start">
+                    <Users className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Tag-based organization</h4>
+                      <p className="text-sm text-gray-600">Group by interests, skills, location, or engagement level</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <Target className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Advanced filtering</h4>
+                      <p className="text-sm text-gray-600">Find exactly who you need for specific actions</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 order-1 lg:order-2">
+                <img 
+                  src="/contacts.png"
+                  alt="Contact management interface"
+                  className="w-full rounded-lg shadow-lg"
+                />
+              </div>
+            </div>
+
+            {/* Campaign Management */}
+            <div className="flex flex-col lg:flex-row items-center gap-8">
+              <div className="flex-1">
+                <img 
+                  src="/campaigns.png"
+                  alt="Campaign management interface"
+                  className="w-full rounded-lg shadow-lg"
+                />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Coordinate Multi-Channel Campaigns</h3>
+                <p className="text-gray-600 mb-6">
+                  Plan and execute comprehensive campaigns across multiple channels. Track participation, 
+                  measure impact, and adapt strategies in real-time.
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-start">
+                    <Activity className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Multi-action campaigns</h4>
+                      <p className="text-sm text-gray-600">Calls, texts, emails, events, and direct actions</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <TrendingUp className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Real-time analytics</h4>
+                      <p className="text-sm text-gray-600">Track engagement and adjust tactics on the fly</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Pathway Management */}
+            <div className="flex flex-col lg:flex-row items-center gap-8">
+              <div className="flex-1 order-2 lg:order-1">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Leadership Development Pathways</h3>
+                <p className="text-gray-600 mb-6">
+                  Create structured journeys that guide supporters from first signup to movement leadership. 
+                  Automate engagement sequences while maintaining personal connections.
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-start">
+                    <Heart className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Automated nurturing</h4>
+                      <p className="text-sm text-gray-600">Guide members through engagement milestones</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <Shield className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Leadership identification</h4>
+                      <p className="text-sm text-gray-600">Surface emerging organizers automatically</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 order-1 lg:order-2">
+                <img 
+                  src="/pathways.png"
+                  alt="Pathway management interface"
+                  className="w-full rounded-lg shadow-lg"
+                />
               </div>
             </div>
           </div>
