@@ -55,6 +55,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Integration with Twilio for future VoIP implementation
   - Database schema for sessions, calls, and scripts
 
+- **Petition System** - Public petition signing functionality (2025-01-27)
+  - Public petition signing page with real-time signature count
+  - Signature validation and duplicate prevention
+  - Optional fields: phone, zip code, and public comments
+  - Recent signatures display with privacy controls
+  - Geographic analysis by zip code
+  - Signature export to CSV
+  - Social sharing integration
+  - Automatic contact creation from signatures
+
 - **Campaign Management** - Converted UI mockup to functional feature (2025-01-27)
   - Created complete database schema for campaigns, stats, assets, petitions, donations
   - Built campaign service with full CRUD operations

@@ -379,7 +379,9 @@ export function CampaignDetail() {
                   variant="outline"
                   onClick={() => {
                     // Copy share link to clipboard
-                    const shareUrl = `${window.location.origin}/campaigns/${currentCampaign.id}/public`
+                    const shareUrl = currentCampaign.type === 'petition' 
+                      ? `${window.location.origin}/campaigns/${currentCampaign.id}/sign`
+                      : `${window.location.origin}/campaigns/${currentCampaign.id}/public`
                     navigator.clipboard.writeText(shareUrl)
                     alert('Campaign link copied to clipboard!')
                   }}
@@ -387,6 +389,16 @@ export function CampaignDetail() {
                   <Share2 className="w-4 h-4 mr-2" />
                   Share Campaign
                 </Button>
+                {currentCampaign.type === 'petition' && (
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => navigate(`/campaigns/${currentCampaign.id}/sign`)}
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    View Petition
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </div>
