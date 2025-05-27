@@ -120,7 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: new Error('Invalid credentials') }
   }
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (email: string, password: string, _fullName: string) => {
     // For demo, just sign them in
     return signIn(email, password)
   }
@@ -133,12 +133,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('mock_session')
   }
 
-  const resetPassword = async (email: string) => {
+  const resetPassword = async (_email: string) => {
     // Mock implementation
     return { error: null }
   }
 
-  const updatePassword = async (newPassword: string) => {
+  const updatePassword = async (_newPassword: string) => {
     // Mock implementation
     return { error: null }
   }
