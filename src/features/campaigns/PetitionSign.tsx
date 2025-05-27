@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { PetitionService } from '@/services/petition.service'
@@ -19,7 +19,6 @@ import {
 
 export function PetitionSign() {
   const { id: campaignId } = useParams()
-  const navigate = useNavigate()
   const [campaign, setCampaign] = useState<any>(null)
   const [petition, setPetition] = useState<any>(null)
   const [stats, setStats] = useState<any>(null)
@@ -65,8 +64,7 @@ export function PetitionSign() {
       setCampaign(campaignData)
 
       // Load petition details
-      const petitionData = await PetitionService.getPetition(campaignId)
-      setPetition(petitionData)
+      await PetitionService.getPetition(campaignId)
 
       // Load stats and signatures
       await Promise.all([

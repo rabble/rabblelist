@@ -9,8 +9,6 @@ import { useAuthStore } from '@/stores/authStore'
 import { 
   Phone, 
   Users, 
-  Clock, 
-  CheckCircle, 
   AlertCircle,
   Play,
   Pause,
@@ -19,8 +17,7 @@ import {
   MessageSquare,
   BarChart3,
   Loader2,
-  PhoneCall,
-  X
+  PhoneCall
 } from 'lucide-react'
 
 interface CallOutcome {
@@ -40,7 +37,6 @@ const CALL_OUTCOMES: CallOutcome[] = [
 
 export function PhoneBankCampaign() {
   const { id: campaignId } = useParams()
-  const navigate = useNavigate()
   const { user } = useAuthStore()
   const { campaigns, loadCampaign } = useCampaignStore()
   

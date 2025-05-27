@@ -87,83 +87,40 @@ export class EmailService {
   }
   
   // Send bulk email campaign
-  static async sendCampaign(campaignId: string, recipientIds: string[]) {
+  static async sendCampaignEmail(
+    campaignId: string, 
+    recipients: Array<{ id: string; email: string; firstName?: string; lastName?: string }>,
+    emailData: { subject: string; html: string; tags?: string[] }
+  ) {
     return withRetry(async () => {
-      // Get campaign details
-      const { data: campaign, error: campaignError } = await supabase
-        .from('email_campaigns')
-        .select('*')
-        .eq('id', campaignId)
-        .single()
-        
-      if (campaignError) throw campaignError
-      
-      // Get recipient details
-      const { data: recipients, error: recipientsError } = await supabase
-        .from('contacts')
-        .select('id, email, full_name, custom_fields')
-        .in('id', recipientIds)
-        .not('email', 'is', null)
-        
-      if (recipientsError) throw recipientsError
-      
-      // Update campaign status
-      await supabase
-        .from('email_campaigns')
-        .update({ 
-          status: 'sending',
-          recipient_count: recipients.length 
-        })
-        .eq('id', campaignId)
-      
-      // Send emails in batches
-      const batchSize = 100
-      let sentCount = 0
-      
-      for (let i = 0; i < recipients.length; i += batchSize) {
-        const batch = recipients.slice(i, i + batchSize)
-        
-        // Create recipient variables for personalization
-        const recipientVariables = batch.reduce((acc, recipient) => {
-          acc[recipient.email] = {
-            full_name: recipient.full_name,
-            first_name: recipient.full_name?.split(' ')[0] || '',
-            ...recipient.custom_fields
-          }
-          return acc
-        }, {} as Record<string, any>)
-        
-        const message: EmailMessage = {
-          to: batch.map(r => r.email),
-          subject: campaign.subject,
-          html: campaign.html,
-          text: campaign.text,
-          template: campaign.template,
-          variables: { 'recipient-variables': JSON.stringify(recipientVariables) },
-          campaignId: campaignId,
-          tags: [`campaign-${campaignId}`]
+      // Send emails with personalization
+      const sendPromises = recipients.map(recipient => {
+        // Personalize the email
+        let personalizedHtml = emailData.html
+        if (recipient.firstName) {
+          personalizedHtml = personalizedHtml.replace(/{{firstName}}/g, recipient.firstName)
         }
-        
-        await this.sendEmail(message)
-        sentCount += batch.length
-        
-        // Update progress
-        await supabase
-          .from('email_campaigns')
-          .update({ sent_count: sentCount })
-          .eq('id', campaignId)
-      }
-      
-      // Mark campaign as sent
-      await supabase
-        .from('email_campaigns')
-        .update({ 
-          status: 'sent',
-          sent_at: new Date().toISOString()
+        if (recipient.lastName) {
+          personalizedHtml = personalizedHtml.replace(/{{lastName}}/g, recipient.lastName)
+        }
+
+        return this.sendEmail({
+          to: [recipient.email],
+          subject: emailData.subject,
+          html: personalizedHtml,
+          campaignId,
+          tags: emailData.tags
         })
-        .eq('id', campaignId)
+      })
+
+      const results = await Promise.allSettled(sendPromises)
       
-      return { sentCount }
+      const successCount = results.filter(r => r.status === 'fulfilled').length
+      const failureCount = results.filter(r => r.status === 'rejected').length
+
+      console.log(`Campaign sent: ${successCount} successful, ${failureCount} failed`)
+
+      return { successCount, failureCount }
     })
   }
   

@@ -10,7 +10,10 @@ export type {
 import type { Tables } from '@/lib/database.types'
 
 export type User = Tables<'users'>
-export type Contact = Tables<'contacts'>
+export type Contact = Tables<'contacts'> & {
+  first_name?: string
+  last_name?: string
+}
 export type Organization = Tables<'organizations'>
 export type CallLog = Tables<'call_logs'>
 export type Event = Tables<'events'>

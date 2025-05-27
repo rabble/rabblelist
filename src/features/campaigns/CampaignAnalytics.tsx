@@ -5,15 +5,12 @@ import { Button } from '@/components/common/Button'
 import { useCampaignStore } from '@/stores/campaignStore'
 import { 
   ArrowLeft,
-  BarChart3,
   TrendingUp,
   Users,
   Mail,
   Phone,
   Share2,
   CheckCircle,
-  Clock,
-  Calendar,
   Download,
   RefreshCw,
   Activity,
@@ -27,8 +24,6 @@ import {
   Line, 
   BarChart, 
   Bar, 
-  PieChart, 
-  Pie, 
   Cell,
   XAxis, 
   YAxis, 
@@ -134,7 +129,6 @@ export function CampaignAnalytics() {
     { channel: 'Social', posts: 12, shares: stats.shares, clicks: 89 }
   ]
 
-  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
 
   return (
     <div className="p-6">
@@ -328,12 +322,12 @@ export function CampaignAnalytics() {
               <tbody>
                 {channelData.map((channel) => {
                   const rate = channel.channel === 'Email' 
-                    ? (channel.opened / channel.sent * 100).toFixed(1)
+                    ? ((channel.opened || 0) / (channel.sent || 1) * 100).toFixed(1)
                     : channel.channel === 'Phone'
-                    ? (channel.completed / channel.attempted * 100).toFixed(1)
+                    ? ((channel.completed || 0) / (channel.attempted || 1) * 100).toFixed(1)
                     : channel.channel === 'SMS'
-                    ? (channel.responded / channel.sent * 100).toFixed(1)
-                    : (channel.clicks / channel.shares * 100).toFixed(1)
+                    ? ((channel.responded || 0) / (channel.sent || 1) * 100).toFixed(1)
+                    : ((channel.clicks || 0) / (channel.shares || 1) * 100).toFixed(1)
                   
                   return (
                     <tr key={channel.channel} className="border-b">

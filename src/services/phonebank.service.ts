@@ -137,11 +137,12 @@ export class PhoneBankService {
       const calledContactIds = new Set(sessionCalls?.map(c => c.contact_id) || [])
 
       // Find first uncalled contact with a phone number
-      const nextContact = campaignContacts.find(cc => 
-        cc.contacts?.phone && !calledContactIds.has(cc.contact_id)
-      )
+      const nextContact = campaignContacts.find(cc => {
+        const contact = cc.contacts as any
+        return contact?.phone && !calledContactIds.has(cc.contact_id)
+      })
 
-      return nextContact?.contacts || null
+      return nextContact ? (nextContact.contacts as any) : null
     })
   }
 
@@ -187,7 +188,7 @@ export class PhoneBankService {
         throw new Error(`Failed to start call: ${response.statusText}`)
       }
 
-      const result = await response.json()
+      await response.json()
       return callRecord.id
     })
   }

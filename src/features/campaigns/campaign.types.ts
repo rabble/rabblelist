@@ -8,15 +8,20 @@ export interface Campaign {
   goal?: number
   start_date?: string
   end_date?: string
+  scheduled_for?: string
   settings?: Record<string, any>
   tags: string[]
   created_by?: string
   created_at: string
   updated_at: string
+  metadata?: Record<string, any>
+  email_subject?: string
+  email_body?: string
+  sms_body?: string
   // Relations
   campaign_stats?: CampaignStats[]
   campaign_assets?: CampaignAsset[]
-  campaign_contacts?: { count: number }[]
+  campaign_contacts?: { count: number; contact_id?: string }[]
   created_by_user?: {
     full_name: string
     email: string
