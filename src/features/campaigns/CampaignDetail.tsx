@@ -366,11 +366,24 @@ export function CampaignDetail() {
                   <Phone className="w-4 h-4 mr-2" />
                   Phone Bank
                 </Button>
-                <Button className="w-full justify-start" variant="outline">
+                <Button 
+                  className="w-full justify-start" 
+                  variant="outline"
+                  onClick={() => navigate(`/campaigns/${currentCampaign.id}/analytics`)}
+                >
                   <BarChart3 className="w-4 h-4 mr-2" />
                   View Analytics
                 </Button>
-                <Button className="w-full justify-start" variant="outline">
+                <Button 
+                  className="w-full justify-start" 
+                  variant="outline"
+                  onClick={() => {
+                    // Copy share link to clipboard
+                    const shareUrl = `${window.location.origin}/campaigns/${currentCampaign.id}/public`
+                    navigator.clipboard.writeText(shareUrl)
+                    alert('Campaign link copied to clipboard!')
+                  }}
+                >
                   <Share2 className="w-4 h-4 mr-2" />
                   Share Campaign
                 </Button>

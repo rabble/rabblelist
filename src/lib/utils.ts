@@ -56,6 +56,29 @@ export function cn(...inputs: ClassValue[]): string {
   return clsx(inputs)
 }
 
+// Add relative time formatting to Date prototype
+declare global {
+  interface Date {
+    toRelativeTimeString(): string
+  }
+}
+
+Date.prototype.toRelativeTimeString = function() {
+  const now = new Date()
+  const diffMs = now.getTime() - this.getTime()
+  const diffSec = Math.floor(diffMs / 1000)
+  const diffMin = Math.floor(diffSec / 60)
+  const diffHr = Math.floor(diffMin / 60)
+  const diffDays = Math.floor(diffHr / 24)
+
+  if (diffSec < 60) return 'just now'
+  if (diffMin < 60) return `${diffMin}m ago`
+  if (diffHr < 24) return `${diffHr}h ago`
+  if (diffDays < 7) return `${diffDays}d ago`
+  
+  return this.toLocaleDateString()
+}
+
 // ============================================================================
 // Date and Time Utilities
 // ============================================================================

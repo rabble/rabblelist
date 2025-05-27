@@ -27,6 +27,7 @@ import { CampaignDetail } from '@/features/campaigns/CampaignDetail'
 import { EmailCampaign } from '@/features/campaigns/EmailCampaign'
 import { SMSCampaign } from '@/features/campaigns/SMSCampaign'
 import { PhoneBankCampaign } from '@/features/campaigns/PhoneBankCampaign'
+import { PetitionSign } from '@/features/campaigns/PetitionSign'
 import { AdminDashboard } from '@/features/admin/AdminDashboard'
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute'
 import { LoginPage } from '@/features/auth/LoginPage'
@@ -260,6 +261,10 @@ function AppRoutes() {
                 <PhoneBankCampaign />
               </Layout>
             </ProtectedRoute>
+          } />
+          
+          <Route path="/campaigns/:id/sign" element={
+            <PetitionSign />
           } />
           
           <Route path="/admin" element={
