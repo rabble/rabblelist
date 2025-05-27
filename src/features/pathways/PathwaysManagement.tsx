@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { 
@@ -262,17 +261,14 @@ export function PathwaysManagement() {
 
   if (loading) {
     return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+      </div>
     )
   }
 
   return (
-    <Layout>
-      <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -540,7 +536,6 @@ export function PathwaysManagement() {
             </div>
           )}
         </div>
-      </div>
-    </Layout>
+    </div>
   )
 }

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { useAuth } from '@/features/auth/AuthContext'
@@ -106,17 +105,14 @@ export function AdminDashboard() {
 
   if (loading) {
     return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
     )
   }
 
   return (
-    <Layout>
-      <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
           <p className="text-gray-600 mt-1">Manage your organization's contacts and ringers</p>
@@ -216,7 +212,6 @@ export function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </Layout>
+    </div>
   )
 }

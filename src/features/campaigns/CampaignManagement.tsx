@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { 
@@ -149,8 +148,7 @@ export function CampaignManagement() {
   })
 
   return (
-    <Layout>
-      <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -340,7 +338,6 @@ export function CampaignManagement() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </Layout>
+    </div>
   )
 }

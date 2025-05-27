@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { 
@@ -170,8 +169,7 @@ export function EngagementDashboard() {
   }
 
   return (
-    <Layout>
-      <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -474,7 +472,6 @@ export function EngagementDashboard() {
             </CardContent>
           </Card>
         </div>
-      </div>
-    </Layout>
+    </div>
   )
 }
