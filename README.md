@@ -1,6 +1,6 @@
-# Contact Manager PWA
+# Rise.protest.net
 
-A Progressive Web App for managing contacts and tracking phone calls, built with React, TypeScript, and Supabase.
+A Progressive Web App for organizing movements - manage contacts, coordinate campaigns, and mobilize communities. Built with React, TypeScript, and Supabase.
 
 ## 🚀 Features
 
@@ -12,6 +12,49 @@ A Progressive Web App for managing contacts and tracking phone calls, built with
 - **Call Logging**: Track call outcomes with notes
 - **Multi-Organization**: Support for multiple isolated organizations
 - **Real-time Sync**: Automatic data synchronization
+
+## 📊 Development Status
+
+### ✅ Core Features Complete
+- [x] User authentication and organization setup
+- [x] Contact management (CRUD, import/export, deduplication)
+- [x] Basic calling workflow with manual dialing
+- [x] Dashboard with organizing metrics
+- [x] Multi-organization data isolation
+- [x] Role-based permissions (admin/ringer)
+- [x] Contact tags and custom fields
+- [x] Basic event creation and listing
+
+### 🚧 Partially Complete
+- [ ] **Event management** (creation ✅, registration ❌, check-in ❌, analytics ❌)
+- [ ] **Offline sync** (structure ✅, full functionality ❌)
+- [ ] **Mobile PWA** (manifest ✅, service worker ✅, offline mode ❌)
+- [ ] **Admin panel** (stats ✅, user management ❌, settings ❌)
+
+### ❌ Missing Core Features
+- [ ] **Email system** - No email sending capabilities
+- [ ] **SMS messaging** - No text messaging features
+- [ ] **Phone integration** - No actual calling, just shows numbers
+- [ ] **Campaign management** - UI mockup only
+- [ ] **Pathways/Engagement ladders** - UI mockup only
+- [ ] **Fundraising** - No donation processing
+- [ ] **Petitions/Actions** - Not implemented
+- [ ] **Event registration** - No public signup forms
+- [ ] **Analytics** - Only basic stats, no advanced reporting
+- [ ] **Automation** - No automated workflows
+
+### 📈 Platform Completion: ~35%
+
+Rise.protest.net currently provides basic contact management and manual calling workflows. To become a complete organizing platform comparable to Action Network or NationBuilder, it needs:
+
+1. **Communication tools** (email, SMS, integrated calling)
+2. **Campaign coordination** features
+3. **Event registration** and check-in systems
+4. **Fundraising** capabilities
+5. **Petition** and action tools
+6. **Advanced analytics** and automation
+
+See [TODO.md](TODO.md) for detailed development roadmap.
 
 ## 🛠️ Tech Stack
 

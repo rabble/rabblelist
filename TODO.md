@@ -1,61 +1,164 @@
-# Contact Manager PWA - TODO List
+# Rise.protest.net Development TODO
 
-## 🚨 Critical Issues (Blocking Production)
+*Last updated: January 27, 2025*
 
-### 1. Replace All Mock Data with Real Supabase Integration
-- [x] Remove all references to `mockData.ts` throughout the app
-- [x] Update `AuthContext.tsx` to use real Supabase auth instead of mockAuth
-- [x] Update `contacts.service.ts` to use Supabase instead of mockDb
-- [x] Update `ContactsManagement.tsx` to use real Supabase queries
-- [x] Update `AdminDashboard.tsx` to fetch real data from Supabase
-- [x] Implement proper error handling for all Supabase operations
-- [x] Add retry logic for failed database operations (exponential backoff with jitter)
+## 🚨 Critical (Blocks Core Organizing)
+*Features essential for basic organizing function*
 
-### 2. Complete Authentication System
-- [x] Implement real user registration flow
-- [x] Add password reset functionality
-- [x] Implement proper session management
-- [x] Add refresh token handling (handled by Supabase automatically)
-- [x] Create proper logout that clears all local data
-- [x] Add authentication error messages and UI feedback
-- [x] Implement role-based access control (admin/ringer/viewer)
-- [x] Add organization switching for multi-org users (UI + migration for proper multi-org)
+### Contact Management
+- [x] Basic contact CRUD operations
+- [x] Contact import from CSV
+- [x] Contact export to CSV
+- [x] Bulk contact selection and deletion
+- [x] Contact deduplication
+- [x] Custom fields configuration
+- [x] Contact search and filtering
+- [x] Contact tags management
+- [ ] **Contact history timeline** - Complete interaction log with all activities
+- [ ] **Contact merge UI** - Visual interface for reviewing and merging duplicates
+- [ ] **Bulk tag operations** - Add/remove tags from multiple contacts at once
+- [ ] **Smart lists** - Dynamic contact lists based on criteria
+- [ ] **Contact scoring** - Engagement scoring based on activities
 
-### 3. Finish Contact Management Features
-- [x] Implement contact creation UI and logic
-- [x] Add contact editing functionality
-- [x] Implement contact deletion with confirmation
-- [x] Add bulk operations (select multiple, bulk delete/tag)
-- [x] Implement advanced search and filtering
-- [x] Add contact sorting options (by name, date created, last contact, events attended)
-- [x] Implement tag management UI (create, rename, delete, merge tags)
-- [x] Add custom fields configuration (UI for creating, editing, deleting custom fields)
-- [x] Create contact import from CSV with field mapping
-- [x] Add contact export functionality
-- [x] Implement contact deduplication logic (find by phone/email/name, merge data)
+### Communication Systems
+- [ ] **Email system integration** - Send emails directly from platform
+  - [ ] Email template editor with drag-and-drop
+  - [ ] Email sending via SendGrid/Mailgun/SES
+  - [ ] Email tracking (opens, clicks)
+  - [ ] Bounce handling and list hygiene
+  - [ ] Unsubscribe management
+- [ ] **SMS messaging** - Two-way text messaging
+  - [ ] SMS provider integration (Twilio/Bandwidth)
+  - [ ] Opt-out handling and compliance
+  - [ ] SMS templates and personalization
+  - [ ] Keyword response automation
+  - [ ] SMS delivery tracking
+- [ ] **Phone banking system** - Actual calling functionality
+  - [ ] VoIP integration (Twilio/Plivo)
+  - [ ] Click-to-call from contact cards
+  - [ ] Call recording capabilities
+  - [ ] Real-time script display during calls
+  - [ ] Automatic call outcome logging
+  - [ ] Predictive dialing for efficiency
 
-### 4. Complete Offline Sync System
-- [x] Implement IndexedDB schema matching Supabase
-- [ ] Create proper sync queue management
-- [ ] Add conflict resolution for offline changes
-- [ ] Implement background sync when online
-- [ ] Add UI indicators for sync status
-- [ ] Handle sync errors gracefully
-- [ ] Add manual sync trigger option
-- [ ] Implement data compression for sync
-- [ ] Add sync history/logs
+### Event Management
+- [x] Basic event creation and listing
+- [ ] **Event registration forms** - Public signup pages
+  - [ ] Custom registration fields
+  - [ ] Capacity management and waitlists
+  - [ ] Confirmation emails
+  - [ ] Calendar integration (.ics files)
+- [ ] **QR code check-in** - Mobile attendance tracking
+  - [ ] Generate unique QR codes per attendee
+  - [ ] Mobile check-in app/interface
+  - [ ] Real-time attendance dashboard
+  - [ ] Walk-in registration support
+- [ ] **Event analytics** - Detailed event metrics
+  - [ ] Attendance vs registration rates
+  - [ ] No-show tracking
+  - [ ] Post-event engagement metrics
+  - [ ] Event ROI calculations
+- [ ] **Recurring events** - Series and repeat patterns
+- [ ] **Event reminders** - Automated SMS/email sequences
 
-### 5. Finish Call Queue Features
-- [ ] Add queue filtering (by tags, last contact date, etc.)
-- [ ] Implement queue prioritization logic
-- [ ] Add skip reasons tracking
-- [ ] Implement call outcome statistics
-- [ ] Add daily/weekly calling goals
-- [ ] Create call scripts management
-- [ ] Add call scheduling features
-- [ ] Implement do-not-call list handling
+### Campaign Management
+- [ ] **Campaign creation wizard** - Guided multi-channel setup
+  - [ ] Campaign goal setting and tracking
+  - [ ] Multi-channel coordination (email + SMS + calling)
+  - [ ] Campaign timeline and milestones
+  - [ ] Asset library (images, videos, documents)
+- [ ] **Campaign execution** - Launch and monitor campaigns
+  - [ ] Audience segmentation tools
+  - [ ] A/B testing capabilities
+  - [ ] Real-time performance monitoring
+  - [ ] Campaign pause/resume functionality
+- [ ] **Campaign analytics** - Comprehensive reporting
+  - [ ] Conversion funnel analysis
+  - [ ] Channel performance comparison
+  - [ ] ROI and cost-per-action metrics
+  - [ ] Exportable reports
 
-### 5.1 Cloud Telephony Integration with AI Transcription
+### Offline Functionality
+- [x] Basic service worker implementation
+- [x] IndexedDB schema setup
+- [x] Basic sync service structure
+- [ ] **Complete offline sync** - Full bidirectional sync
+  - [ ] Sync queue persistence and retry logic
+  - [ ] Conflict resolution UI
+  - [ ] Background sync when reconnected
+  - [ ] Sync progress indicators
+  - [ ] Offline mode indicators throughout UI
+  - [ ] Selective sync for large datasets
+  - [ ] Sync error recovery and reporting
+
+## 🔥 High Priority (Major UX Improvements)
+*Features that significantly improve organizing effectiveness*
+
+### Pathways (Engagement Ladders)
+- [ ] **Visual pathway builder** - Drag-and-drop sequence editor
+  - [ ] Step creation with requirements and actions
+  - [ ] Branching logic based on contact behavior
+  - [ ] Time-based progression rules
+  - [ ] Automated actions at each step
+- [ ] **Pathway assignment** - Add contacts to pathways
+  - [ ] Bulk pathway assignment
+  - [ ] Automatic assignment based on triggers
+  - [ ] Manual progression overrides
+- [ ] **Pathway tracking** - Monitor member progress
+  - [ ] Progress visualization per contact
+  - [ ] Cohort analysis tools
+  - [ ] Drop-off analysis and optimization
+  - [ ] Pathway completion certificates
+- [ ] **Pathway automation** - Triggered actions
+  - [ ] Automatic emails at each step
+  - [ ] Task creation for organizers
+  - [ ] Tag updates based on progress
+  - [ ] Integration with campaigns
+
+### Fundraising
+- [ ] **Donation form builder** - Embeddable forms
+  - [ ] Customizable donation amounts
+  - [ ] Recurring donation options
+  - [ ] Tribute/memorial donations
+  - [ ] Employer matching integration
+- [ ] **Payment processing** - Secure transactions
+  - [ ] Stripe integration
+  - [ ] PayPal support
+  - [ ] ACH/bank transfer options
+  - [ ] International payment support
+- [ ] **Donor management** - Stewardship tools
+  - [ ] Donation history tracking
+  - [ ] Tax receipt generation
+  - [ ] Major donor flagging
+  - [ ] Pledge tracking
+- [ ] **Fundraising campaigns** - Goal-based campaigns
+  - [ ] Thermometer widgets
+  - [ ] Peer-to-peer fundraising
+  - [ ] Matching gift campaigns
+  - [ ] Time-based campaigns
+
+### Petitions & Actions
+- [ ] **Petition builder** - Create action pages
+  - [ ] Custom form fields
+  - [ ] Target selection (legislators, companies)
+  - [ ] Signature goals and thermometers
+  - [ ] Social sharing tools
+- [ ] **Signature collection** - Gather support
+  - [ ] Embedded petition widgets
+  - [ ] Mobile-optimized forms
+  - [ ] Duplicate detection
+  - [ ] Geographic validation
+- [ ] **Petition delivery** - Send to targets
+  - [ ] Automated delivery rules
+  - [ ] Batch delivery options
+  - [ ] Delivery confirmation tracking
+  - [ ] Target response logging
+- [ ] **Action alerts** - Rapid mobilization
+  - [ ] Urgent action notifications
+  - [ ] One-click actions
+  - [ ] Action tracking and reporting
+
+### Cloud Telephony Integration with AI Transcription
 **Goal**: Enable anonymous calling where ringers don't see contact numbers and calls are automatically transcribed, analyzed, and logged.
 
 #### Research & Planning Phase
@@ -193,57 +296,222 @@
   - [ ] Local telecom regulations per country
   - [ ] Consent recording mechanisms
 
-#### Testing & Quality Assurance
-- [ ] Comprehensive testing:
-  - [ ] Load testing for concurrent calls
-  - [ ] Transcription accuracy testing
-  - [ ] LLM response quality validation
-  - [ ] Multi-language testing with native speakers
-  - [ ] Edge case handling (poor connections, background noise)
+## 🛐 Technical Debt
+*Infrastructure and code quality improvements*
 
-#### Deployment & Monitoring
-- [ ] Set up monitoring:
-  - [ ] Call quality metrics (MOS scores)
-  - [ ] Transcription accuracy monitoring
-  - [ ] LLM response time tracking
-  - [ ] Cost monitoring per service
-  - [ ] Error rate tracking and alerting
+### Performance Optimization
+- [ ] **Database query optimization**
+  - [ ] Add proper indexes for common queries
+  - [ ] Implement query result caching
+  - [ ] Optimize N+1 query problems
+  - [ ] Database connection pooling
+- [ ] **Frontend performance**
+  - [ ] Implement code splitting
+  - [ ] Add lazy loading for routes
+  - [ ] Optimize bundle size
+  - [ ] Image optimization and lazy loading
+  - [ ] Virtual scrolling for large lists
+- [ ] **API optimization**
+  - [ ] Implement proper pagination everywhere
+  - [ ] Add request debouncing
+  - [ ] Response caching strategies
+  - [ ] Rate limiting implementation
 
-#### Estimated Timeline & Resources
-- **Phase 1 (Basic Calling)**: 2-3 weeks
-- **Phase 2 (Transcription)**: 2-3 weeks  
-- **Phase 3 (AI Analysis)**: 3-4 weeks
-- **Phase 4 (Multi-language)**: 2 weeks
-- **Phase 5 (Analytics)**: 2 weeks
-- **Total**: 11-14 weeks
+### Code Quality
+- [ ] **Testing infrastructure**
+  - [ ] Add integration tests for API calls
+  - [ ] E2E tests for critical workflows
+  - [ ] Visual regression testing
+  - [ ] Performance benchmarking
+  - [ ] Load testing setup
+- [ ] **Error handling**
+  - [ ] Global error boundary implementation
+  - [ ] Sentry or similar error tracking
+  - [ ] User-friendly error messages
+  - [ ] Error recovery mechanisms
+- [ ] **TypeScript improvements**
+  - [ ] Strict type checking everywhere
+  - [ ] Remove all 'any' types
+  - [ ] Proper API response typing
+  - [ ] Type-safe database queries
 
-#### Estimated Costs (Monthly)
-- **Twilio**: $0.022/min (US), varies by country
-- **Google Speech-to-Text**: $0.016/min for telephony
-- **OpenAI GPT-4o-mini**: ~$0.001 per call analysis
-- **Storage**: Included in Supabase plan
-- **Estimated for 10,000 mins/month**: ~$400-500
+### Security
+- [ ] **Authentication hardening**
+  - [ ] 2FA/MFA support
+  - [ ] Session timeout controls
+  - [ ] Password complexity requirements
+  - [ ] Account lockout policies
+- [ ] **Data security**
+  - [ ] Field-level encryption for PII
+  - [ ] Audit logging for all actions
+  - [ ] GDPR compliance tools
+  - [ ] Data retention policies
+- [ ] **API security**
+  - [ ] API rate limiting
+  - [ ] Request validation
+  - [ ] CORS configuration
+  - [ ] CSP headers
 
-## 📱 PWA & Mobile Features
+### Documentation
+- [ ] **Developer documentation**
+  - [ ] API documentation
+  - [ ] Architecture diagrams
+  - [ ] Setup guides
+  - [ ] Contributing guidelines
+- [ ] **User documentation**
+  - [ ] Feature guides
+  - [ ] Video tutorials
+  - [ ] FAQ section
+  - [ ] Troubleshooting guides
 
-### 6. Complete PWA Implementation
-- [ ] Fix service worker registration (currently references non-existent `/sw.js`)
-- [ ] Implement proper caching strategies
-- [ ] Add offline page/fallback
-- [ ] Implement background sync
-- [ ] Add push notification support
-- [ ] Create app install prompt UI
-- [ ] Add app update notification
-- [ ] Implement proper cache invalidation
+## 🚀 Implementation Priorities
 
-### 7. Mobile UI Optimization
-- [ ] Add pull-to-refresh on all list views
-- [ ] Implement swipe gestures for navigation
-- [ ] Add haptic feedback for actions
-- [ ] Optimize touch targets (minimum 44x44px)
-- [ ] Add loading skeletons for better perceived performance
-- [ ] Implement virtual scrolling for long lists
-- [ ] Add keyboard shortcuts for desktop users
+### Phase 1: Core Communications (Weeks 1-4)
+1. Email system integration
+2. SMS messaging capabilities
+3. Basic phone banking UI
+
+### Phase 2: Events & Campaigns (Weeks 5-8)
+1. Event registration system
+2. Campaign management implementation
+3. Basic petition functionality
+
+### Phase 3: Engagement & Analytics (Weeks 9-12)
+1. Pathways implementation
+2. Enhanced analytics
+3. Automated workflows
+
+### Phase 4: Advanced Features (Weeks 13-16)
+1. Fundraising integration
+2. Advanced phone banking
+3. AI-powered features
+
+## 📊 Current Platform Status
+
+### What's Working
+- ✅ Basic contact management (CRUD, import/export)
+- ✅ User authentication and multi-org support
+- ✅ Basic dashboard and analytics
+- ✅ Contact deduplication
+- ✅ Basic event creation
+- ✅ PWA manifest and service worker
+
+### What's Partially Complete
+- 🔶 Offline sync (structure exists, not fully functional)
+- 🔶 Call queue (UI only, no actual calling)
+- 🔶 Events (no registration or check-in)
+- 🔶 Admin dashboard (stats only, no user management)
+
+### What's Missing
+- ❌ All communication features (email, SMS, calling)
+- ❌ Campaign management (UI mockup only)
+- ❌ Pathways/engagement ladders (UI mockup only)
+- ❌ Fundraising capabilities
+- ❌ Petition/action tools
+- ❌ Push notifications
+- ❌ Automated workflows
+- ❌ Advanced analytics
+- ❌ AI features
+
+### Completion Estimate: ~35% of full platform vision
+
+## 📈 Medium Priority (Quality of Life)
+*Improvements that enhance user experience*
+
+### Multi-Organization Support
+- [x] Basic multi-org data isolation
+- [x] Organization switching UI
+- [ ] **Coalition features** - Cross-org collaboration
+  - [ ] Shared campaigns across orgs
+  - [ ] Coalition-wide analytics
+  - [ ] Resource sharing permissions
+  - [ ] Joint event management
+
+### Analytics & Reporting
+- [x] Basic dashboard with stats
+- [ ] **Custom dashboards** - User-configurable views
+  - [ ] Drag-and-drop widget placement
+  - [ ] Custom metric definitions
+  - [ ] Saved dashboard templates
+  - [ ] Role-based dashboards
+- [ ] **Advanced analytics** - Deep insights
+  - [ ] Cohort analysis tools
+  - [ ] Predictive modeling
+  - [ ] Engagement scoring algorithms
+  - [ ] Geographic heat maps
+- [ ] **Automated reports** - Scheduled delivery
+  - [ ] Email report subscriptions
+  - [ ] Custom report builder
+  - [ ] PDF generation
+  - [ ] Data export APIs
+
+### User Management
+- [ ] **Complete admin panel** - Full user control
+  - [ ] User creation and invitation flow
+  - [ ] Role and permission management UI
+  - [ ] User activity logs
+  - [ ] Bulk user operations
+  - [ ] User deactivation/reactivation
+- [ ] **Team management** - Organizing structure
+  - [ ] Team/department creation
+  - [ ] Team leader assignment
+  - [ ] Team-based permissions
+  - [ ] Team performance metrics
+
+### Mobile & PWA Enhancements
+- [x] Basic PWA manifest and service worker
+- [ ] **Enhanced offline support**
+  - [ ] Full offline mode for all features
+  - [ ] Smart caching strategies
+  - [ ] Background sync for all data types
+  - [ ] Offline form submission queue
+- [ ] **Mobile optimizations**
+  - [ ] Touch gesture support
+  - [ ] Mobile-specific UI components
+  - [ ] Reduced data usage mode
+  - [ ] Native app features (camera, location)
+- [ ] **Push notifications**
+  - [ ] Web push implementation
+  - [ ] Notification preferences
+  - [ ] Rich notifications with actions
+  - [ ] Notification analytics
+
+## 🔮 Future Enhancements
+*Advanced features for later development*
+
+### AI & Automation
+- [ ] **Smart contact scoring** - AI-powered insights
+  - [ ] Engagement prediction models
+  - [ ] Leadership identification
+  - [ ] Churn risk detection
+  - [ ] Next best action suggestions
+- [ ] **Automated workflows** - Complex automation
+  - [ ] Visual workflow builder
+  - [ ] Conditional logic trees
+  - [ ] Multi-step automations
+  - [ ] Integration with external tools
+- [ ] **AI communication assistant**
+  - [ ] Message drafting suggestions
+  - [ ] Optimal send time prediction
+  - [ ] Subject line optimization
+  - [ ] Response likelihood scoring
+
+### Advanced Organizing
+- [ ] **Distributed organizing** - Peer-to-peer tools
+  - [ ] Volunteer-led event creation
+  - [ ] Peer texting capabilities
+  - [ ] Social media amplification
+  - [ ] Friend-to-friend outreach
+- [ ] **Electoral integration** - Voter engagement
+  - [ ] Voter file matching
+  - [ ] VAN integration
+  - [ ] Polling location info
+  - [ ] Ballot tracking
+- [ ] **Direct action tools** - Protest coordination
+  - [ ] Real-time coordination maps
+  - [ ] Legal support integration
+  - [ ] Safety check-ins
+  - [ ] Media contact management
 
 ## 🎯 Feature Completion
 

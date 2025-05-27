@@ -13,7 +13,9 @@ import {
   Globe,
   Lock,
   WifiOff,
-  Activity
+  Activity,
+  TrendingUp,
+  AlertCircle
 } from 'lucide-react'
 
 const LandingPage = () => {
@@ -22,7 +24,8 @@ const LandingPage = () => {
   const historicalLessons = [
     {
       icon: <Phone className="w-6 h-6" />,
-      title: "Highlander's Popular Education → Peer-to-Peer Organizing",
+      title: "Peer-to-Peer Organizing",
+      subtitle: "Inspired by Highlander's Popular Education",
       quote: "The situation is there... [the school] will build its own structure",
       author: "Myles Horton",
       features: [
@@ -35,7 +38,8 @@ const LandingPage = () => {
     },
     {
       icon: <Globe className="w-6 h-6" />,
-      title: "MLK's Strategic Campaigns → Distributed Crisis Response",
+      title: "Distributed Crisis Response",
+      subtitle: "Built on MLK's Strategic Campaigns",
       quote: "Birmingham succeeded because roles were clear within 24 hours",
       features: [
         "Auto-route new signups to local organizers",
@@ -47,7 +51,8 @@ const LandingPage = () => {
     },
     {
       icon: <Target className="w-6 h-6" />,
-      title: "Emergent Strategy → Leadership Multiplication",
+      title: "Leadership Multiplication",
+      subtitle: "Following Emergent Strategy Principles",
       quote: "Small is good, small is all",
       author: "adrienne maree brown",
       features: [
@@ -59,7 +64,8 @@ const LandingPage = () => {
     },
     {
       icon: <Activity className="w-6 h-6" />,
-      title: "Alinsky's Power Building → Concrete Action",
+      title: "Concrete Action Opportunities",
+      subtitle: "Alinsky's Power Building Methods",
       quote: "Power is not only what you have, but what the enemy thinks you have",
       author: "Saul Alinsky",
       features: [
@@ -71,7 +77,8 @@ const LandingPage = () => {
     },
     {
       icon: <WifiOff className="w-6 h-6" />,
-      title: "Hong Kong's 'Be Water' → Offline-First Resilience",
+      title: "Offline-First Resilience",
+      subtitle: "Hong Kong's 'Be Water' Strategy",
       quote: "Movements need infrastructure that survives internet shutdowns",
       features: [
         "All features work offline",
@@ -111,7 +118,7 @@ const LandingPage = () => {
                 About
               </Link>
               <a 
-                href="https://github.com/rabble/rabblelist" 
+                href="https://github.com/rise-movement/rise-app" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-600 hover:text-gray-900 font-medium hidden sm:inline"
@@ -121,7 +128,6 @@ const LandingPage = () => {
               <Button 
                 size="sm"
                 onClick={() => navigate('/login')}
-                className="bg-primary-600 hover:bg-primary-700 text-white"
               >
                 Start Organizing
               </Button>
@@ -133,54 +139,29 @@ const LandingPage = () => {
       {/* Hero Section */}
       <section className="pt-24 pb-16 px-4">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
+          <div className="text-center">
             <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
               Turn Crisis Into Commitment.
               <span className="text-primary-600 block">Build Real Movement Power.</span>
             </h1>
             
-            {/* History's Lesson Alert */}
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-8 max-w-4xl mx-auto">
-              <div className="flex items-start space-x-3">
-                <Clock className="w-6 h-6 text-amber-600 flex-shrink-0 mt-1" />
-                <div className="text-left">
-                  <h2 className="text-xl font-bold text-gray-900 mb-2">
-                    ⚡ History's Lesson: You Have 48 Hours to Win or Lose
-                  </h2>
-                  <p className="text-gray-700 mb-3">
-                    When Rosa Parks was arrested, the Montgomery Improvement Association mobilized 40,000 people in 72 hours. 
-                    When Ferguson erupted, pre-existing relationships sustained 400 days of resistance. 
-                    When Hong Kong faced mass arrests, their "Be Water" strategy kept the movement alive.
-                  </p>
-                  <p className="text-gray-900 font-semibold">
-                    Today's movements face the same challenge at digital scale: <span className="text-amber-700">convert surge interest into lasting participation before the news cycle moves on.</span>
-                  </p>
-                </div>
-              </div>
-            </div>
+            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              Rise is the organizing platform that converts surge interest into lasting participation. 
+              Built on 70 years of movement wisdom, designed for today's digital scale.
+            </p>
 
-            <div className="flex flex-col items-center space-y-4 mb-8">
-              <p className="text-xl text-gray-600 font-medium">
-                ✊ Rise isn't for fundraising or social media followers.
-              </p>
-              <p className="text-xl text-gray-900 font-bold">
-                🛠 It's for organizers turning signups into new leaders—fast.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
               <Button 
                 size="lg" 
                 onClick={() => navigate('/login')}
-                className="bg-primary-600 hover:bg-primary-700 text-white shadow-xl hover:shadow-2xl flex items-center"
+                className="flex items-center shadow-xl hover:shadow-2xl"
               >
                 Start Organizing Now <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
               <Button 
                 variant="outline" 
                 size="lg"
-                onClick={() => window.open('https://github.com/rabble/rabblelist', '_blank')}
-                className="border-gray-300"
+                onClick={() => window.open('https://github.com/rise-movement/rise-app', '_blank')}
               >
                 Explore the Code
               </Button>
@@ -189,13 +170,127 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* What History Taught Us Section */}
+      {/* Problem Section - The 48-Hour Challenge */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                The 48-Hour Challenge Every Movement Faces
+              </h2>
+              <p className="text-xl text-gray-600">
+                History shows you have less than 72 hours to convert crisis momentum into organized action
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl p-8 shadow-sm">
+                <div className="grid md:grid-cols-3 gap-8">
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-2">Montgomery, 1955</h3>
+                    <p className="text-gray-600">
+                      When Rosa Parks was arrested, the Montgomery Improvement Association mobilized 
+                      <span className="font-semibold text-gray-900"> 40,000 people in 72 hours</span> through 
+                      church networks and taxi drivers.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-2">Ferguson, 2014</h3>
+                    <p className="text-gray-600">
+                      When protests erupted, pre-existing relationships sustained 
+                      <span className="font-semibold text-gray-900"> 400 days of resistance</span> because 
+                      organizers had infrastructure ready.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-2">Hong Kong, 2019</h3>
+                    <p className="text-gray-600">
+                      Facing mass arrests, their "Be Water" strategy kept the movement alive through 
+                      <span className="font-semibold text-gray-900"> distributed leadership</span> and 
+                      offline-first organizing.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-primary-50 rounded-xl p-8 border border-primary-200">
+                <div className="flex items-start space-x-4">
+                  <AlertCircle className="w-6 h-6 text-primary-600 flex-shrink-0 mt-1" />
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      Today's Digital Scale Challenge
+                    </h3>
+                    <p className="text-gray-700">
+                      Modern movements face the same urgency at unprecedented scale. When a crisis hits, 
+                      you need to convert thousands of signups into organized action before the news cycle 
+                      moves on. Without the right infrastructure, viral moments become missed opportunities.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Solution Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Organizing Infrastructure for the Moments That Matter
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Rise isn't for fundraising or social media followers. 
+              It's for organizers turning signups into new leaders—fast.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="w-8 h-8 text-primary-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Rapid Response</h3>
+              <p className="text-gray-600">
+                Start calling new signups within minutes. Auto-route to available organizers. 
+                Convert interest before it fades.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <TrendingUp className="w-8 h-8 text-primary-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Leadership Development</h3>
+              <p className="text-gray-600">
+                Track engagement progression. Identify emerging leaders. 
+                Build sustainable organizing capacity.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-8 h-8 text-primary-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Crisis-Ready</h3>
+              <p className="text-gray-600">
+                Works offline. Survives traffic spikes. Continues through internet shutdowns. 
+                Built for when it matters most.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section - What History Taught Us */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              🧩 What History Taught Us (What Rise Does)
+              Built on Proven Organizing Principles
             </h2>
+            <p className="text-xl text-gray-600">
+              Every feature is inspired by successful movement strategies
+            </p>
           </div>
 
           <div className="space-y-12">
@@ -206,9 +301,10 @@ const LandingPage = () => {
                     {lesson.icon}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    <h3 className="text-xl font-bold text-gray-900 mb-1">
                       {lesson.title}
                     </h3>
+                    <p className="text-gray-600 text-sm mb-3">{lesson.subtitle}</p>
                     {lesson.quote && (
                       <blockquote className="text-gray-600 italic border-l-4 border-primary-200 pl-4">
                         "{lesson.quote}" {lesson.author && `— ${lesson.author}`}
@@ -230,13 +326,16 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Screenshots Section */}
+      {/* How It Works Section */}
       <section className="py-16">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              🚀 See How It Works: From Viral Moment to Organized Power
+              From Viral Moment to Organized Power
             </h2>
+            <p className="text-xl text-gray-600">
+              See how Rise transforms crisis response into sustainable organizing
+            </p>
           </div>
 
           {/* Crisis Response Dashboard */}
@@ -252,103 +351,74 @@ const LandingPage = () => {
                   alt="Dashboard showing organizing metrics"
                   className="w-full rounded-lg shadow-md"
                 />
-                <div className="mt-6 space-y-3">
-                  <h4 className="font-semibold text-gray-900">What you see at a glance:</h4>
-                  <ul className="space-y-2 text-gray-700">
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
-                      <span><strong>Contact surge tracking:</strong> Real-time view of new signups to mobilize</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
-                      <span><strong>Active Ringers:</strong> Who's available to start calling right now</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
-                      <span><strong>Quick Actions:</strong> One-click access to start calling, add contacts, manage events</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
-                      <span><strong>Daily Goals:</strong> Track progress toward conversion targets</span>
-                    </li>
-                  </ul>
+                <div className="mt-6 grid md:grid-cols-2 gap-4">
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Real-time surge tracking</h4>
+                      <p className="text-sm text-gray-600">Monitor new signups and mobilize instantly</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Smart assignment</h4>
+                      <p className="text-sm text-gray-600">Auto-route contacts to available organizers</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">One-click calling</h4>
+                      <p className="text-sm text-gray-600">Start conversations with guided prompts</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Progress tracking</h4>
+                      <p className="text-sm text-gray-600">Monitor conversion rates and goals</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Contact Management */}
-          <div className="mb-16">
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className="p-6 bg-gray-50 border-b">
-                <h3 className="text-2xl font-bold text-gray-900">Movement Building Analytics</h3>
-                <p className="text-gray-600 mt-1">The engagement ladder in action</p>
-              </div>
-              <div className="p-6">
-                <img 
-                  src="/contacts.png"
-                  alt="Contact management with tags and filters"
-                  className="w-full rounded-lg shadow-md"
-                />
-                <div className="mt-6 space-y-3">
-                  <h4 className="font-semibold text-gray-900">Smart contact organization:</h4>
-                  <ul className="space-y-2 text-gray-700">
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
-                      <span><strong>Tag-based organization:</strong> Group contacts by interests, skills, and engagement level</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
-                      <span><strong>Advanced filtering:</strong> Find exactly who you need for specific actions</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
-                      <span><strong>Engagement tracking:</strong> See who's ready to level up their involvement</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
-                      <span><strong>Quick actions:</strong> Call, message, or assign tasks with one click</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* The Ferguson Model */}
+          {/* The Process */}
           <div className="bg-primary-50 rounded-xl p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">The Ferguson Model → Digital Scale:</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">The Proven Process</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
                 {
                   step: "1",
-                  title: "Mass action/viral moment hits",
+                  title: "Crisis moment hits",
                   description: "Dashboard shows contact surge in real-time"
                 },
                 {
                   step: "2",
-                  title: "Rise auto-triages contacts",
-                  description: "Smart assignment to available Ringers"
+                  title: "Auto-triage contacts",
+                  description: "Smart assignment to available organizers"
                 },
                 {
                   step: "3",
-                  title: "Organizers call within 2 hours",
-                  description: "One-click calling with conversation guides"
+                  title: "Rapid outreach",
+                  description: "Call within 2 hours with conversation guides"
                 },
                 {
                   step: "4",
-                  title: "Contacts get specific next steps",
-                  description: "Automatic progression through engagement ladder"
+                  title: "Clear next steps",
+                  description: "Move contacts through engagement ladder"
                 },
                 {
                   step: "5",
-                  title: "New leaders identified",
-                  description: "System flags volunteers ready for organizer roles"
+                  title: "Identify leaders",
+                  description: "Flag volunteers ready for organizing roles"
                 },
                 {
                   step: "6",
-                  title: "Base grows with each cycle",
-                  description: "Analytics track sustainable power growth"
+                  title: "Build power",
+                  description: "Track sustainable movement growth"
                 }
               ].map((item) => (
                 <div key={item.step} className="bg-white rounded-lg p-6">
@@ -366,12 +436,12 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Movement Wisdom Section */}
+      {/* Social Proof - Movement Wisdom */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              🧭 Built on 70 Years of Movement Wisdom
+              Learning from 70 Years of Movements
             </h2>
           </div>
 
@@ -379,7 +449,7 @@ const LandingPage = () => {
             <div className="bg-white rounded-xl p-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                 <CheckCircle className="w-6 h-6 text-primary-500 mr-2" />
-                What Worked:
+                What Worked
               </h3>
               <ul className="space-y-3">
                 {movementWisdom.worked.map((item, idx) => (
@@ -392,8 +462,8 @@ const LandingPage = () => {
 
             <div className="bg-white rounded-xl p-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <span className="w-6 h-6 text-red-500 mr-2">✕</span>
-                What Failed:
+                <AlertCircle className="w-6 h-6 text-red-500 mr-2" />
+                What Failed
               </h3>
               <ul className="space-y-3">
                 {movementWisdom.failed.map((item, idx) => (
@@ -406,13 +476,13 @@ const LandingPage = () => {
           </div>
 
           <div className="mt-8 bg-primary-100 rounded-xl p-6">
-            <h4 className="font-bold text-gray-900 mb-3">Rise operationalizes the lessons that build lasting power:</h4>
+            <h4 className="font-bold text-gray-900 mb-3">Rise operationalizes these lessons:</h4>
             <div className="grid md:grid-cols-2 gap-4">
               {[
                 "Relationship-centered organizing over mass mobilization",
                 "Distributed leadership that survives repression",
                 "Clear engagement pathways from supporter to organizer",
-                "Technology that amplifies human connections, doesn't replace them"
+                "Technology that amplifies human connections"
               ].map((lesson, idx) => (
                 <div key={idx} className="flex items-start">
                   <Heart className="w-5 h-5 text-primary-600 mr-2 flex-shrink-0 mt-0.5" />
@@ -429,7 +499,7 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              🛡️ Designed for Movement Realities
+              Designed for Movement Realities
             </h2>
           </div>
 
@@ -476,9 +546,9 @@ const LandingPage = () => {
       <section className="py-16 bg-gray-900">
         <div className="container mx-auto px-4 max-w-4xl text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            ✅ Ready to Turn Your Next Crisis Into Lasting Power?
+            Ready to Turn Your Next Crisis Into Lasting Power?
           </h2>
-          <p className="text-xl text-gray-300 mb-6">
+          <p className="text-xl text-gray-300 mb-8">
             Don't let another Ferguson become another Occupy.<br />
             Don't let another viral moment evaporate into hashtags.
           </p>
@@ -487,20 +557,27 @@ const LandingPage = () => {
             <Button 
               size="lg" 
               onClick={() => navigate('/login')}
-              className="bg-primary-600 hover:bg-primary-700 text-white shadow-xl hover:shadow-2xl flex items-center"
+              className="shadow-xl hover:shadow-2xl"
             >
-              👉 Start Organizing Now
+              Start Organizing Now
             </Button>
             <Button 
               size="lg"
               variant="outline" 
-              onClick={() => window.open('https://github.com/rabble/rabblelist', '_blank')}
+              onClick={() => window.open('https://github.com/rise-movement/rise-app', '_blank')}
               className="border-white text-white hover:bg-white hover:text-gray-900"
             >
-              🛠 Explore the Code
+              Explore the Code
             </Button>
           </div>
 
+          <Button 
+            variant="outline"
+            onClick={() => window.open('mailto:organizers@rise.protest.net', '_blank')}
+            className="border-gray-400 text-gray-300 hover:bg-gray-800 hover:text-white"
+          >
+            Request Access for Your Group
+          </Button>
 
           <blockquote className="mt-12 text-gray-400 italic">
             <p className="text-lg mb-2">"The most powerful weapon we have is organized people."</p>
@@ -517,7 +594,7 @@ const LandingPage = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-gray-600">
-              rise.protest.net - Building movements for social change
+              © 2024 rise.protest.net - Building movements for social change
             </div>
             <div className="flex gap-6">
               <a href="/privacy-policy.html" className="text-gray-600 hover:text-primary-600 transition-colors">
@@ -527,7 +604,7 @@ const LandingPage = () => {
                 Terms
               </a>
               <a 
-                href="https://github.com/rabble/rabblelist" 
+                href="https://github.com/rise-movement/rise-app" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-600 hover:text-primary-600 transition-colors"
