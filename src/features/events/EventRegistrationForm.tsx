@@ -34,7 +34,7 @@ const registrationSchema = z.object({
   guest_name: z.string().min(1, 'Name is required'),
   guest_email: z.string().email('Invalid email address'),
   guest_phone: z.string().optional(),
-  ticket_type: z.string().optional().default('general'),
+  ticket_type: z.string().min(1, 'Ticket type is required'),
   dietary_restrictions: z.string().optional(),
   accessibility_needs: z.string().optional(),
   notes: z.string().optional(),
@@ -269,7 +269,7 @@ export default function EventRegistrationForm() {
                 </div>
               )}
               
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Full Name *
