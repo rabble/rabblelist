@@ -44,6 +44,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added Campaigns, Pathways, and Engagement to main navigation
   - Mobile-optimized tab bar with new sections
   - Improved desktop navigation
+- **Tags Support** - Added comprehensive tagging system for contacts
+  - Tag creation and management interface
+  - Bulk tag operations
+  - Tag-based filtering and search
+- **CSV Export** - Export contact data to CSV format
+  - Flexible field selection
+  - Bulk export capabilities
+- **Inline Editing** - Edit contact information directly in the contact list
+  - Real-time updates
+  - Improved user experience
+- **Advanced Search** - Enhanced search functionality across contacts
+  - Search by name, email, phone, and tags
+  - Quick filtering options
+- **Error Handling** - Improved error handling throughout the application
+  - User-friendly error messages
+  - Graceful fallbacks for failed operations
 
 ### Changed
 - Updated environment configuration for Supabase and Twilio
