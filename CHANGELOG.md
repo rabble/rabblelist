@@ -34,6 +34,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Changed from 3:1 to 2:1 layout with Recent Calls in sidebar
   - Stacked Quick Actions and Today's Activity in main column
   - More compact Recent Calls design for sidebar display
+- **Unified Color Scheme** - Complete color unification using emerald theme
+  - Updated Tailwind config to use emerald as primary color (#10b981)
+  - Replaced all blue color references with primary colors
+  - Updated Button component variants to use primary color scheme
+  - Unified focus states, hover states, and active states
+  - Consistent color usage across landing, dashboard, auth, and navigation
+  - Semantic colors adjusted: success (emerald), warning (amber), danger (red), info (cyan)
 
 ## [0.2.0] - 2025-05-27
 

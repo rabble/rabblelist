@@ -42,39 +42,39 @@ const BASE_STYLES = [
 
 const VARIANT_STYLES: Record<ButtonVariant, string> = {
   primary: [
-    'bg-gradient-to-r',
-    'from-primary-500',
-    'to-primary-600',
+    'bg-primary-600',
     'text-white',
-    'hover:from-primary-600',
-    'hover:to-primary-700',
-    'active:from-primary-700',
-    'active:to-primary-800',
+    'hover:bg-primary-700',
+    'active:bg-primary-800',
     'focus-visible:ring-primary-500',
     'shadow-md',
     'hover:shadow-lg'
   ].join(' '),
   
   secondary: [
-    'bg-slate-100',
-    'text-slate-900',
-    'hover:bg-slate-200',
+    'bg-primary-50',
+    'text-primary-900',
+    'hover:bg-primary-100',
     'shadow-sm',
-    'hover:shadow-md'
+    'hover:shadow-md',
+    'border',
+    'border-primary-200'
   ].join(' '),
   
   outline: [
     'border-2',
-    'border-slate-200',
+    'border-primary-200',
     'bg-white',
-    'hover:bg-slate-50',
-    'hover:border-slate-300',
+    'text-primary-700',
+    'hover:bg-primary-50',
+    'hover:border-primary-300',
     'hover:shadow-sm'
   ].join(' '),
   
   ghost: [
-    'hover:bg-slate-100',
-    'hover:text-slate-900'
+    'text-primary-700',
+    'hover:bg-primary-50',
+    'hover:text-primary-900'
   ].join(' '),
   
   destructive: [

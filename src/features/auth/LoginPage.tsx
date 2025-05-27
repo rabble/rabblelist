@@ -135,7 +135,7 @@ export function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-primary-600 rounded-xl flex items-center justify-center mx-auto mb-4">
             <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
@@ -144,7 +144,7 @@ export function LoginPage() {
           <p className="text-gray-600 mt-2">
             {mode === 'signin' ? 'Sign in to your account' : 'Create a new account'}
           </p>
-          <Link to="/" className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 mt-2">
+          <Link to="/" className="inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 mt-2">
             <Home className="w-4 h-4" />
             Learn more about rise.protest.net
           </Link>
@@ -183,7 +183,7 @@ export function LoginPage() {
                         type="text"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         placeholder="John Doe"
                         required
                         autoComplete="name"
@@ -202,7 +202,7 @@ export function LoginPage() {
                           type="checkbox"
                           checked={createNewOrg}
                           onChange={(e) => setCreateNewOrg(e.target.checked)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                         />
                         Create new organization
                       </label>
@@ -215,7 +215,7 @@ export function LoginPage() {
                           type="text"
                           value={organizationName}
                           onChange={(e) => setOrganizationName(e.target.value)}
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                           placeholder="Organization name"
                           required={createNewOrg}
                         />
@@ -242,7 +242,7 @@ export function LoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     placeholder="you@example.com"
                     required
                     autoComplete="email"
@@ -261,7 +261,7 @@ export function LoginPage() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     placeholder="••••••••"
                     required
                     autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
@@ -301,7 +301,7 @@ export function LoginPage() {
                     type="button"
                     onClick={handleDemoLogin}
                     disabled={isLoading}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <div className="flex items-center justify-center gap-2">
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -322,7 +322,7 @@ export function LoginPage() {
                     setError(null)
                     setSuccess(null)
                   }}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium block w-full"
+                  className="text-sm text-primary-600 hover:text-primary-700 font-medium block w-full"
                 >
                   {mode === 'signin' 
                     ? "Don't have an account? Sign up" 
@@ -346,9 +346,9 @@ export function LoginPage() {
         <div className="mt-6 text-center text-sm text-gray-500">
           <p>By signing up, you agree to our</p>
           <p>
-            <a href="#" className="text-blue-600 hover:underline">Terms of Service</a>
+            <a href="#" className="text-primary-600 hover:underline">Terms of Service</a>
             {' and '}
-            <a href="#" className="text-blue-600 hover:underline">Privacy Policy</a>
+            <a href="#" className="text-primary-600 hover:underline">Privacy Policy</a>
           </p>
         </div>
       </div>

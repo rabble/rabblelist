@@ -7,19 +7,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Apple-inspired colors
+        // Unified emerald-based color scheme
         primary: {
-          DEFAULT: '#007AFF',
-          50: '#E5F1FF',
-          100: '#CCE4FF',
-          200: '#99C9FF',
-          300: '#66ADFF',
-          400: '#3392FF',
-          500: '#007AFF',
-          600: '#0061CC',
-          700: '#004899',
-          800: '#003066',
-          900: '#001833',
+          DEFAULT: '#10b981',
+          50: '#ecfdf5',
+          100: '#d1fae5',
+          200: '#a7f3d0',
+          300: '#6ee7b7',
+          400: '#34d399',
+          500: '#10b981',
+          600: '#059669',
+          700: '#047857',
+          800: '#065f46',
+          900: '#064e3b',
         },
         gray: {
           50: '#F9FAFB',
@@ -33,10 +33,10 @@ export default {
           800: '#3A3A3C',
           900: '#1C1C1E',
         },
-        success: '#34C759',
-        warning: '#FF9500',
-        danger: '#FF3B30',
-        info: '#5856D6',
+        success: '#10b981', // emerald-500
+        warning: '#f59e0b', // amber-500
+        danger: '#ef4444', // red-500
+        info: '#06b6d4', // cyan-500
         background: {
           DEFAULT: '#FFFFFF',
           secondary: '#F2F2F7',

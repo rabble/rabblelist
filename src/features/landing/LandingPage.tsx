@@ -103,7 +103,7 @@ const LandingPage = () => {
         <nav className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <Megaphone className="w-8 h-8 text-emerald-600" />
+              <Megaphone className="w-8 h-8 text-primary-600" />
               <span className="text-2xl font-bold text-gray-900">Rise.Protest.net</span>
             </Link>
             <div className="flex items-center space-x-6">
@@ -111,7 +111,7 @@ const LandingPage = () => {
                 About
               </Link>
               <a 
-                href="https://github.com/rise-movement/rise-app" 
+                href="https://github.com/rabble/rabblelist" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-600 hover:text-gray-900 font-medium hidden sm:inline"
@@ -121,7 +121,7 @@ const LandingPage = () => {
               <Button 
                 size="sm"
                 onClick={() => navigate('/login')}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="bg-primary-600 hover:bg-primary-700 text-white"
               >
                 Start Organizing
               </Button>
@@ -136,7 +136,7 @@ const LandingPage = () => {
           <div className="text-center mb-16">
             <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
               Turn Crisis Into Commitment.
-              <span className="text-emerald-600 block">Build Real Movement Power.</span>
+              <span className="text-primary-600 block">Build Real Movement Power.</span>
             </h1>
             
             {/* History's Lesson Alert */}
@@ -172,14 +172,14 @@ const LandingPage = () => {
               <Button 
                 size="lg" 
                 onClick={() => navigate('/login')}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-xl hover:shadow-2xl flex items-center"
+                className="bg-primary-600 hover:bg-primary-700 text-white shadow-xl hover:shadow-2xl flex items-center"
               >
                 Start Organizing Now <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
               <Button 
                 variant="outline" 
                 size="lg"
-                onClick={() => window.open('https://github.com/rise-movement/rise-app', '_blank')}
+                onClick={() => window.open('https://github.com/rabble/rabblelist', '_blank')}
                 className="border-gray-300"
               >
                 Explore the Code
@@ -202,7 +202,7 @@ const LandingPage = () => {
             {historicalLessons.map((lesson, index) => (
               <div key={index} className="bg-white rounded-xl shadow-sm p-8">
                 <div className="flex items-start space-x-4 mb-6">
-                  <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600 flex-shrink-0">
+                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center text-primary-600 flex-shrink-0">
                     {lesson.icon}
                   </div>
                   <div className="flex-1">
@@ -210,7 +210,7 @@ const LandingPage = () => {
                       {lesson.title}
                     </h3>
                     {lesson.quote && (
-                      <blockquote className="text-gray-600 italic border-l-4 border-emerald-200 pl-4">
+                      <blockquote className="text-gray-600 italic border-l-4 border-primary-200 pl-4">
                         "{lesson.quote}" {lesson.author && `— ${lesson.author}`}
                       </blockquote>
                     )}
@@ -219,7 +219,7 @@ const LandingPage = () => {
                 <div className="grid md:grid-cols-2 gap-3 ml-16">
                   {lesson.features.map((feature, idx) => (
                     <div key={idx} className="flex items-start space-x-2">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
                       <span className="text-gray-700 text-sm">{feature}</span>
                     </div>
                   ))}
@@ -256,19 +256,19 @@ const LandingPage = () => {
                   <h4 className="font-semibold text-gray-900">What you see at a glance:</h4>
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
                       <span><strong>Contact surge tracking:</strong> Real-time view of new signups to mobilize</span>
                     </li>
                     <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
                       <span><strong>Active Ringers:</strong> Who's available to start calling right now</span>
                     </li>
                     <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
                       <span><strong>Quick Actions:</strong> One-click access to start calling, add contacts, manage events</span>
                     </li>
                     <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
                       <span><strong>Daily Goals:</strong> Track progress toward conversion targets</span>
                     </li>
                   </ul>
@@ -294,19 +294,19 @@ const LandingPage = () => {
                   <h4 className="font-semibold text-gray-900">Smart contact organization:</h4>
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
                       <span><strong>Tag-based organization:</strong> Group contacts by interests, skills, and engagement level</span>
                     </li>
                     <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
                       <span><strong>Advanced filtering:</strong> Find exactly who you need for specific actions</span>
                     </li>
                     <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
                       <span><strong>Engagement tracking:</strong> See who's ready to level up their involvement</span>
                     </li>
                     <li className="flex items-start">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="w-5 h-5 text-primary-500 mr-2 flex-shrink-0 mt-0.5" />
                       <span><strong>Quick actions:</strong> Call, message, or assign tasks with one click</span>
                     </li>
                   </ul>
@@ -316,7 +316,7 @@ const LandingPage = () => {
           </div>
 
           {/* The Ferguson Model */}
-          <div className="bg-emerald-50 rounded-xl p-8">
+          <div className="bg-primary-50 rounded-xl p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">The Ferguson Model → Digital Scale:</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
@@ -353,7 +353,7 @@ const LandingPage = () => {
               ].map((item) => (
                 <div key={item.step} className="bg-white rounded-lg p-6">
                   <div className="flex items-center mb-3">
-                    <div className="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold mr-3">
+                    <div className="w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold mr-3">
                       {item.step}
                     </div>
                     <h4 className="font-semibold text-gray-900">{item.title}</h4>
@@ -378,12 +378,12 @@ const LandingPage = () => {
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-white rounded-xl p-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <CheckCircle className="w-6 h-6 text-green-500 mr-2" />
+                <CheckCircle className="w-6 h-6 text-primary-500 mr-2" />
                 What Worked:
               </h3>
               <ul className="space-y-3">
                 {movementWisdom.worked.map((item, idx) => (
-                  <li key={idx} className="text-gray-700 pl-4 border-l-2 border-green-200">
+                  <li key={idx} className="text-gray-700 pl-4 border-l-2 border-primary-200">
                     {item}
                   </li>
                 ))}
@@ -405,7 +405,7 @@ const LandingPage = () => {
             </div>
           </div>
 
-          <div className="mt-8 bg-emerald-100 rounded-xl p-6">
+          <div className="mt-8 bg-primary-100 rounded-xl p-6">
             <h4 className="font-bold text-gray-900 mb-3">Rise operationalizes the lessons that build lasting power:</h4>
             <div className="grid md:grid-cols-2 gap-4">
               {[
@@ -415,7 +415,7 @@ const LandingPage = () => {
                 "Technology that amplifies human connections, doesn't replace them"
               ].map((lesson, idx) => (
                 <div key={idx} className="flex items-start">
-                  <Heart className="w-5 h-5 text-emerald-600 mr-2 flex-shrink-0 mt-0.5" />
+                  <Heart className="w-5 h-5 text-primary-600 mr-2 flex-shrink-0 mt-0.5" />
                   <span className="text-gray-800">{lesson}</span>
                 </div>
               ))}
@@ -457,7 +457,7 @@ const LandingPage = () => {
               }
             ].map((feature, idx) => (
               <div key={idx} className="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-shadow">
-                <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600 mb-4">
+                <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center text-primary-600 mb-4">
                   {feature.icon}
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -487,33 +487,26 @@ const LandingPage = () => {
             <Button 
               size="lg" 
               onClick={() => navigate('/login')}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-xl hover:shadow-2xl"
+              className="bg-primary-600 hover:bg-primary-700 text-white shadow-xl hover:shadow-2xl flex items-center"
             >
               👉 Start Organizing Now
             </Button>
             <Button 
               size="lg"
               variant="outline" 
-              onClick={() => window.open('https://github.com/rise-movement/rise-app', '_blank')}
+              onClick={() => window.open('https://github.com/rabble/rabblelist', '_blank')}
               className="border-white text-white hover:bg-white hover:text-gray-900"
             >
               🛠 Explore the Code
             </Button>
           </div>
 
-          <Button 
-            variant="outline"
-            onClick={() => window.open('mailto:organizers@rise.protest.net', '_blank')}
-            className="border-gray-400 text-gray-300 hover:bg-gray-800 hover:text-white"
-          >
-            📥 Request Access for Your Group
-          </Button>
 
           <blockquote className="mt-12 text-gray-400 italic">
             <p className="text-lg mb-2">"The most powerful weapon we have is organized people."</p>
             <cite className="text-gray-500">— Saul Alinsky</cite>
           </blockquote>
-          <p className="text-emerald-400 font-semibold text-xl mt-4">
+          <p className="text-primary-400 font-semibold text-xl mt-4">
             Rise is how you organize them.
           </p>
         </div>
@@ -524,20 +517,20 @@ const LandingPage = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-gray-600">
-              © 2024 rise.protest.net - Building movements for social change
+              rise.protest.net - Building movements for social change
             </div>
             <div className="flex gap-6">
-              <a href="/privacy-policy.html" className="text-gray-600 hover:text-emerald-600 transition-colors">
+              <a href="/privacy-policy.html" className="text-gray-600 hover:text-primary-600 transition-colors">
                 Privacy
               </a>
-              <a href="/terms-of-service.html" className="text-gray-600 hover:text-emerald-600 transition-colors">
+              <a href="/terms-of-service.html" className="text-gray-600 hover:text-primary-600 transition-colors">
                 Terms
               </a>
               <a 
-                href="https://github.com/rise-movement/rise-app" 
+                href="https://github.com/rabble/rabblelist" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-gray-600 hover:text-emerald-600 transition-colors"
+                className="text-gray-600 hover:text-primary-600 transition-colors"
               >
                 GitHub
               </a>

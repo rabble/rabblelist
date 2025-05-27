@@ -34,8 +34,8 @@ const TAB_CONFIGS: TabConfig[] = [
 ]
 
 const ACTIVE_STYLES = {
-  icon: 'text-blue-600',
-  text: 'text-blue-600 font-medium',
+  icon: 'text-primary-600',
+  text: 'text-primary-600 font-medium',
   strokeWidth: 2.5
 } as const
 

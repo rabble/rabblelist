@@ -92,32 +92,32 @@ export function Dashboard() {
       label: 'Total Contacts',
       value: stats.totalContacts.toLocaleString(),
       icon: Users,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      color: 'text-primary-600',
+      bgColor: 'bg-primary-50',
       action: () => navigate('/contacts')
     },
     {
       label: 'Called Today',
       value: stats.contactsCalledToday.toLocaleString(),
       icon: Phone,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
+      color: 'text-primary-600',
+      bgColor: 'bg-primary-50',
       action: () => navigate('/contacts/queue')
     },
     {
       label: 'Upcoming Events',
       value: stats.upcomingEvents.toLocaleString(),
       icon: Calendar,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
+      color: 'text-primary-700',
+      bgColor: 'bg-primary-100',
       action: () => navigate('/events')
     },
     {
       label: 'Active Ringers',
       value: stats.activeRingers.toLocaleString(),
       icon: CheckCircle,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
+      color: 'text-amber-600',
+      bgColor: 'bg-amber-50',
       action: profile?.role === 'admin' ? () => navigate('/admin') : undefined
     }
   ]
@@ -125,7 +125,7 @@ export function Dashboard() {
   const getOutcomeColor = (outcome: string) => {
     switch (outcome) {
       case 'answered':
-        return 'bg-green-500'
+        return 'bg-primary-500'
       case 'voicemail':
         return 'bg-yellow-500'
       case 'no_answer':
@@ -141,7 +141,7 @@ export function Dashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
       </div>
     )
   }
@@ -261,7 +261,7 @@ export function Dashboard() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex items-start">
-                    <Phone className="w-5 h-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" />
+                    <Phone className="w-5 h-5 text-primary-600 mt-0.5 mr-3 flex-shrink-0" />
                     <div className="flex-1">
                       <p className="font-medium">Calls Made</p>
                       <p className="text-sm text-gray-600">
@@ -271,7 +271,7 @@ export function Dashboard() {
                   </div>
                   
                   <div className="flex items-start">
-                    <Users className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+                    <Users className="w-5 h-5 text-primary-600 mt-0.5 mr-3 flex-shrink-0" />
                     <div className="flex-1">
                       <p className="font-medium">Active Team</p>
                       <p className="text-sm text-gray-600">
@@ -281,7 +281,7 @@ export function Dashboard() {
                   </div>
                   
                   <div className="flex items-start">
-                    <Target className="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" />
+                    <Target className="w-5 h-5 text-primary-700 mt-0.5 mr-3 flex-shrink-0" />
                     <div className="flex-1">
                       <p className="font-medium">Daily Goal</p>
                       <p className="text-sm text-gray-600">
@@ -289,7 +289,7 @@ export function Dashboard() {
                       </p>
                       <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-blue-600 transition-all duration-500"
+                          className="h-full bg-primary-600 transition-all duration-500"
                           style={{ width: `${Math.min(100, Math.round((stats.contactsCalledToday / 50) * 100))}%` }}
                         />
                       </div>

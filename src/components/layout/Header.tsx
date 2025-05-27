@@ -20,7 +20,7 @@ export function Header() {
       <header className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200">
         <div className="flex items-center justify-between px-4 h-14">
           <div className="flex items-center space-x-2">
-            <Megaphone className="h-5 w-5 text-emerald-600" />
+            <Megaphone className="h-5 w-5 text-primary-600" />
             <span className="text-lg font-semibold text-gray-900">Rise.Protest.net</span>
           </div>
         </div>
@@ -32,7 +32,7 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200">
       <div className="flex items-center justify-between px-4 h-14">
         <div className="flex items-center space-x-2">
-          <Megaphone className="h-5 w-5 text-emerald-600" />
+          <Megaphone className="h-5 w-5 text-primary-600" />
           <span className="text-lg font-semibold text-gray-900">Rise.Protest.net</span>
         </div>
         
@@ -44,8 +44,8 @@ export function Header() {
             onClick={() => setShowMenu(!showMenu)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-sm font-semibold text-blue-600">
+            <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+              <span className="text-sm font-semibold text-primary-600">
                 {profile?.full_name ? profile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase() : 'U'}
               </span>
             </div>

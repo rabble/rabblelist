@@ -3,12 +3,12 @@ import { ArrowRight, Users, Target, Shield, Megaphone } from 'lucide-react';
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4 py-8">
         <header className="mb-12">
           <nav className="flex justify-between items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <Megaphone className="w-8 h-8 text-emerald-600" />
+              <Megaphone className="w-8 h-8 text-primary-600" />
               <span className="text-2xl font-bold text-gray-800 dark:text-white">Rise.Protest.net</span>
             </Link>
             <div className="flex space-x-6">
@@ -18,7 +18,7 @@ export default function AboutPage() {
               <Link to="/about" className="text-gray-800 dark:text-white font-semibold">
                 About
               </Link>
-              <Link to="/login" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+              <Link to="/login" className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700">
                 Login
               </Link>
             </div>
@@ -170,7 +170,7 @@ export default function AboutPage() {
               </p>
             </section>
 
-            <div className="mt-12 p-6 bg-blue-50 dark:bg-gray-700 rounded-lg">
+            <div className="mt-12 p-6 bg-primary-50 dark:bg-gray-700 rounded-lg">
               <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-3">
                 Ready to Transform Your Organizing?
               </h3>
@@ -179,7 +179,7 @@ export default function AboutPage() {
               </p>
               <Link 
                 to="/login" 
-                className="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
               >
                 Get Started <ArrowRight className="ml-2" size={20} />
               </Link>
