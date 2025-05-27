@@ -120,12 +120,11 @@ const TabButton = ({ tab, isActive, onClick }: TabButtonProps) => {
 export function TabBar() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
 
-  // Don't render if user is not authenticated
-  if (!user) return null
-
-  const visibleTabs = getVisibleTabs(TAB_CONFIGS, user.role)
+  // Show tab bar even without full auth - just hide admin tab
+  const userRole = profile?.role || user?.role || 'viewer'
+  const visibleTabs = getVisibleTabs(TAB_CONFIGS, userRole)
 
   return (
     <nav 

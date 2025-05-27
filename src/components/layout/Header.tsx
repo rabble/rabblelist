@@ -14,7 +14,18 @@ export function Header() {
     navigate('/login')
   }
 
-  if (!user || !profile) return null
+  // Show a basic header even without full auth
+  if (!user) {
+    return (
+      <header className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200">
+        <div className="flex items-center justify-between px-4 h-14">
+          <h1 className="text-lg font-semibold text-gray-900">
+            Contact Manager
+          </h1>
+        </div>
+      </header>
+    )
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200">
@@ -33,7 +44,7 @@ export function Header() {
           >
             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
               <span className="text-sm font-semibold text-blue-600">
-                {profile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
+                {profile?.full_name ? profile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase() : 'U'}
               </span>
             </div>
             <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showMenu ? 'rotate-180' : ''}`} />
@@ -47,8 +58,8 @@ export function Header() {
               />
               <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg overflow-hidden z-50 border border-gray-200">
                 <div className="p-4 border-b border-gray-200">
-                  <p className="font-semibold text-gray-900">{profile.full_name}</p>
-                  <p className="text-sm text-gray-500 capitalize">{profile.role}</p>
+                  <p className="font-semibold text-gray-900">{profile?.full_name || 'User'}</p>
+                  <p className="text-sm text-gray-500 capitalize">{profile?.role || 'viewer'}</p>
                 </div>
                 
                 <div className="p-2">
