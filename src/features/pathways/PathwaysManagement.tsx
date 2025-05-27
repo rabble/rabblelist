@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { usePathwayStore } from '@/stores/pathwayStore'
+import { PathwayTemplateModal } from './PathwayTemplateModal'
+import { pathwayTemplates } from './pathwayTemplates'
+import type { PathwayTemplate } from './pathwayTemplates'
 import { 
   Plus,
   Target,
@@ -14,11 +17,13 @@ import {
   Trash2,
   TrendingUp,
   Activity,
-  Loader2
+  Loader2,
+  Route
 } from 'lucide-react'
 
 export function PathwaysManagement() {
   const navigate = useNavigate()
+  const [showTemplateModal, setShowTemplateModal] = useState(false)
   const { 
     pathways, 
     currentPathway,
@@ -97,10 +102,16 @@ export function PathwaysManagement() {
                 Guide members through their organizing journey
               </p>
             </div>
-            <Button onClick={() => navigate('/pathways/new')}>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Pathway
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={() => setShowTemplateModal(true)}>
+                <Route className="w-4 h-4 mr-2" />
+                Use Template
+              </Button>
+              <Button onClick={() => navigate('/pathways/new')}>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Pathway
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -411,6 +422,76 @@ export function PathwaysManagement() {
             </div>
           )}
         </div>
+
+        {/* Popular Templates */}
+        <Card className="mt-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Popular Pathway Templates</CardTitle>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowTemplateModal(true)}
+              >
+                View All Templates
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <button 
+                className="p-4 text-left border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-primary-300 transition-all"
+                onClick={() => {
+                  const template = pathwayTemplates.find(t => t.id === 'new-volunteer-onboarding')
+                  if (template) navigate('/pathways/new', { state: { template } })
+                }}
+              >
+                <span className="text-2xl mb-2 block">👋</span>
+                <h4 className="font-medium">New Volunteer Onboarding</h4>
+                <p className="text-sm text-gray-600">
+                  Welcome and integrate new volunteers
+                </p>
+              </button>
+              <button 
+                className="p-4 text-left border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-primary-300 transition-all"
+                onClick={() => {
+                  const template = pathwayTemplates.find(t => t.id === 'volunteer-to-leader')
+                  if (template) navigate('/pathways/new', { state: { template } })
+                }}
+              >
+                <span className="text-2xl mb-2 block">🚀</span>
+                <h4 className="font-medium">Volunteer to Team Leader</h4>
+                <p className="text-sm text-gray-600">
+                  Develop volunteers into leaders
+                </p>
+              </button>
+              <button 
+                className="p-4 text-left border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-primary-300 transition-all"
+                onClick={() => {
+                  const template = pathwayTemplates.find(t => t.id === 'digital-organizer')
+                  if (template) navigate('/pathways/new', { state: { template } })
+                }}
+              >
+                <span className="text-2xl mb-2 block">💻</span>
+                <h4 className="font-medium">Digital Organizer</h4>
+                <p className="text-sm text-gray-600">
+                  Master digital organizing tools
+                </p>
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Template Modal */}
+        <PathwayTemplateModal
+          isOpen={showTemplateModal}
+          onClose={() => setShowTemplateModal(false)}
+          onSelectTemplate={(template: PathwayTemplate) => {
+            setShowTemplateModal(false)
+            // Navigate to pathway creation with template data
+            navigate('/pathways/new', { state: { template } })
+          }}
+        />
     </div>
   )
 }

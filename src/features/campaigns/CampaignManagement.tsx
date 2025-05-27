@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { useCampaignStore } from '@/stores/campaignStore'
+import { CampaignTemplateModal } from './CampaignTemplateModal'
+import { campaignTemplates } from './campaignTemplates'
+import type { CampaignTemplate } from './campaignTemplates'
 import { 
   Plus,
   Users,
@@ -14,10 +17,10 @@ import {
   Phone,
   Share2,
   Megaphone,
-  Vote,
   Heart,
   Loader2,
-  Trash2
+  Trash2,
+  Sparkles
 } from 'lucide-react'
 
 export function CampaignManagement() {
@@ -25,6 +28,7 @@ export function CampaignManagement() {
   const [selectedType, setSelectedType] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
   const [searchTerm] = useState('')
+  const [showTemplateModal, setShowTemplateModal] = useState(false)
   
   const { campaigns, isLoadingCampaigns, loadCampaigns, deleteCampaign } = useCampaignStore()
 
@@ -88,10 +92,16 @@ export function CampaignManagement() {
                 Create and manage your organizing campaigns
               </p>
             </div>
-            <Button onClick={() => navigate('/campaigns/new')}>
-              <Plus className="w-4 h-4 mr-2" />
-              New Campaign
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={() => setShowTemplateModal(true)}>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Use Template
+              </Button>
+              <Button onClick={() => navigate('/campaigns/new')}>
+                <Plus className="w-4 h-4 mr-2" />
+                New Campaign
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -261,34 +271,72 @@ export function CampaignManagement() {
         {/* Campaign Templates */}
         <Card className="mt-8">
           <CardHeader>
-            <CardTitle>Quick Start Templates</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Popular Templates</CardTitle>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowTemplateModal(true)}
+              >
+                View All Templates
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button className="p-4 text-left border border-gray-200 rounded-lg hover:bg-gray-50">
-                <Vote className="w-8 h-8 text-blue-600 mb-2" />
-                <h4 className="font-medium">Petition Drive</h4>
+              <button 
+                className="p-4 text-left border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-primary-300 transition-all"
+                onClick={() => {
+                  const template = campaignTemplates.find(t => t.id === 'climate-petition')
+                  if (template) navigate('/campaigns/new', { state: { template } })
+                }}
+              >
+                <span className="text-2xl mb-2 block">🌍</span>
+                <h4 className="font-medium">Climate Action Petition</h4>
                 <p className="text-sm text-gray-600">
-                  Collect signatures for your cause
+                  Rally community support for climate initiatives
                 </p>
               </button>
-              <button className="p-4 text-left border border-gray-200 rounded-lg hover:bg-gray-50">
-                <Users className="w-8 h-8 text-green-600 mb-2" />
-                <h4 className="font-medium">Volunteer Recruitment</h4>
+              <button 
+                className="p-4 text-left border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-primary-300 transition-all"
+                onClick={() => {
+                  const template = campaignTemplates.find(t => t.id === 'gotv-phone-bank')
+                  if (template) navigate('/campaigns/new', { state: { template } })
+                }}
+              >
+                <span className="text-2xl mb-2 block">🗳️</span>
+                <h4 className="font-medium">GOTV Phone Bank</h4>
                 <p className="text-sm text-gray-600">
-                  Build your organizing team
+                  Mobilize voters for election day
                 </p>
               </button>
-              <button className="p-4 text-left border border-gray-200 rounded-lg hover:bg-gray-50">
-                <Megaphone className="w-8 h-8 text-purple-600 mb-2" />
-                <h4 className="font-medium">Rapid Response</h4>
+              <button 
+                className="p-4 text-left border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-primary-300 transition-all"
+                onClick={() => {
+                  const template = campaignTemplates.find(t => t.id === 'rapid-response')
+                  if (template) navigate('/campaigns/new', { state: { template } })
+                }}
+              >
+                <span className="text-2xl mb-2 block">🚨</span>
+                <h4 className="font-medium">Rapid Response Network</h4>
                 <p className="text-sm text-gray-600">
-                  Mobilize quickly for urgent actions
+                  Mobilize quickly in response to urgent threats
                 </p>
               </button>
             </div>
           </CardContent>
         </Card>
+
+        {/* Template Modal */}
+        <CampaignTemplateModal
+          isOpen={showTemplateModal}
+          onClose={() => setShowTemplateModal(false)}
+          onSelectTemplate={(template: CampaignTemplate) => {
+            setShowTemplateModal(false)
+            // Navigate to campaign creation with template data
+            navigate('/campaigns/new', { state: { template } })
+          }}
+        />
     </div>
   )
 }

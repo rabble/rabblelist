@@ -2,6 +2,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from '@/features/auth/AuthContext'
 import { Layout } from '@/components/layout/Layout'
 import { ContactsPage } from './ContactsPage'
+import { ContactQueue } from '@/features/contacts/ContactQueue'
+import { ContactForm } from '@/features/contacts/ContactForm'
+import { ContactDetail } from '@/features/contacts/ContactDetail'
+import { ContactImport } from '@/features/contacts/ContactImport'
+import { ContactDeduplication } from '@/features/contacts/ContactDeduplication'
+import { TagsManagement } from '@/features/contacts/management/TagsManagement'
+import { EventForm } from '@/features/events/EventForm'
 import { Dashboard } from '@/features/dashboard/Dashboard'
 import { EventsManagement } from '@/features/events/EventsManagement'
 import { EventDetail } from '@/features/events/EventDetail'
@@ -56,6 +63,48 @@ function AppRoutes() {
             </ProtectedRoute>
           } />
           
+          <Route path="/contacts/queue" element={
+            <ProtectedRoute>
+              <ContactQueue />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/contacts/new" element={
+            <ProtectedRoute>
+              <ContactForm />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/contacts/:id" element={
+            <ProtectedRoute>
+              <ContactDetail />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/contacts/:id/edit" element={
+            <ProtectedRoute>
+              <ContactForm />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/contacts/import" element={
+            <ProtectedRoute>
+              <ContactImport />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/contacts/deduplicate" element={
+            <ProtectedRoute>
+              <ContactDeduplication />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/contacts/tags" element={
+            <ProtectedRoute>
+              <TagsManagement />
+            </ProtectedRoute>
+          } />
+          
           <Route path="/events" element={
             <ProtectedRoute>
               <Layout>
@@ -64,9 +113,21 @@ function AppRoutes() {
             </ProtectedRoute>
           } />
           
+          <Route path="/events/new" element={
+            <ProtectedRoute>
+              <EventForm />
+            </ProtectedRoute>
+          } />
+          
           <Route path="/events/:id" element={
             <ProtectedRoute>
               <EventDetail />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/events/:id/edit" element={
+            <ProtectedRoute>
+              <EventForm />
             </ProtectedRoute>
           } />
           
