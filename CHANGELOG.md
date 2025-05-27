@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-05-27
+
 ### Added
 - Initial project setup with React 18, TypeScript, Vite, and Tailwind CSS
 - Basic PWA configuration with manifest and icons
@@ -60,6 +62,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Error Handling** - Improved error handling throughout the application
   - User-friendly error messages
   - Graceful fallbacks for failed operations
+- **Rebranding** - Renamed app from "Contact Manager" to "rise.protest.net"
+  - Updated app name and branding throughout the UI
+  - Changed PWA manifest to reflect protest/mobilization focus
+  - Added landing page with real screenshots
+- **Landing Page** - Professional landing page with app screenshots
+  - Hero section with clear call-to-action
+  - Feature showcase with actual app screenshots
+  - Benefits section highlighting organizing tools
+  - Mobile-responsive design
 
 ### Changed
 - Updated environment configuration for Supabase and Twilio
@@ -85,6 +96,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Restored proper routing structure
   - Added Layout component wrapping for all pages
   - Fixed TabBar visibility on mobile
+- **Authentication Flow** - Fixed login/logout functionality
+  - Implemented stateful mock authentication with localStorage
+  - Fixed redirect to dashboard after login
+  - Fixed sign out functionality to properly clear session
+  - Removed auto-login behavior to allow access to login form
+- **Layout Improvements** - Optimized layout for larger screens
+  - Fixed double Layout wrapping causing excessive whitespace
+  - Reduced sidebar width for better content space utilization
+  - Removed max-width constraints to use full screen width
+  - Applied consistent padding across all main pages
 
 ### Security
 - Added Row Level Security policies for all database tables
