@@ -348,6 +348,15 @@ export function CampaignDetail() {
                   <Mail className="w-4 h-4 mr-2" />
                   Send Email
                 </Button>
+                <Button 
+                  className="w-full justify-start" 
+                  variant="outline"
+                  onClick={() => navigate(`/campaigns/${currentCampaign.id}/sms`)}
+                  disabled={!['phone_bank', 'canvas', 'social'].includes(currentCampaign.type)}
+                >
+                  <Phone className="w-4 h-4 mr-2" />
+                  Send SMS
+                </Button>
                 <Button className="w-full justify-start" variant="outline">
                   <BarChart3 className="w-4 h-4 mr-2" />
                   View Analytics

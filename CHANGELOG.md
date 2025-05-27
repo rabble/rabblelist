@@ -36,6 +36,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Integration with campaign management system
   - Mock Mailgun API implementation for development
 
+- **SMS Campaign System** - Twilio SMS integration for campaigns (2025-01-27)
+  - SMS service using existing Twilio configuration
+  - Bulk SMS campaigns with personalization
+  - SMS character counting and segment calculation
+  - Media attachment support (MMS)
+  - SMS templates management
+  - Test SMS functionality
+  - Integration with campaign management system
+  - Communication logs database for tracking all messages
+
 - **Campaign Management** - Converted UI mockup to functional feature (2025-01-27)
   - Created complete database schema for campaigns, stats, assets, petitions, donations
   - Built campaign service with full CRUD operations

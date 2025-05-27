@@ -20,6 +20,7 @@ import { CampaignManagement } from '@/features/campaigns/CampaignManagement'
 import { CampaignForm } from '@/features/campaigns/CampaignForm'
 import { CampaignDetail } from '@/features/campaigns/CampaignDetail'
 import { EmailCampaign } from '@/features/campaigns/EmailCampaign'
+import { SMSCampaign } from '@/features/campaigns/SMSCampaign'
 import { AdminDashboard } from '@/features/admin/AdminDashboard'
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute'
 import { LoginPage } from '@/features/auth/LoginPage'
@@ -197,6 +198,14 @@ function AppRoutes() {
             <ProtectedRoute>
               <Layout>
                 <EmailCampaign />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/campaigns/:id/sms" element={
+            <ProtectedRoute>
+              <Layout>
+                <SMSCampaign />
               </Layout>
             </ProtectedRoute>
           } />
