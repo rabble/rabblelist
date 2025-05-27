@@ -16,6 +16,19 @@ import { useEventStore } from '../../stores/eventStore'
 import { useEventRegistrationStore } from '../../stores/eventRegistrationStore'
 import { Button } from '../../components/common/Button'
 import { Card } from '../../components/common/Card'
+import type { Event } from '@/types'
+
+// Extended Event type with registration fields
+interface EventWithRegistration extends Event {
+  registration_open?: boolean
+  registration_deadline?: string
+  waitlist_enabled?: boolean
+  ticket_types?: Array<{
+    name: string
+    price: number
+    description?: string
+  }>
+}
 
 const registrationSchema = z.object({
   guest_name: z.string().min(1, 'Name is required'),
@@ -46,16 +59,14 @@ export default function EventRegistrationForm() {
   const [registrationComplete, setRegistrationComplete] = useState(false)
   const [registrationError, setRegistrationError] = useState<string | null>(null)
   
-  const event = events.find(e => e.id === eventId)
+  const event = events.find(e => e.id === eventId) as EventWithRegistration | undefined
   const eventStats = eventId ? stats[eventId] : null
   const customFields = eventId ? registrationFields[eventId] || [] : []
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
-    setValue,
-    watch
+    formState: { errors, isSubmitting }
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {

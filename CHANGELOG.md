@@ -28,6 +28,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Detailed feature descriptions for each platform component
 
 ### Added
+- **Campaign Management** - Converted UI mockup to functional feature (2025-01-27)
+  - Created complete database schema for campaigns, stats, assets, petitions, donations
+  - Built campaign service with full CRUD operations
+  - Implemented campaign store using Zustand
+  - Created CampaignForm component for create/edit with type selection
+  - Updated CampaignManagement to use real data instead of mocks
+  - Added CampaignDetail view with progress tracking
+  - Supports petition, event, donation, email, phone bank, canvas, and social campaigns
+
+- **Pathways/Engagement Ladders** - Converted UI mockup to functional feature (2025-01-27)
+  - Created pathway_members table for tracking member progress
+  - Built pathway service with full CRUD operations
+  - Implemented pathway store with member management
+  - Updated PathwaysManagement to use real data
+  - Completely rewrote PathwayForm for dynamic step management
+  - Added member progress tracking and statistics
+
+- **Event Registration System** - New public-facing feature (2025-01-27)
+  - Created comprehensive event_registrations database schema
+  - Built registration service with capacity management
+  - Implemented auto-promotion from waitlist
+  - Created public registration form at /events/:id/register
+  - Updated EventDetail with registration list and check-in
+  - Added custom registration fields support
+  - Export registrations to CSV functionality
+  - Real-time registration statistics
+
 - **About Page** - New marketing page explaining organizing theory and theory of change
   - Historical organizing wisdom and digital crisis moment problem
   - Popular education meets algorithmic organizing concepts

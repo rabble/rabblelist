@@ -54,8 +54,7 @@ export function PathwayForm() {
     updatePathway,
     createStep,
     updateStep,
-    deleteStep,
-    reorderSteps
+    deleteStep
   } = usePathwayStore()
   
   const [isSaving, setIsSaving] = useState(false)
@@ -205,18 +204,6 @@ export function PathwayForm() {
     ))
   }
 
-  const moveStep = (fromIndex: number, toIndex: number) => {
-    const newSteps = [...steps]
-    const [movedStep] = newSteps.splice(fromIndex, 1)
-    newSteps.splice(toIndex, 0, movedStep)
-    
-    // Update order indices
-    newSteps.forEach((step, index) => {
-      step.order_index = index
-    })
-    
-    setSteps(newSteps)
-  }
 
   const availableTags = ['engagement', 'leadership', 'skill', 'volunteer', 'donor', 'custom']
 

@@ -194,7 +194,7 @@ export class PathwayService {
     })
   }
 
-  static async reorderPathwaySteps(pathwayId: string, steps: { id: string; order_index: number }[]) {
+  static async reorderPathwaySteps(_pathwayId: string, steps: { id: string; order_index: number }[]) {
     const updates = steps.map(step =>
       supabase
         .from('pathway_steps')
