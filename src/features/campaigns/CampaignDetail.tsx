@@ -339,7 +339,12 @@ export function CampaignDetail() {
                   <Users className="w-4 h-4 mr-2" />
                   Add Contacts
                 </Button>
-                <Button className="w-full justify-start" variant="outline">
+                <Button 
+                  className="w-full justify-start" 
+                  variant="outline"
+                  onClick={() => navigate(`/campaigns/${currentCampaign.id}/email`)}
+                  disabled={currentCampaign.type !== 'email_blast'}
+                >
                   <Mail className="w-4 h-4 mr-2" />
                   Send Email
                 </Button>
