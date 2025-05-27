@@ -1,5 +1,5 @@
 import { useAuth } from '@/features/auth/AuthContext'
-import { LogOut, ChevronDown } from 'lucide-react'
+import { LogOut, ChevronDown, Megaphone } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { OrganizationSwitcher } from '@/features/auth/OrganizationSwitcher'
@@ -19,9 +19,10 @@ export function Header() {
     return (
       <header className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200">
         <div className="flex items-center justify-between px-4 h-14">
-          <h1 className="text-lg font-semibold text-gray-900">
-            Contact Manager
-          </h1>
+          <div className="flex items-center space-x-2">
+            <Megaphone className="h-5 w-5 text-emerald-600" />
+            <span className="text-lg font-semibold text-gray-900">Rise.Protest.net</span>
+          </div>
         </div>
       </header>
     )
@@ -30,9 +31,10 @@ export function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200">
       <div className="flex items-center justify-between px-4 h-14">
-        <h1 className="text-lg font-semibold text-gray-900">
-          rise.protest.net
-        </h1>
+        <div className="flex items-center space-x-2">
+          <Megaphone className="h-5 w-5 text-emerald-600" />
+          <span className="text-lg font-semibold text-gray-900">Rise.Protest.net</span>
+        </div>
         
         <div className="flex items-center gap-4">
           <OrganizationSwitcher />
@@ -65,7 +67,7 @@ export function Header() {
                 <div className="p-2">
                   <button
                     onClick={() => {
-                      navigate('/')
+                      navigate('/about')
                       setShowMenu(false)
                     }}
                     className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"

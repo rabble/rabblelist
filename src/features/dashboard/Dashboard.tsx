@@ -183,188 +183,193 @@ export function Dashboard() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* Quick Actions */}
-          <Card className="xl:col-span-2">
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Button 
-                  onClick={() => navigate('/contacts/queue')}
-                  className="justify-start h-auto py-4"
-                  variant="outline"
-                >
-                  <Phone className="w-5 h-5 mr-3 flex-shrink-0" />
-                  <div className="text-left">
-                    <p className="font-medium">Start Calling</p>
-                    <p className="text-sm text-gray-600">
-                      Begin your contact queue
-                    </p>
-                  </div>
-                </Button>
+        {/* Main Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Quick Actions and Today's Activity */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Button 
+                    onClick={() => navigate('/contacts/queue')}
+                    className="justify-start h-auto py-4"
+                    variant="outline"
+                  >
+                    <Phone className="w-5 h-5 mr-3 flex-shrink-0" />
+                    <div className="text-left">
+                      <p className="font-medium">Start Calling</p>
+                      <p className="text-sm text-gray-600">
+                        Begin your contact queue
+                      </p>
+                    </div>
+                  </Button>
 
-                <Button 
-                  onClick={() => navigate('/contacts/new')}
-                  className="justify-start h-auto py-4"
-                  variant="outline"
-                >
-                  <Users className="w-5 h-5 mr-3 flex-shrink-0" />
-                  <div className="text-left">
-                    <p className="font-medium">Add Contact</p>
-                    <p className="text-sm text-gray-600">
-                      Create new contact
-                    </p>
-                  </div>
-                </Button>
+                  <Button 
+                    onClick={() => navigate('/contacts/new')}
+                    className="justify-start h-auto py-4"
+                    variant="outline"
+                  >
+                    <Users className="w-5 h-5 mr-3 flex-shrink-0" />
+                    <div className="text-left">
+                      <p className="font-medium">Add Contact</p>
+                      <p className="text-sm text-gray-600">
+                        Create new contact
+                      </p>
+                    </div>
+                  </Button>
 
-                <Button 
-                  onClick={() => navigate('/events')}
-                  className="justify-start h-auto py-4"
-                  variant="outline"
-                >
-                  <Calendar className="w-5 h-5 mr-3 flex-shrink-0" />
-                  <div className="text-left">
-                    <p className="font-medium">View Events</p>
-                    <p className="text-sm text-gray-600">
-                      {stats.upcomingEvents} upcoming
-                    </p>
-                  </div>
-                </Button>
+                  <Button 
+                    onClick={() => navigate('/events')}
+                    className="justify-start h-auto py-4"
+                    variant="outline"
+                  >
+                    <Calendar className="w-5 h-5 mr-3 flex-shrink-0" />
+                    <div className="text-left">
+                      <p className="font-medium">View Events</p>
+                      <p className="text-sm text-gray-600">
+                        {stats.upcomingEvents} upcoming
+                      </p>
+                    </div>
+                  </Button>
 
-                <Button 
-                  onClick={() => navigate('/contacts')}
-                  className="justify-start h-auto py-4"
-                  variant="outline"
-                >
-                  <TrendingUp className="w-5 h-5 mr-3 flex-shrink-0" />
-                  <div className="text-left">
-                    <p className="font-medium">Manage Contacts</p>
-                    <p className="text-sm text-gray-600">
-                      View all contacts
-                    </p>
-                  </div>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Today's Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Today's Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <Phone className="w-5 h-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-medium">Calls Made</p>
-                    <p className="text-sm text-gray-600">
-                      {stats.contactsCalledToday} contacts reached
-                    </p>
-                  </div>
+                  <Button 
+                    onClick={() => navigate('/contacts')}
+                    className="justify-start h-auto py-4"
+                    variant="outline"
+                  >
+                    <TrendingUp className="w-5 h-5 mr-3 flex-shrink-0" />
+                    <div className="text-left">
+                      <p className="font-medium">Manage Contacts</p>
+                      <p className="text-sm text-gray-600">
+                        View all contacts
+                      </p>
+                    </div>
+                  </Button>
                 </div>
-                
-                <div className="flex items-start">
-                  <Users className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-medium">Active Team</p>
-                    <p className="text-sm text-gray-600">
-                      {stats.activeRingers} ringers active today
-                    </p>
+              </CardContent>
+            </Card>
+
+            {/* Today's Activity */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Today's Activity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <Phone className="w-5 h-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="font-medium">Calls Made</p>
+                      <p className="text-sm text-gray-600">
+                        {stats.contactsCalledToday} contacts reached
+                      </p>
+                    </div>
                   </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <Target className="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-medium">Daily Goal</p>
-                    <p className="text-sm text-gray-600">
-                      {Math.min(100, Math.round((stats.contactsCalledToday / 50) * 100))}% completed
-                    </p>
-                    <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-blue-600 transition-all duration-500"
-                        style={{ width: `${Math.min(100, Math.round((stats.contactsCalledToday / 50) * 100))}%` }}
-                      />
+                  
+                  <div className="flex items-start">
+                    <Users className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="font-medium">Active Team</p>
+                      <p className="text-sm text-gray-600">
+                        {stats.activeRingers} ringers active today
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <Target className="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="font-medium">Daily Goal</p>
+                      <p className="text-sm text-gray-600">
+                        {Math.min(100, Math.round((stats.contactsCalledToday / 50) * 100))}% completed
+                      </p>
+                      <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-blue-600 transition-all duration-500"
+                          style={{ width: `${Math.min(100, Math.round((stats.contactsCalledToday / 50) * 100))}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - Recent Calls */}
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle>Recent Calls</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {recentCalls.length > 0 ? (
+                <div className="space-y-3">
+                  {recentCalls.map((call) => (
+                    <div 
+                      key={call.id}
+                      className="flex flex-col py-3 border-b last:border-0 gap-2"
+                    >
+                      <div className="flex items-start space-x-3">
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${
+                          getOutcomeColor(call.outcome)
+                        }`} />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">
+                            {call.contacts?.full_name || 'Unknown Contact'}
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            <span className="capitalize">{call.outcome.replace('_', ' ')}</span>
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(call.called_at).toLocaleString([], {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                          {call.ringer && (
+                            <p className="text-xs text-gray-500">
+                              by {call.ringer.full_name}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      {call.contact_id && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => navigate(`/contacts/${call.contact_id}`)}
+                          className="w-full"
+                        >
+                          View Contact
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Phone className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                  <p className="text-sm text-gray-500">
+                    No calls made yet today
+                  </p>
+                  <Button 
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => navigate('/contacts/queue')}
+                  >
+                    Start Calling
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
-
-        {/* Recent Activity */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Recent Calls</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {recentCalls.length > 0 ? (
-              <div className="space-y-3">
-                {recentCalls.map((call) => (
-                  <div 
-                    key={call.id}
-                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 border-b last:border-0 gap-2"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                        getOutcomeColor(call.outcome)
-                      }`} />
-                      <div>
-                        <p className="font-medium">
-                          {call.contacts?.full_name || 'Unknown Contact'}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          <span className="capitalize">{call.outcome.replace('_', ' ')}</span>
-                          {' • '}
-                          {new Date(call.called_at).toLocaleString([], {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                          {call.ringer && (
-                            <>
-                              {' • '}
-                              <span className="text-gray-500">by {call.ringer.full_name}</span>
-                            </>
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                    {call.contact_id && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => navigate(`/contacts/${call.contact_id}`)}
-                        className="self-end sm:self-auto"
-                      >
-                        View
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Phone className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-500">
-                  No calls made yet today. Let's get started!
-                </p>
-                <Button 
-                  className="mt-4"
-                  onClick={() => navigate('/contacts/queue')}
-                >
-                  Start Calling
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
     </div>
   )
 }

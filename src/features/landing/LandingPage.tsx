@@ -1,189 +1,228 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { Button } from '../../components/common/Button'
 import { 
   Users, 
-  Calendar, 
   Phone, 
-  Tag, 
-  Search, 
-  BarChart3,
   CheckCircle,
-  Zap,
-  Shield
+  Shield,
+  Clock,
+  Target,
+  ArrowRight,
+  Megaphone,
+  Heart,
+  Globe,
+  Lock,
+  WifiOff,
+  Activity
 } from 'lucide-react'
 
 const LandingPage = () => {
   const navigate = useNavigate()
 
-  const features = [
+  const historicalLessons = [
     {
-      title: 'Dashboard Overview',
-      description: 'Get instant insights with stats, recent activities, and quick actions',
-      screenshot: '/Screenshot%202025-05-27%20at%209.27.51%20AM.png',
-      alt: 'Dashboard showing welcome screen with stats and quick actions'
+      icon: <Phone className="w-6 h-6" />,
+      title: "Highlander's Popular Education → Peer-to-Peer Organizing",
+      quote: "The situation is there... [the school] will build its own structure",
+      author: "Myles Horton",
+      features: [
+        "Mobile-first relationship building",
+        "No app install required—PWA works offline",
+        "Tap-to-call with guided conversation prompts",
+        "One-tap outcome logging",
+        "Notes and context flow with each contact"
+      ]
     },
     {
-      title: 'Contact Management',
-      description: 'Organize contacts with tags, search, and advanced filters',
-      screenshot: '/Screenshot%202025-05-27%20at%209.27.39%20AM.png',
-      alt: 'Contacts list with tags, search functionality, and filters'
+      icon: <Globe className="w-6 h-6" />,
+      title: "MLK's Strategic Campaigns → Distributed Crisis Response",
+      quote: "Birmingham succeeded because roles were clear within 24 hours",
+      features: [
+        "Auto-route new signups to local organizers",
+        "Pre-configured delegation hierarchies",
+        "Start calling from contact queues immediately",
+        "Geographic auto-grouping",
+        "Permission escalation based on engagement"
+      ]
     },
     {
-      title: 'Campaign Coordination',
-      description: 'Plan and execute campaigns with volunteer coordination and outreach tools',
-      screenshot: '/Screenshot%202025-05-27%20at%209.28.01%20AM.png',
-      alt: 'Campaign management interface with various action types'
+      icon: <Target className="w-6 h-6" />,
+      title: "Emergent Strategy → Leadership Multiplication",
+      quote: "Small is good, small is all",
+      author: "adrienne maree brown",
+      features: [
+        "Track progression: signup → attendance → leadership",
+        "Automated mentorship matching",
+        "Visible next steps for each contact",
+        "A/B test engagement sequences"
+      ]
+    },
+    {
+      icon: <Activity className="w-6 h-6" />,
+      title: "Alinsky's Power Building → Concrete Action",
+      quote: "Power is not only what you have, but what the enemy thinks you have",
+      author: "Saul Alinsky",
+      features: [
+        "Create and manage events via web or mobile",
+        "QR check-in + attendance tracking",
+        "View participation history",
+        "Demonstrate collective strength"
+      ]
+    },
+    {
+      icon: <WifiOff className="w-6 h-6" />,
+      title: "Hong Kong's 'Be Water' → Offline-First Resilience",
+      quote: "Movements need infrastructure that survives internet shutdowns",
+      features: [
+        "All features work offline",
+        "Encrypted communication channels",
+        "Distributed data storage",
+        "90-second signup flows during traffic spikes"
+      ]
     }
   ]
 
-  const benefits = [
-    {
-      icon: <Users className="w-6 h-6" />,
-      title: 'Community Building',
-      description: 'Connect with activists and organizers to build powerful movements together'
-    },
-    {
-      icon: <Zap className="w-6 h-6" />,
-      title: 'Direct Action',
-      description: 'Coordinate protests, campaigns, and actions with real-time collaboration'
-    },
-    {
-      icon: <Shield className="w-6 h-6" />,
-      title: 'Secure Organizing',
-      description: 'Protect your community with encrypted data and privacy-first design'
-    },
-    {
-      icon: <BarChart3 className="w-6 h-6" />,
-      title: 'Impact Tracking',
-      description: 'Measure engagement and see the real impact of your organizing efforts'
-    }
-  ]
+  const movementWisdom = {
+    worked: [
+      "Montgomery Bus Boycott: Pre-existing church networks + clear roles",
+      "Serbia's Otpor: Decentralized tactics + unified strategy",
+      "Black Lives Matter: Chapter autonomy + shared principles",
+      "Fridays for Future: Simple format + local adaptation"
+    ],
+    failed: [
+      "Occupy Wall Street: Viral spread without engagement infrastructure",
+      "Arab Spring: Toppled dictators but lacked post-revolution organizing",
+      "Women's March: Massive turnout that didn't convert into sustained organizing"
+    ]
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-white">
+      {/* Navigation Header */}
+      <header className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
+        <nav className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <Link to="/" className="flex items-center space-x-2">
+              <Megaphone className="w-8 h-8 text-emerald-600" />
+              <span className="text-2xl font-bold text-gray-900">Rise.Protest.net</span>
+            </Link>
+            <div className="flex items-center space-x-6">
+              <Link to="/about" className="text-gray-600 hover:text-gray-900 font-medium hidden sm:inline">
+                About
+              </Link>
+              <a 
+                href="https://github.com/rise-movement/rise-app" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-gray-900 font-medium hidden sm:inline"
+              >
+                GitHub
+              </a>
+              <Button 
+                size="sm"
+                onClick={() => navigate('/login')}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                Start Organizing
+              </Button>
+            </div>
+          </div>
+        </nav>
+      </header>
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-transparent to-primary-50 opacity-50" />
-        <div className="container mx-auto px-4 py-16 md:py-24 relative">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight">
-              Build Movements,
-              <span className="text-primary-600 block">Change the World</span>
+      <section className="pt-24 pb-16 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+              Turn Crisis Into Commitment.
+              <span className="text-emerald-600 block">Build Real Movement Power.</span>
             </h1>
-            <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
-              rise.protest.net is the organizing platform for activists, movement builders, and changemakers. 
-              Connect with your community, coordinate actions, and create lasting social impact.
-            </p>
+            
+            {/* History's Lesson Alert */}
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-8 max-w-4xl mx-auto">
+              <div className="flex items-start space-x-3">
+                <Clock className="w-6 h-6 text-amber-600 flex-shrink-0 mt-1" />
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">
+                    ⚡ History's Lesson: You Have 48 Hours to Win or Lose
+                  </h2>
+                  <p className="text-gray-700 mb-3">
+                    When Rosa Parks was arrested, the Montgomery Improvement Association mobilized 40,000 people in 72 hours. 
+                    When Ferguson erupted, pre-existing relationships sustained 400 days of resistance. 
+                    When Hong Kong faced mass arrests, their "Be Water" strategy kept the movement alive.
+                  </p>
+                  <p className="text-gray-900 font-semibold">
+                    Today's movements face the same challenge at digital scale: <span className="text-amber-700">convert surge interest into lasting participation before the news cycle moves on.</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center space-y-4 mb-8">
+              <p className="text-xl text-gray-600 font-medium">
+                ✊ Rise isn't for fundraising or social media followers.
+              </p>
+              <p className="text-xl text-gray-900 font-bold">
+                🛠 It's for organizers turning signups into new leaders—fast.
+              </p>
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
                 onClick={() => navigate('/login')}
-                className="shadow-xl hover:shadow-2xl"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-xl hover:shadow-2xl flex items-center"
               >
-                Join the Movement
+                Start Organizing Now <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
               <Button 
                 variant="outline" 
-                size="lg" 
-                onClick={() => navigate('/login')}
+                size="lg"
+                onClick={() => window.open('https://github.com/rise-movement/rise-app', '_blank')}
+                className="border-gray-300"
               >
-                Sign In
+                Explore the Code
               </Button>
-            </div>
-            <div className="mt-8 flex items-center justify-center gap-8 text-sm text-slate-600">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>Community-powered</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>Works offline</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>Open & transparent</span>
-              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
+      {/* What History Taught Us Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-              Everything You Need to Stay Organized
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              🧩 What History Taught Us (What Rise Does)
             </h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              From contact management to event coordination, our platform has all the tools you need.
-            </p>
           </div>
 
-          <div className="space-y-16">
-            {features.map((feature, index) => (
-              <div 
-                key={index}
-                className={`flex flex-col lg:flex-row items-center gap-8 lg:gap-12 ${
-                  index % 2 === 1 ? 'lg:flex-row-reverse' : ''
-                }`}
-              >
-                <div className="flex-1 space-y-4">
-                  <h3 className="text-2xl md:text-3xl font-bold text-slate-900">
-                    {feature.title}
-                  </h3>
-                  <p className="text-lg text-slate-600">
-                    {feature.description}
-                  </p>
-                  <div className="flex gap-4 pt-2">
-                    {index === 0 && (
-                      <>
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <BarChart3 className="w-5 h-5" />
-                          <span>Analytics</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Zap className="w-5 h-5" />
-                          <span>Quick Actions</span>
-                        </div>
-                      </>
-                    )}
-                    {index === 1 && (
-                      <>
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Tag className="w-5 h-5" />
-                          <span>Tags</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Search className="w-5 h-5" />
-                          <span>Search</span>
-                        </div>
-                      </>
-                    )}
-                    {index === 2 && (
-                      <>
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Phone className="w-5 h-5" />
-                          <span>Outreach</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Calendar className="w-5 h-5" />
-                          <span>Coordination</span>
-                        </div>
-                      </>
+          <div className="space-y-12">
+            {historicalLessons.map((lesson, index) => (
+              <div key={index} className="bg-white rounded-xl shadow-sm p-8">
+                <div className="flex items-start space-x-4 mb-6">
+                  <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600 flex-shrink-0">
+                    {lesson.icon}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      {lesson.title}
+                    </h3>
+                    {lesson.quote && (
+                      <blockquote className="text-gray-600 italic border-l-4 border-emerald-200 pl-4">
+                        "{lesson.quote}" {lesson.author && `— ${lesson.author}`}
+                      </blockquote>
                     )}
                   </div>
                 </div>
-                <div className="flex-1">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary-100 to-primary-200 rounded-2xl transform rotate-3 scale-105 opacity-20" />
-                    <img 
-                      src={feature.screenshot}
-                      alt={feature.alt}
-                      className="relative rounded-2xl shadow-2xl w-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
+                <div className="grid md:grid-cols-2 gap-3 ml-16">
+                  {lesson.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-start space-x-2">
+                      <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-gray-700 text-sm">{feature}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
@@ -191,32 +230,241 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-16 md:py-24 bg-slate-50">
-        <div className="container mx-auto px-4">
+      {/* Screenshots Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-              Tools for Social Change
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              🚀 See How It Works: From Viral Moment to Organized Power
             </h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Everything you need to organize effectively and create lasting impact.
-            </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {benefits.map((benefit, index) => (
-              <div 
-                key={index}
-                className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow"
-              >
-                <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center text-primary-600 mb-4">
-                  {benefit.icon}
+          {/* Crisis Response Dashboard */}
+          <div className="mb-16">
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="p-6 bg-gray-50 border-b">
+                <h3 className="text-2xl font-bold text-gray-900">Crisis Response Dashboard</h3>
+                <p className="text-gray-600 mt-1">Your organizing command center during surge moments</p>
+              </div>
+              <div className="p-6">
+                <img 
+                  src="/dashboard.png"
+                  alt="Dashboard showing organizing metrics"
+                  className="w-full rounded-lg shadow-md"
+                />
+                <div className="mt-6 space-y-3">
+                  <h4 className="font-semibold text-gray-900">What you see at a glance:</h4>
+                  <ul className="space-y-2 text-gray-700">
+                    <li className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <span><strong>Contact surge tracking:</strong> Real-time view of new signups to mobilize</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <span><strong>Active Ringers:</strong> Who's available to start calling right now</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <span><strong>Quick Actions:</strong> One-click access to start calling, add contacts, manage events</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <span><strong>Daily Goals:</strong> Track progress toward conversion targets</span>
+                    </li>
+                  </ul>
                 </div>
-                <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                  {benefit.title}
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Management */}
+          <div className="mb-16">
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="p-6 bg-gray-50 border-b">
+                <h3 className="text-2xl font-bold text-gray-900">Movement Building Analytics</h3>
+                <p className="text-gray-600 mt-1">The engagement ladder in action</p>
+              </div>
+              <div className="p-6">
+                <img 
+                  src="/contacts.png"
+                  alt="Contact management with tags and filters"
+                  className="w-full rounded-lg shadow-md"
+                />
+                <div className="mt-6 space-y-3">
+                  <h4 className="font-semibold text-gray-900">Smart contact organization:</h4>
+                  <ul className="space-y-2 text-gray-700">
+                    <li className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <span><strong>Tag-based organization:</strong> Group contacts by interests, skills, and engagement level</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <span><strong>Advanced filtering:</strong> Find exactly who you need for specific actions</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <span><strong>Engagement tracking:</strong> See who's ready to level up their involvement</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <span><strong>Quick actions:</strong> Call, message, or assign tasks with one click</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* The Ferguson Model */}
+          <div className="bg-emerald-50 rounded-xl p-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">The Ferguson Model → Digital Scale:</h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                {
+                  step: "1",
+                  title: "Mass action/viral moment hits",
+                  description: "Dashboard shows contact surge in real-time"
+                },
+                {
+                  step: "2",
+                  title: "Rise auto-triages contacts",
+                  description: "Smart assignment to available Ringers"
+                },
+                {
+                  step: "3",
+                  title: "Organizers call within 2 hours",
+                  description: "One-click calling with conversation guides"
+                },
+                {
+                  step: "4",
+                  title: "Contacts get specific next steps",
+                  description: "Automatic progression through engagement ladder"
+                },
+                {
+                  step: "5",
+                  title: "New leaders identified",
+                  description: "System flags volunteers ready for organizer roles"
+                },
+                {
+                  step: "6",
+                  title: "Base grows with each cycle",
+                  description: "Analytics track sustainable power growth"
+                }
+              ].map((item) => (
+                <div key={item.step} className="bg-white rounded-lg p-6">
+                  <div className="flex items-center mb-3">
+                    <div className="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold mr-3">
+                      {item.step}
+                    </div>
+                    <h4 className="font-semibold text-gray-900">{item.title}</h4>
+                  </div>
+                  <p className="text-gray-700 text-sm">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Movement Wisdom Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              🧭 Built on 70 Years of Movement Wisdom
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="bg-white rounded-xl p-8">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <CheckCircle className="w-6 h-6 text-green-500 mr-2" />
+                What Worked:
+              </h3>
+              <ul className="space-y-3">
+                {movementWisdom.worked.map((item, idx) => (
+                  <li key={idx} className="text-gray-700 pl-4 border-l-2 border-green-200">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="bg-white rounded-xl p-8">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <span className="w-6 h-6 text-red-500 mr-2">✕</span>
+                What Failed:
+              </h3>
+              <ul className="space-y-3">
+                {movementWisdom.failed.map((item, idx) => (
+                  <li key={idx} className="text-gray-700 pl-4 border-l-2 border-red-200">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-8 bg-emerald-100 rounded-xl p-6">
+            <h4 className="font-bold text-gray-900 mb-3">Rise operationalizes the lessons that build lasting power:</h4>
+            <div className="grid md:grid-cols-2 gap-4">
+              {[
+                "Relationship-centered organizing over mass mobilization",
+                "Distributed leadership that survives repression",
+                "Clear engagement pathways from supporter to organizer",
+                "Technology that amplifies human connections, doesn't replace them"
+              ].map((lesson, idx) => (
+                <div key={idx} className="flex items-start">
+                  <Heart className="w-5 h-5 text-emerald-600 mr-2 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-800">{lesson}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Security Features */}
+      <section className="py-16">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              🛡️ Designed for Movement Realities
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                icon: <Lock className="w-6 h-6" />,
+                title: "Secure",
+                description: "End-to-end encryption, GDPR-compliant, role-based access"
+              },
+              {
+                icon: <Shield className="w-6 h-6" />,
+                title: "Resilient",
+                description: "Functions during internet shutdowns, leader detention, traffic spikes"
+              },
+              {
+                icon: <Globe className="w-6 h-6" />,
+                title: "Accessible",
+                description: "Works on any device, any connection, any language"
+              },
+              {
+                icon: <Users className="w-6 h-6" />,
+                title: "Open Source",
+                description: "Community-controlled, federation-ready infrastructure"
+              }
+            ].map((feature, idx) => (
+              <div key={idx} className="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-shadow">
+                <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600 mb-4">
+                  {feature.icon}
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {feature.title}
                 </h3>
-                <p className="text-slate-600">
-                  {benefit.description}
+                <p className="text-gray-600 text-sm">
+                  {feature.description}
                 </p>
               </div>
             ))}
@@ -225,40 +473,73 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-3xl p-8 md:p-12 text-center text-white">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to Make a Difference?
-            </h2>
-            <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-              Join the growing network of activists and organizers building a better world.
-            </p>
+      <section className="py-16 bg-gray-900">
+        <div className="container mx-auto px-4 max-w-4xl text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            ✅ Ready to Turn Your Next Crisis Into Lasting Power?
+          </h2>
+          <p className="text-xl text-gray-300 mb-6">
+            Don't let another Ferguson become another Occupy.<br />
+            Don't let another viral moment evaporate into hashtags.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <Button 
               size="lg" 
-              variant="secondary"
               onClick={() => navigate('/login')}
-              className="shadow-xl hover:shadow-2xl"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-xl hover:shadow-2xl"
             >
-              Start Building Your Movement
+              👉 Start Organizing Now
+            </Button>
+            <Button 
+              size="lg"
+              variant="outline" 
+              onClick={() => window.open('https://github.com/rise-movement/rise-app', '_blank')}
+              className="border-white text-white hover:bg-white hover:text-gray-900"
+            >
+              🛠 Explore the Code
             </Button>
           </div>
+
+          <Button 
+            variant="outline"
+            onClick={() => window.open('mailto:organizers@rise.protest.net', '_blank')}
+            className="border-gray-400 text-gray-300 hover:bg-gray-800 hover:text-white"
+          >
+            📥 Request Access for Your Group
+          </Button>
+
+          <blockquote className="mt-12 text-gray-400 italic">
+            <p className="text-lg mb-2">"The most powerful weapon we have is organized people."</p>
+            <cite className="text-gray-500">— Saul Alinsky</cite>
+          </blockquote>
+          <p className="text-emerald-400 font-semibold text-xl mt-4">
+            Rise is how you organize them.
+          </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-8 border-t border-slate-200">
+      <footer className="py-8 bg-gray-100 border-t border-gray-200">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-slate-600">
+            <div className="text-gray-600">
               © 2024 rise.protest.net - Building movements for social change
             </div>
             <div className="flex gap-6">
-              <a href="/privacy-policy.html" className="text-slate-600 hover:text-primary-600 transition-colors">
+              <a href="/privacy-policy.html" className="text-gray-600 hover:text-emerald-600 transition-colors">
                 Privacy
               </a>
-              <a href="/terms-of-service.html" className="text-slate-600 hover:text-primary-600 transition-colors">
-                Community Guidelines
+              <a href="/terms-of-service.html" className="text-gray-600 hover:text-emerald-600 transition-colors">
+                Terms
+              </a>
+              <a 
+                href="https://github.com/rise-movement/rise-app" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-emerald-600 transition-colors"
+              >
+                GitHub
               </a>
             </div>
           </div>

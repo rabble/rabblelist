@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider, useAuth } from '@/features/auth/AuthContext'
+import { AuthProvider } from '@/features/auth/AuthContext'
 import { Layout } from '@/components/layout/Layout'
 import { ContactsPage } from './ContactsPage'
 import { Dashboard } from '@/features/dashboard/Dashboard'
@@ -13,6 +13,7 @@ import { AdminDashboard } from '@/features/admin/AdminDashboard'
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute'
 import { LoginPage } from '@/features/auth/LoginPage'
 import LandingPage from '@/features/landing/LandingPage'
+import AboutPage from '@/features/landing/AboutPage'
 
 function App() {
   return (
@@ -26,17 +27,12 @@ function App() {
 
 // Separate component that can use useAuth
 function AppRoutes() {
-  const { user, loading } = useAuth()
-  
   return (
     <Routes>
       {/* Public routes */}
-      <Route path="/" element={
-        loading ? <div>Loading...</div> : 
-        user ? <Navigate to="/dashboard" replace /> : 
-        <LandingPage />
-      } />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/about" element={<AboutPage />} />
           
           {/* Protected routes */}
           <Route path="/dashboard" element={

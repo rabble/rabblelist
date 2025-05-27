@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **About Page** - New marketing page explaining organizing theory and theory of change
+  - Historical organizing wisdom and digital crisis moment problem
+  - Popular education meets algorithmic organizing concepts
+  - Strategic escalation in the attention economy
+  - Crisis infrastructure for distributed resilience
+  - Building resilient movement infrastructure
+- **Landing Page Navigation** - Added navigation header to landing and about pages
+  - Consistent navigation between marketing pages
+  - Added About link to footer navigation
+- **Enhanced Landing Page** - Complete redesign with powerful marketing copy
+  - Historical movement lessons integrated with features
+  - Crisis response framework (48-hour conversion window)
+  - Movement wisdom section (what worked vs what failed)
+  - Security and resilience features highlighted
+  - Screenshots showcasing dashboard and contact management
+  - Ferguson Model → Digital Scale workflow
+- **Rise.Protest.net Branding** - Updated all branding from Catalyst to Rise
+  - New megaphone logo icon across all pages
+  - Emerald green color scheme (matching theme)
+  - Consistent branding in header, landing, and about pages
+
+### Changed
+- **Dashboard Layout** - Improved balance for large screens
+  - Changed from 3:1 to 2:1 layout with Recent Calls in sidebar
+  - Stacked Quick Actions and Today's Activity in main column
+  - More compact Recent Calls design for sidebar display
+
 ## [0.2.0] - 2025-05-27
 
 ### Added
