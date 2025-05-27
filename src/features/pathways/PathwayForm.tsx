@@ -9,18 +9,10 @@ import {
   Trash2,
   GripVertical,
   Save,
-  Target,
-  Users,
-  Clock,
   CheckCircle,
-  AlertCircle,
-  Calendar,
   MessageSquare,
   Mail,
-  Phone,
-  Globe,
-  Hash,
-  Zap
+  Hash
 } from 'lucide-react'
 
 interface PathwayStep {

@@ -10,69 +10,97 @@ import { PathwayForm } from '@/features/pathways/PathwayForm'
 import { EngagementDashboard } from '@/features/engagement/EngagementDashboard'
 import { CampaignManagement } from '@/features/campaigns/CampaignManagement'
 import { AdminDashboard } from '@/features/admin/AdminDashboard'
+import { ProtectedRoute } from '@/features/auth/ProtectedRoute'
+import { LoginPage } from '@/features/auth/LoginPage'
+import LandingPage from '@/features/landing/LandingPage'
 
 function App() {
   return (
     <Router>
       <AuthProvider>
         <Routes>
-          {/* Redirect root to contacts */}
-          <Route path="/" element={<Navigate to="/contacts" replace />} />
+          {/* Public routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
           
-          {/* Main pages with layout */}
+          {/* Protected routes */}
           <Route path="/dashboard" element={
-            <Layout>
-              <Dashboard />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <Dashboard />
+              </Layout>
+            </ProtectedRoute>
           } />
           
           <Route path="/contacts" element={
-            <Layout>
-              <ContactsPage />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <ContactsPage />
+              </Layout>
+            </ProtectedRoute>
           } />
           
           <Route path="/events" element={
-            <Layout>
-              <EventsManagement />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <EventsManagement />
+              </Layout>
+            </ProtectedRoute>
           } />
           
           <Route path="/groups" element={
-            <Layout>
-              <GroupsManagement />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <GroupsManagement />
+              </Layout>
+            </ProtectedRoute>
           } />
           
           <Route path="/pathways" element={
-            <Layout>
-              <PathwaysManagement />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <PathwaysManagement />
+              </Layout>
+            </ProtectedRoute>
           } />
           
-          <Route path="/pathways/new" element={<PathwayForm />} />
-          <Route path="/pathways/:id/edit" element={<PathwayForm />} />
+          <Route path="/pathways/new" element={
+            <ProtectedRoute>
+              <PathwayForm />
+            </ProtectedRoute>
+          } />
+          <Route path="/pathways/:id/edit" element={
+            <ProtectedRoute>
+              <PathwayForm />
+            </ProtectedRoute>
+          } />
           
           <Route path="/engagement" element={
-            <Layout>
-              <EngagementDashboard />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <EngagementDashboard />
+              </Layout>
+            </ProtectedRoute>
           } />
           
           <Route path="/campaigns" element={
-            <Layout>
-              <CampaignManagement />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <CampaignManagement />
+              </Layout>
+            </ProtectedRoute>
           } />
           
           <Route path="/admin" element={
-            <Layout>
-              <AdminDashboard />
-            </Layout>
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Layout>
+                <AdminDashboard />
+              </Layout>
+            </ProtectedRoute>
           } />
           
-          {/* Catch all */}
-          <Route path="*" element={<Navigate to="/contacts" replace />} />
+          {/* Catch all - redirect to landing page */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
     </Router>

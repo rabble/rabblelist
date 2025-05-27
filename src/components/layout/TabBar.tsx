@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Home, Users, Megaphone, Calendar, Settings, Activity, Target } from 'lucide-react'
+import { Home, Users, Megaphone, Settings, Activity, Target } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthContext'
 

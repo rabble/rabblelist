@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
@@ -12,20 +12,14 @@ import {
   Phone,
   Activity,
   Target,
-  Clock,
   AlertCircle,
-  ChevronRight,
   Filter,
   Download,
   RefreshCw,
   BarChart3,
-  LineChart,
   PieChart,
   Zap,
   UserCheck,
-  UserX,
-  Hash,
-  Globe,
   Share2
 } from 'lucide-react'
 
@@ -56,7 +50,6 @@ interface EngagementSegment {
 
 export function EngagementDashboard() {
   const [timeframe, setTimeframe] = useState('7d')
-  const [loading, setLoading] = useState(false)
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null)
 
   // Mock data for engagement metrics
