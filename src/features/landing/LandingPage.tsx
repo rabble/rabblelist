@@ -9,8 +9,7 @@ import {
   BarChart3,
   CheckCircle,
   Zap,
-  Shield,
-  Smartphone
+  Shield
 } from 'lucide-react'
 
 const LandingPage = () => {
@@ -20,26 +19,20 @@ const LandingPage = () => {
     {
       title: 'Dashboard Overview',
       description: 'Get instant insights with stats, recent activities, and quick actions',
-      screenshot: '/screenshot-dashboard.png',
+      screenshot: '/Screenshot%202025-05-27%20at%209.27.51%20AM.png',
       alt: 'Dashboard showing welcome screen with stats and quick actions'
     },
     {
       title: 'Contact Management',
       description: 'Organize contacts with tags, search, and advanced filters',
-      screenshot: '/screenshot-contacts.png',
+      screenshot: '/Screenshot%202025-05-27%20at%209.27.39%20AM.png',
       alt: 'Contacts list with tags, search functionality, and filters'
     },
     {
-      title: 'Detailed Contact View',
-      description: 'Track call history, notes, and engagement for each contact',
-      screenshot: '/screenshot-contact-detail.png',
-      alt: 'Individual contact view with call history and action buttons'
-    },
-    {
-      title: 'Event Management',
-      description: 'Create and manage events, track attendance, and follow up',
-      screenshot: '/screenshot-event.png',
-      alt: 'Event creation form with details and management options'
+      title: 'Campaign Coordination',
+      description: 'Plan and execute campaigns with volunteer coordination and outreach tools',
+      screenshot: '/Screenshot%202025-05-27%20at%209.28.01%20AM.png',
+      alt: 'Campaign management interface with various action types'
     }
   ]
 
@@ -171,23 +164,11 @@ const LandingPage = () => {
                       <>
                         <div className="flex items-center gap-2 text-slate-600">
                           <Phone className="w-5 h-5" />
-                          <span>Call History</span>
+                          <span>Outreach</span>
                         </div>
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Users className="w-5 h-5" />
-                          <span>Engagement</span>
-                        </div>
-                      </>
-                    )}
-                    {index === 3 && (
-                      <>
                         <div className="flex items-center gap-2 text-slate-600">
                           <Calendar className="w-5 h-5" />
-                          <span>Scheduling</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Users className="w-5 h-5" />
-                          <span>Attendance</span>
+                          <span>Coordination</span>
                         </div>
                       </>
                     )}
@@ -196,17 +177,12 @@ const LandingPage = () => {
                 <div className="flex-1">
                   <div className="relative">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary-100 to-primary-200 rounded-2xl transform rotate-3 scale-105 opacity-20" />
-                    <div className="relative rounded-2xl shadow-2xl w-full bg-white p-12 flex items-center justify-center min-h-[300px]">
-                      <div className="text-center">
-                        <div className="text-6xl mb-4">
-                          {index === 0 && '📊'}
-                          {index === 1 && '👥'}
-                          {index === 2 && '📋'}
-                          {index === 3 && '📅'}
-                        </div>
-                        <p className="text-gray-500">{feature.alt}</p>
-                      </div>
-                    </div>
+                    <img 
+                      src={feature.screenshot}
+                      alt={feature.alt}
+                      className="relative rounded-2xl shadow-2xl w-full object-cover"
+                      loading="lazy"
+                    />
                   </div>
                 </div>
               </div>
