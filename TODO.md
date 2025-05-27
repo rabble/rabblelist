@@ -21,31 +21,39 @@
 - [ ] **Contact scoring** - Engagement scoring based on activities
 
 ### Communication Systems
-- [ ] **Email system integration** - Send emails directly from platform
+- [x] **Email system integration** - Send emails directly from platform (Mailgun mock)
+  - [x] Email service with campaign support
+  - [x] Email campaign UI with preview
+  - [x] Test email functionality
   - [ ] Email template editor with drag-and-drop
-  - [ ] Email sending via SendGrid/Mailgun/SES
   - [ ] Email tracking (opens, clicks)
   - [ ] Bounce handling and list hygiene
   - [ ] Unsubscribe management
-- [ ] **SMS messaging** - Two-way text messaging
-  - [ ] SMS provider integration (Twilio/Bandwidth)
+- [x] **SMS messaging** - Campaign SMS messaging via Twilio
+  - [x] SMS service with Twilio integration
+  - [x] Bulk SMS campaigns with personalization
+  - [x] Character counting and segment calculation
+  - [x] Media attachment support (MMS)
+  - [ ] Two-way SMS conversations
   - [ ] Opt-out handling and compliance
-  - [ ] SMS templates and personalization
   - [ ] Keyword response automation
-  - [ ] SMS delivery tracking
-- [ ] **Phone banking system** - Actual calling functionality
-  - [ ] VoIP integration (Twilio/Plivo)
-  - [ ] Click-to-call from contact cards
+- [x] **Phone banking system** - Basic calling interface
+  - [x] Phone banking session management
+  - [x] Call tracking and outcome recording
+  - [x] Real-time script display during calls
+  - [x] Session statistics and progress tracking
+  - [ ] Actual VoIP integration (Twilio calling)
+  - [ ] Click-to-call implementation
   - [ ] Call recording capabilities
-  - [ ] Real-time script display during calls
-  - [ ] Automatic call outcome logging
   - [ ] Predictive dialing for efficiency
 
 ### Event Management
 - [x] Basic event creation and listing
-- [ ] **Event registration forms** - Public signup pages
-  - [ ] Custom registration fields
-  - [ ] Capacity management and waitlists
+- [x] **Event registration forms** - Public signup pages
+  - [x] Custom registration fields
+  - [x] Capacity management and waitlists
+  - [x] Auto-promotion from waitlist
+  - [x] Registration export to CSV
   - [ ] Confirmation emails
   - [ ] Calendar integration (.ics files)
 - [ ] **QR code check-in** - Mobile attendance tracking

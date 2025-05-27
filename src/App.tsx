@@ -13,14 +13,20 @@ import { Dashboard } from '@/features/dashboard/Dashboard'
 import { EventsManagement } from '@/features/events/EventsManagement'
 import { EventDetail } from '@/features/events/EventDetail'
 import { GroupsManagement } from '@/features/groups/GroupsManagement'
+import { GroupForm } from '@/features/groups/GroupForm'
+import { GroupMembers } from '@/features/groups/GroupMembers'
+import { GroupAddMembers } from '@/features/groups/GroupAddMembers'
 import { PathwaysManagement } from '@/features/pathways/PathwaysManagement'
 import { PathwayForm } from '@/features/pathways/PathwayForm'
+import { PathwayMembers } from '@/features/pathways/PathwayMembers'
+import { CampaignAnalytics } from '@/features/campaigns/CampaignAnalytics'
 import { EngagementDashboard } from '@/features/engagement/EngagementDashboard'
 import { CampaignManagement } from '@/features/campaigns/CampaignManagement'
 import { CampaignForm } from '@/features/campaigns/CampaignForm'
 import { CampaignDetail } from '@/features/campaigns/CampaignDetail'
 import { EmailCampaign } from '@/features/campaigns/EmailCampaign'
 import { SMSCampaign } from '@/features/campaigns/SMSCampaign'
+import { PhoneBankCampaign } from '@/features/campaigns/PhoneBankCampaign'
 import { AdminDashboard } from '@/features/admin/AdminDashboard'
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute'
 import { LoginPage } from '@/features/auth/LoginPage'
@@ -141,6 +147,30 @@ function AppRoutes() {
             </ProtectedRoute>
           } />
           
+          <Route path="/groups/new" element={
+            <ProtectedRoute>
+              <GroupForm />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/groups/:id/edit" element={
+            <ProtectedRoute>
+              <GroupForm />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/groups/:id/members" element={
+            <ProtectedRoute>
+              <GroupMembers />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/groups/:id/add-members" element={
+            <ProtectedRoute>
+              <GroupAddMembers />
+            </ProtectedRoute>
+          } />
+          
           <Route path="/pathways" element={
             <ProtectedRoute>
               <Layout>
@@ -157,6 +187,12 @@ function AppRoutes() {
           <Route path="/pathways/:id/edit" element={
             <ProtectedRoute>
               <PathwayForm />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/pathways/:id/members" element={
+            <ProtectedRoute>
+              <PathwayMembers />
             </ProtectedRoute>
           } />
           
@@ -206,6 +242,22 @@ function AppRoutes() {
             <ProtectedRoute>
               <Layout>
                 <SMSCampaign />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/campaigns/:id/analytics" element={
+            <ProtectedRoute>
+              <Layout>
+                <CampaignAnalytics />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/campaigns/:id/phonebank" element={
+            <ProtectedRoute>
+              <Layout>
+                <PhoneBankCampaign />
               </Layout>
             </ProtectedRoute>
           } />

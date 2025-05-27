@@ -357,6 +357,15 @@ export function CampaignDetail() {
                   <Phone className="w-4 h-4 mr-2" />
                   Send SMS
                 </Button>
+                <Button 
+                  className="w-full justify-start" 
+                  variant="outline"
+                  onClick={() => navigate(`/campaigns/${currentCampaign.id}/phonebank`)}
+                  disabled={currentCampaign.type !== 'phone_bank'}
+                >
+                  <Phone className="w-4 h-4 mr-2" />
+                  Phone Bank
+                </Button>
                 <Button className="w-full justify-start" variant="outline">
                   <BarChart3 className="w-4 h-4 mr-2" />
                   View Analytics
