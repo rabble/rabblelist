@@ -45,24 +45,24 @@ const LandingPage = () => {
 
   const benefits = [
     {
+      icon: <Users className="w-6 h-6" />,
+      title: 'Community Building',
+      description: 'Connect with activists and organizers to build powerful movements together'
+    },
+    {
       icon: <Zap className="w-6 h-6" />,
-      title: 'Works Offline',
-      description: 'Access your contacts and data anywhere, even without internet'
+      title: 'Direct Action',
+      description: 'Coordinate protests, campaigns, and actions with real-time collaboration'
     },
     {
       icon: <Shield className="w-6 h-6" />,
-      title: 'Secure & Private',
-      description: 'Your data is encrypted and stored securely with role-based access'
+      title: 'Secure Organizing',
+      description: 'Protect your community with encrypted data and privacy-first design'
     },
     {
-      icon: <Smartphone className="w-6 h-6" />,
-      title: 'Mobile First',
-      description: 'Designed for mobile devices with responsive layouts'
-    },
-    {
-      icon: <Users className="w-6 h-6" />,
-      title: 'Team Collaboration',
-      description: 'Work together with team members on shared contacts and events'
+      icon: <BarChart3 className="w-6 h-6" />,
+      title: 'Impact Tracking',
+      description: 'Measure engagement and see the real impact of your organizing efforts'
     }
   ]
 
@@ -74,12 +74,12 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 py-16 md:py-24 relative">
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight">
-              Organize Your Community,
-              <span className="text-primary-600 block">Amplify Your Impact</span>
+              Build Movements,
+              <span className="text-primary-600 block">Change the World</span>
             </h1>
             <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
-              The powerful contact management system designed for organizers, activists, and community builders. 
-              Manage contacts, track engagement, and coordinate events - all in one place.
+              rise.protest.net is the organizing platform for activists, movement builders, and changemakers. 
+              Connect with your community, coordinate actions, and create lasting social impact.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
@@ -87,7 +87,7 @@ const LandingPage = () => {
                 onClick={() => navigate('/login')}
                 className="shadow-xl hover:shadow-2xl"
               >
-                Get Started Free
+                Join the Movement
               </Button>
               <Button 
                 variant="outline" 
@@ -100,7 +100,7 @@ const LandingPage = () => {
             <div className="mt-8 flex items-center justify-center gap-8 text-sm text-slate-600">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>No credit card required</span>
+                <span>Community-powered</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-green-500" />
@@ -108,7 +108,7 @@ const LandingPage = () => {
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>Free forever</span>
+                <span>Open & transparent</span>
               </div>
             </div>
           </div>
@@ -196,12 +196,17 @@ const LandingPage = () => {
                 <div className="flex-1">
                   <div className="relative">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary-100 to-primary-200 rounded-2xl transform rotate-3 scale-105 opacity-20" />
-                    <img 
-                      src={feature.screenshot}
-                      alt={feature.alt}
-                      className="relative rounded-2xl shadow-2xl w-full h-auto"
-                      loading="lazy"
-                    />
+                    <div className="relative rounded-2xl shadow-2xl w-full bg-white p-12 flex items-center justify-center min-h-[300px]">
+                      <div className="text-center">
+                        <div className="text-6xl mb-4">
+                          {index === 0 && '📊'}
+                          {index === 1 && '👥'}
+                          {index === 2 && '📋'}
+                          {index === 3 && '📅'}
+                        </div>
+                        <p className="text-gray-500">{feature.alt}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -215,10 +220,10 @@ const LandingPage = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-              Built for Modern Organizers
+              Tools for Social Change
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Powerful features designed with your workflow in mind.
+              Everything you need to organize effectively and create lasting impact.
             </p>
           </div>
 
@@ -248,10 +253,10 @@ const LandingPage = () => {
         <div className="container mx-auto px-4">
           <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-3xl p-8 md:p-12 text-center text-white">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to Get Started?
+              Ready to Make a Difference?
             </h2>
             <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-              Join thousands of organizers who are building stronger communities with our platform.
+              Join the growing network of activists and organizers building a better world.
             </p>
             <Button 
               size="lg" 
@@ -259,7 +264,7 @@ const LandingPage = () => {
               onClick={() => navigate('/login')}
               className="shadow-xl hover:shadow-2xl"
             >
-              Start Organizing Today
+              Start Building Your Movement
             </Button>
           </div>
         </div>
@@ -270,14 +275,14 @@ const LandingPage = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-slate-600">
-              © 2024 Contact Manager PWA. All rights reserved.
+              © 2024 rise.protest.net - Building movements for social change
             </div>
             <div className="flex gap-6">
               <a href="/privacy-policy.html" className="text-slate-600 hover:text-primary-600 transition-colors">
-                Privacy Policy
+                Privacy
               </a>
               <a href="/terms-of-service.html" className="text-slate-600 hover:text-primary-600 transition-colors">
-                Terms of Service
+                Community Guidelines
               </a>
             </div>
           </div>

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from './AuthContext'
 import { Button } from '@/components/common/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
-import { Mail, Lock, AlertCircle, User, Building } from 'lucide-react'
+import { Mail, Lock, AlertCircle, User, Building, Home } from 'lucide-react'
 
 export function LoginPage() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
@@ -144,6 +144,10 @@ export function LoginPage() {
           <p className="text-gray-600 mt-2">
             {mode === 'signin' ? 'Sign in to your account' : 'Create a new account'}
           </p>
+          <Link to="/" className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 mt-2">
+            <Home className="w-4 h-4" />
+            Learn more about rise.protest.net
+          </Link>
         </div>
 
         <Card>

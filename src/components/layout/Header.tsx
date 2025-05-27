@@ -64,6 +64,15 @@ export function Header() {
                 
                 <div className="p-2">
                   <button
+                    onClick={() => {
+                      navigate('/')
+                      setShowMenu(false)
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <span className="text-gray-900">About rise.protest.net</span>
+                  </button>
+                  <button
                     onClick={handleSignOut}
                     className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
                   >
