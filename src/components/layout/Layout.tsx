@@ -33,7 +33,7 @@ export function Layout({ children }: LayoutProps) {
       <Header />
       
       {/* Desktop sidebar navigation */}
-      <aside className="hidden md:flex md:fixed md:inset-y-0 md:left-0 md:z-40 md:w-64 md:flex-col">
+      <aside className="hidden md:flex md:fixed md:inset-y-0 md:left-0 md:z-40 md:w-56 md:flex-col">
         <div className="flex flex-grow flex-col overflow-y-auto bg-white border-r border-gray-200 pt-14">
           <nav className="flex flex-1 flex-col p-4 space-y-1">
             {visibleNavItems.map((item) => {
@@ -62,10 +62,8 @@ export function Layout({ children }: LayoutProps) {
       </aside>
       
       {/* Main content */}
-      <main className="pt-14 pb-16 md:pb-0 md:pl-64 min-h-screen">
-        <div className="h-full">
-          {children}
-        </div>
+      <main className="pt-14 pb-16 md:pb-0 md:pl-56 min-h-screen bg-gray-50">
+        {children}
       </main>
       
       {/* Mobile tab bar */}

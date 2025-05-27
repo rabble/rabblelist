@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { useAuth } from '@/features/auth/AuthContext'
@@ -141,17 +140,14 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
     )
   }
 
   return (
-    <Layout>
-      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
@@ -163,7 +159,7 @@ export function Dashboard() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6 sm:mb-8">
           {quickStats.map((stat) => (
             <Card 
               key={stat.label}
@@ -187,9 +183,9 @@ export function Dashboard() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Quick Actions */}
-          <Card className="lg:col-span-2">
+          <Card className="xl:col-span-2">
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
@@ -369,7 +365,6 @@ export function Dashboard() {
             )}
           </CardContent>
         </Card>
-      </div>
-    </Layout>
+    </div>
   )
 }
