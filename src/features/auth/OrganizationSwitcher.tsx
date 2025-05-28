@@ -33,8 +33,8 @@ export function OrganizationSwitcher() {
 
     setIsLoading(true)
     try {
-      // Get all organizations user has access to
-      const { data: userOrgs, error } = await supabase
+      // Try the preferred query with join first
+      let { data: userOrgs, error } = await supabase
         .from('user_organizations')
         .select(`
           organization_id,
@@ -45,7 +45,36 @@ export function OrganizationSwitcher() {
         .eq('user_id', profile.id)
         .order('is_primary', { ascending: false })
 
-      if (error) throw error
+      // If the join fails, try the view as fallback
+      if (error?.code === 'PGRST200') {
+        console.log('Falling back to view-based query')
+        const { data: viewData, error: viewError } = await supabase
+          .from('user_organizations_with_org')
+          .select('*')
+          .eq('user_id', profile.id)
+          .order('is_primary', { ascending: false })
+
+        if (!viewError && viewData) {
+          userOrgs = viewData.map(row => ({
+            organization_id: row.organization_id,
+            role: row.role,
+            is_primary: row.is_primary,
+            organizations: {
+              id: row.org_id,
+              name: row.org_name,
+              country_code: row.org_country_code,
+              settings: row.org_settings,
+              features: row.org_features,
+              created_at: row.org_created_at,
+              updated_at: row.org_updated_at
+            }
+          }))
+        } else if (viewError) {
+          throw viewError
+        }
+      } else if (error) {
+        throw error
+      }
 
       const organizations: UserOrganization[] = userOrgs?.map(uo => ({
         organization_id: uo.organization_id,
