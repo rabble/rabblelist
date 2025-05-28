@@ -24,12 +24,12 @@ export function LoginPage() {
   const from = (location.state as any)?.from?.pathname || '/dashboard'
   const redirectTo = from === '/login' ? '/dashboard' : from
 
-  // If already logged in, redirect to dashboard
+  // If already logged in, redirect to intended page (but not if we're on the landing page)
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && location.pathname === '/login') {
       navigate(redirectTo, { replace: true })
     }
-  }, [loading, user, navigate, redirectTo])
+  }, [loading, user, navigate, redirectTo, location.pathname])
 
   const handleDemoLogin = async () => {
     setError(null)
