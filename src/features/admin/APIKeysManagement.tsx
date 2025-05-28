@@ -4,13 +4,11 @@ import { Button } from '@/components/common/Button'
 import { Card } from '@/components/common/Card'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { 
-  Key, 
   AlertCircle, 
   CheckCircle, 
   Eye, 
   EyeOff, 
   Trash2, 
-  RefreshCw,
   TestTube,
   Save
 } from 'lucide-react'
@@ -263,7 +261,7 @@ export const APIKeysManagement = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <LoadingSpinner size="lg" />
+        <LoadingSpinner size="large" />
       </div>
     )
   }

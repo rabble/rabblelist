@@ -47,3 +47,16 @@ Same as production but with development/staging values
 - Rotate tokens immediately if exposed
 - Use different tokens for development and production when possible
 - Cloudflare Pages automatically redacts sensitive values in build logs
+
+## Verifying Sentry Setup
+
+1. Build locally: `npm run build`
+   - You should see "Successfully uploaded source maps to Sentry"
+   
+2. Check Sentry dashboard:
+   - Go to https://protestnet.sentry.io/issues/
+   - Errors should appear with proper source mapping
+   
+3. Test error reporting:
+   - Add a test error in your app
+   - Check that it appears in Sentry with correct stack traces
