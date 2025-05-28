@@ -50,9 +50,10 @@ export async function getCurrentUserProfile() {
  */
 export async function validateResourceOwnership(
   table: string,
-  resourceId: string,
-  organizationId: string
+  resourceId: string
 ): Promise<boolean> {
+  const organizationId = await getCurrentOrganizationId()
+  
   const { data, error } = await supabase
     .from(table)
     .select('organization_id')
@@ -60,8 +61,12 @@ export async function validateResourceOwnership(
     .single()
 
   if (error || !data) {
-    return false
+    throw new Error(`Resource not found in ${table}`)
   }
 
-  return data.organization_id === organizationId
+  if (data.organization_id !== organizationId) {
+    throw new Error('Access denied: Resource belongs to another organization')
+  }
+
+  return true
 }

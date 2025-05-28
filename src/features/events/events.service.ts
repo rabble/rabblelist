@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { getCurrentOrganizationId, validateResourceOwnership } from '@/lib/serviceHelpers'
 import type { Tables, Inserts, Updates } from '@/lib/database.types'
 
 export type Event = Tables<'events'>
@@ -14,13 +15,12 @@ export class EventService {
     offset?: number
   }) {
     try {
-      const { data: orgId } = await supabase.rpc('organization_id')
-      if (!orgId) throw new Error('No organization found')
+      const organizationId = await getCurrentOrganizationId()
 
       let query = supabase
         .from('events')
         .select('*', { count: 'exact' })
-        .eq('organization_id', orgId)
+        .eq('organization_id', organizationId)
         .order('start_time', { ascending: true })
 
       if (filters?.search) {
@@ -53,15 +53,14 @@ export class EventService {
   // Get a single event with attendee count
   static async getEvent(id: string) {
     try {
-      const { data: orgId } = await supabase.rpc('organization_id')
-      if (!orgId) throw new Error('No organization found')
+      const organizationId = await getCurrentOrganizationId()
 
       // Get event details
       const { data: event, error: eventError } = await supabase
         .from('events')
         .select('*')
         .eq('id', id)
-        .eq('organization_id', orgId)
+        .eq('organization_id', organizationId)
         .single()
 
       if (eventError) throw eventError
@@ -86,14 +85,13 @@ export class EventService {
   // Create a new event
   static async createEvent(event: EventInsert) {
     try {
-      const { data: orgId } = await supabase.rpc('organization_id')
-      if (!orgId) throw new Error('No organization found')
+      const organizationId = await getCurrentOrganizationId()
 
       const { data, error } = await supabase
         .from('events')
         .insert({
           ...event,
-          organization_id: orgId,
+          organization_id: organizationId,
           settings: event.settings || {}
         })
         .select()
@@ -111,6 +109,8 @@ export class EventService {
   // Update an event
   static async updateEvent(id: string, updates: EventUpdate) {
     try {
+      await validateResourceOwnership('events', id)
+      
       const { data, error } = await supabase
         .from('events')
         .update(updates)
@@ -130,6 +130,8 @@ export class EventService {
   // Delete an event
   static async deleteEvent(id: string) {
     try {
+      await validateResourceOwnership('events', id)
+      
       const { error } = await supabase
         .from('events')
         .delete()
@@ -147,6 +149,8 @@ export class EventService {
   // Get event attendees
   static async getEventAttendees(eventId: string) {
     try {
+      await validateResourceOwnership('events', eventId)
+      
       const { data, error } = await supabase
         .from('event_rsvps')
         .select(`
@@ -168,6 +172,9 @@ export class EventService {
   // RSVP to an event
   static async createRsvp(eventId: string, contactId: string, status: 'confirmed' | 'maybe' | 'declined' = 'confirmed') {
     try {
+      await validateResourceOwnership('events', eventId)
+      await validateResourceOwnership('contacts', contactId)
+      
       const { data, error } = await supabase
         .from('event_rsvps')
         .insert({
@@ -191,6 +198,9 @@ export class EventService {
   // Update RSVP status
   static async updateRsvp(eventId: string, contactId: string, status: 'confirmed' | 'maybe' | 'declined' | 'attended') {
     try {
+      await validateResourceOwnership('events', eventId)
+      await validateResourceOwnership('contacts', contactId)
+      
       const { data, error } = await supabase
         .from('event_rsvps')
         .update({ 
@@ -214,13 +224,12 @@ export class EventService {
   // Get upcoming events
   static async getUpcomingEvents(limit = 5) {
     try {
-      const { data: orgId } = await supabase.rpc('organization_id')
-      if (!orgId) throw new Error('No organization found')
+      const organizationId = await getCurrentOrganizationId()
 
       const { data, error } = await supabase
         .from('events')
         .select('*')
-        .eq('organization_id', orgId)
+        .eq('organization_id', organizationId)
         .gte('start_time', new Date().toISOString())
         .order('start_time', { ascending: true })
         .limit(limit)

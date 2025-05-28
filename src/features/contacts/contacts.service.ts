@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 import type { Contact } from '@/types'
 import type { Inserts } from '@/lib/database.types'
 import { withRetry } from '@/lib/retryUtils'
+import { getCurrentOrganizationId, validateResourceOwnership } from '@/lib/serviceHelpers'
 
 export class ContactService {
   // Get contacts for the current user's organization
@@ -14,10 +15,12 @@ export class ContactService {
     orderDirection?: 'asc' | 'desc'
   }) {
     try {
+      const organizationId = await getCurrentOrganizationId()
       
       let query = supabase
         .from('contacts')
         .select('*', { count: 'exact' })
+        .eq('organization_id', organizationId)
 
       // Apply dynamic ordering
       const orderBy = filters?.orderBy || 'created_at'
@@ -42,20 +45,14 @@ export class ContactService {
 
       const { data, error, count } = await query
 
-        dataLength: data?.length, 
-        count, 
-        error,
-        firstContact: data?.[0]
-      })
-
       if (error) {
-        console.error('❌ ContactService.getContacts error:', error)
+        console.error('ContactService.getContacts error:', error)
         throw error
       }
 
       return { data: data || [], count: count || 0, error: null }
     } catch (error) {
-      console.error('❌ Error fetching contacts:', error)
+      console.error('Error fetching contacts:', error)
       return { data: [], count: 0, error }
     }
   }
@@ -63,10 +60,13 @@ export class ContactService {
   // Get a single contact
   static async getContact(id: string) {
     try {
+      const organizationId = await getCurrentOrganizationId()
+      
       const { data, error } = await supabase
         .from('contacts')
         .select('*')
         .eq('id', id)
+        .eq('organization_id', organizationId)
         .single()
 
       if (error) throw error
@@ -81,16 +81,14 @@ export class ContactService {
   // Create a new contact
   static async createContact(contact: Inserts<'contacts'>) {
     try {
+      const organizationId = await getCurrentOrganizationId()
+      
       return await withRetry(async () => {
-        // Use demo org ID for now
-      const org = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
-        
-
         const { data, error } = await supabase
           .from('contacts')
           .insert({
             ...contact,
-            organization_id: org,
+            organization_id: organizationId,
             tags: contact.tags || [],
             custom_fields: contact.custom_fields || {},
             total_events_attended: 0
@@ -116,11 +114,20 @@ export class ContactService {
   // Update a contact
   static async updateContact(id: string, updates: Partial<Contact>) {
     try {
+      const organizationId = await getCurrentOrganizationId()
+      
+      // Validate ownership
+      const isOwned = await validateResourceOwnership('contacts', id, organizationId)
+      if (!isOwned) {
+        throw new Error('Contact not found or access denied')
+      }
+      
       return await withRetry(async () => {
         const { data, error } = await supabase
           .from('contacts')
           .update(updates)
           .eq('id', id)
+          .eq('organization_id', organizationId)
           .select()
           .single()
 
@@ -142,10 +149,19 @@ export class ContactService {
   // Delete a contact
   static async deleteContact(id: string) {
     try {
+      const organizationId = await getCurrentOrganizationId()
+      
+      // Validate ownership
+      const isOwned = await validateResourceOwnership('contacts', id, organizationId)
+      if (!isOwned) {
+        throw new Error('Contact not found or access denied')
+      }
+      
       const { error } = await supabase
         .from('contacts')
         .delete()
         .eq('id', id)
+        .eq('organization_id', organizationId)
 
       if (error) throw error
 
@@ -159,18 +175,16 @@ export class ContactService {
   // Get contacts for calling queue
   static async getCallQueue() {
     try {
-      const { data: userId } = await supabase.auth.getUser()
-      if (!userId?.user) throw new Error('Not authenticated')
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
 
-      // Use demo org ID for now
-      const org = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
-      
+      const organizationId = await getCurrentOrganizationId()
 
       // Get contacts that need to be called
       const { data, error } = await supabase
         .from('contacts')
         .select('*')
-        .eq('organization_id', org)
+        .eq('organization_id', organizationId)
         .or('last_contact_date.is.null,last_contact_date.lt.now() - interval \'30 days\'')
         .order('priority', { ascending: false })
         .order('last_contact_date', { ascending: true, nullsFirst: true })
@@ -182,8 +196,8 @@ export class ContactService {
       const { data: assignments } = await supabase
         .from('call_assignments')
         .select('contact_id')
-        .eq('ringer_id', userId.user.id)
-        .eq('organization_id', org)
+        .eq('ringer_id', user.id)
+        .eq('organization_id', organizationId)
         .is('completed_at', null)
 
       const assignedContactIds = assignments?.map(a => a.contact_id) || []
@@ -196,8 +210,8 @@ export class ContactService {
       // Assign new contacts to this ringer
       if (unassignedContacts.length > 0) {
         const newAssignments = unassignedContacts.slice(0, 10).map(contact => ({
-          organization_id: org,
-          ringer_id: userId.user.id,
+          organization_id: organizationId,
+          ringer_id: user.id,
           contact_id: contact.id,
           assigned_at: new Date().toISOString()
         }))
@@ -215,19 +229,17 @@ export class ContactService {
   // Log a call
   static async logCall(callLog: Inserts<'call_logs'>) {
     try {
-      const { data: userId } = await supabase.auth.getUser()
-      if (!userId?.user) throw new Error('Not authenticated')
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
 
-      // Use demo org ID for now
-      const org = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
-      
+      const organizationId = await getCurrentOrganizationId()
 
       const { data, error } = await supabase
         .from('call_logs')
         .insert({
           ...callLog,
-          organization_id: org,
-          ringer_id: userId.user.id,
+          organization_id: organizationId,
+          ringer_id: user.id,
           called_at: callLog.called_at || new Date().toISOString(),
           tags: callLog.tags || []
         })
@@ -241,7 +253,7 @@ export class ContactService {
         await supabase
           .from('call_assignments')
           .update({ completed_at: new Date().toISOString() })
-          .eq('ringer_id', userId.user.id)
+          .eq('ringer_id', user.id)
           .eq('contact_id', callLog.contact_id)
       }
 
@@ -255,6 +267,8 @@ export class ContactService {
   // Get call history for a contact
   static async getCallHistory(contactId: string) {
     try {
+      const organizationId = await getCurrentOrganizationId()
+      
       const { data, error } = await supabase
         .from('call_logs')
         .select(`
@@ -262,6 +276,7 @@ export class ContactService {
           ringer:users(full_name, email)
         `)
         .eq('contact_id', contactId)
+        .eq('organization_id', organizationId)
         .order('called_at', { ascending: false })
 
       if (error) throw error
@@ -276,14 +291,12 @@ export class ContactService {
   // Bulk import contacts
   static async bulkImportContacts(contacts: Inserts<'contacts'>[]) {
     try {
-      // Use demo org ID for now
-      const org = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
-      
+      const organizationId = await getCurrentOrganizationId()
 
       // Add organization_id to all contacts
       const contactsWithOrg = contacts.map(contact => ({
         ...contact,
-        organization_id: org,
+        organization_id: organizationId,
         tags: contact.tags || [],
         custom_fields: contact.custom_fields || {},
         total_events_attended: 0
@@ -323,9 +336,12 @@ export class ContactService {
     location?: string
   }) {
     try {
+      const organizationId = await getCurrentOrganizationId()
+      
       let query = supabase
         .from('contacts')
         .select('*', { count: 'exact' })
+        .eq('organization_id', organizationId)
 
       // Tag filters
       if (filters.tags && filters.tags.length > 0) {
@@ -382,9 +398,11 @@ export class ContactService {
   }
 
   // Get duplicate candidates
-  static async findDuplicates(organizationId: string) {
+  static async findDuplicates() {
     try {
-      // Get all contacts
+      const organizationId = await getCurrentOrganizationId()
+      
+      // Get all contacts for this organization
       const { data: contacts, error } = await supabase
         .from('contacts')
         .select('id, full_name, email, phone')
@@ -506,6 +524,16 @@ export class ContactService {
     mergedData: Partial<Contact>
   ) {
     try {
+      const organizationId = await getCurrentOrganizationId()
+      
+      // Validate all contacts belong to this organization
+      for (const contactId of [primaryContactId, ...mergeContactIds]) {
+        const isOwned = await validateResourceOwnership('contacts', contactId, organizationId)
+        if (!isOwned) {
+          throw new Error(`Contact ${contactId} not found or access denied`)
+        }
+      }
+      
       // Start a transaction-like operation
       const results = {
         primaryUpdate: null as any,
@@ -518,6 +546,7 @@ export class ContactService {
         .from('contacts')
         .update(mergedData)
         .eq('id', primaryContactId)
+        .eq('organization_id', organizationId)
         .select()
         .single()
 
@@ -543,6 +572,7 @@ export class ContactService {
             .from(table)
             .update({ contact_id: primaryContactId })
             .eq('contact_id', mergeId)
+            .eq('organization_id', organizationId)
 
           if (error) {
             console.warn(`Error updating ${table} for contact ${mergeId}:`, error)
@@ -557,6 +587,7 @@ export class ContactService {
           .from('contacts')
           .delete()
           .eq('id', mergeId)
+          .eq('organization_id', organizationId)
 
         if (error) {
           results.errors.push({ step: 'delete', contactId: mergeId, error })
@@ -577,8 +608,10 @@ export class ContactService {
   }
 
   // Score contacts based on engagement
-  static async scoreContacts(organizationId: string) {
+  static async scoreContacts() {
     try {
+      const organizationId = await getCurrentOrganizationId()
+      
       // Get all contacts with their activity data
       const { data: contacts, error: contactsError } = await supabase
         .from('contacts')
@@ -650,6 +683,7 @@ export class ContactService {
           .from('contacts')
           .update({ engagement_score: contact.engagement_score })
           .eq('id', contact.id)
+          .eq('organization_id', organizationId)
       }
 
       return { 
@@ -666,6 +700,14 @@ export class ContactService {
   // Get all contact interactions (for timeline view)
   static async getContactInteractions(contactId: string) {
     try {
+      const organizationId = await getCurrentOrganizationId()
+      
+      // Validate contact belongs to organization
+      const isOwned = await validateResourceOwnership('contacts', contactId, organizationId)
+      if (!isOwned) {
+        throw new Error('Contact not found or access denied')
+      }
+      
       // Get all interactions from different sources
       const [
         { data: callLogs },
@@ -678,13 +720,15 @@ export class ContactService {
         supabase
           .from('call_logs')
           .select('*')
-          .eq('contact_id', contactId),
+          .eq('contact_id', contactId)
+          .eq('organization_id', organizationId),
         
         // Communication logs (emails/SMS)
         supabase
           .from('communication_logs')
           .select('*')
-          .eq('contact_id', contactId),
+          .eq('contact_id', contactId)
+          .eq('organization_id', organizationId),
         
         // Event registrations
         supabase

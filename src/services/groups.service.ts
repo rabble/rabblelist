@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { withRetry } from '@/lib/retryUtils'
+import { getCurrentOrganizationId, validateResourceOwnership } from '@/lib/serviceHelpers'
 import type { Inserts } from '@/lib/database.types'
 
 export interface Group {
@@ -46,12 +47,15 @@ export class GroupsService {
     offset?: number
   }) {
     try {
+      const organizationId = await getCurrentOrganizationId()
+      
       let query = supabase
         .from('groups')
         .select(`
           *,
           group_members(count)
         `, { count: 'exact' })
+        .eq('organization_id', organizationId)
         .order('created_at', { ascending: false })
 
       if (filters?.search) {
@@ -98,6 +102,8 @@ export class GroupsService {
   // Get a single group with members
   static async getGroup(id: string) {
     try {
+      const organizationId = await getCurrentOrganizationId()
+      
       const { data, error } = await supabase
         .from('groups')
         .select(`
@@ -108,6 +114,7 @@ export class GroupsService {
           )
         `)
         .eq('id', id)
+        .eq('organization_id', organizationId)
         .single()
 
       if (error) throw error
@@ -142,6 +149,8 @@ export class GroupsService {
       return await withRetry(async () => {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) throw new Error('Not authenticated')
+        
+        const organizationId = await getCurrentOrganizationId()
 
         const settings = {
           type: group.type || 'working',
@@ -154,6 +163,7 @@ export class GroupsService {
           .insert({
             name: group.name,
             description: group.description,
+            organization_id: organizationId,
             settings,
             tags: group.tags || [],
             created_by: user.id,
@@ -176,6 +186,8 @@ export class GroupsService {
   static async updateGroup(id: string, updates: Partial<Group>) {
     try {
       return await withRetry(async () => {
+        await validateResourceOwnership('groups', id)
+        
         // Extract settings fields
         const { type, active, parent_id, ...rest } = updates
         
@@ -217,6 +229,8 @@ export class GroupsService {
   // Delete a group
   static async deleteGroup(id: string) {
     try {
+      await validateResourceOwnership('groups', id)
+      
       const { error } = await supabase
         .from('groups')
         .delete()
@@ -239,6 +253,8 @@ export class GroupsService {
     offset?: number
   }) {
     try {
+      await validateResourceOwnership('groups', groupId)
+      
       let query = supabase
         .from('group_members')
         .select(`
@@ -293,6 +309,13 @@ export class GroupsService {
       return await withRetry(async () => {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) throw new Error('Not authenticated')
+        
+        await validateResourceOwnership('groups', groupId)
+        
+        // Validate that all contacts belong to the same organization
+        for (const contactId of contactIds) {
+          await validateResourceOwnership('contacts', contactId)
+        }
 
         const members = contactIds.map(contactId => ({
           group_id: groupId,
@@ -322,6 +345,9 @@ export class GroupsService {
   // Remove a member from a group
   static async removeGroupMember(groupId: string, contactId: string) {
     try {
+      await validateResourceOwnership('groups', groupId)
+      await validateResourceOwnership('contacts', contactId)
+      
       const { error } = await supabase
         .from('group_members')
         .delete()
@@ -343,6 +369,9 @@ export class GroupsService {
   // Update member role
   static async updateMemberRole(groupId: string, contactId: string, role: string) {
     try {
+      await validateResourceOwnership('groups', groupId)
+      await validateResourceOwnership('contacts', contactId)
+      
       const { data, error } = await supabase
         .from('group_members')
         .update({ role })
@@ -363,6 +392,8 @@ export class GroupsService {
   // Update member count for a group
   private static async updateMemberCount(groupId: string) {
     try {
+      await validateResourceOwnership('groups', groupId)
+      
       const { count } = await supabase
         .from('group_members')
         .select('*', { count: 'exact', head: true })
@@ -383,6 +414,8 @@ export class GroupsService {
   // Get group statistics
   static async getGroupStats(groupId: string) {
     try {
+      await validateResourceOwnership('groups', groupId)
+      
       // Get member count by role
       const { data: members } = await supabase
         .from('group_members')

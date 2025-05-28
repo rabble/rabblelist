@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { withRetry } from '@/lib/retryUtils'
+import { getCurrentOrganizationId, validateResourceOwnership } from '@/lib/serviceHelpers'
 
 export interface PetitionSignature {
   id: string
@@ -28,16 +29,23 @@ export class PetitionService {
    * Get petition details by campaign ID
    */
   static async getPetition(campaignId: string) {
-    return withRetry(async () => {
-      const { data, error } = await supabase
-        .from('petitions')
-        .select('*')
-        .eq('campaign_id', campaignId)
-        .single()
+    try {
+      await validateResourceOwnership('campaigns', campaignId)
+      
+      return withRetry(async () => {
+        const { data, error } = await supabase
+          .from('petitions')
+          .select('*')
+          .eq('campaign_id', campaignId)
+          .single()
 
-      if (error) throw error
-      return data
-    })
+        if (error) throw error
+        return data
+      })
+    } catch (error) {
+      console.error('Error in getPetition:', error)
+      throw error
+    }
   }
 
   /**
@@ -54,47 +62,53 @@ export class PetitionService {
     isPublic?: boolean
     contactId?: string
   }) {
-    return withRetry(async () => {
-      // First check if email already signed
-      const { data: existing } = await supabase
-        .from('petition_signatures')
-        .select('id')
-        .eq('campaign_id', signature.campaignId)
-        .eq('email', signature.email)
-        .single()
-
-      if (existing) {
-        throw new Error('This email has already signed the petition')
-      }
-
-      // Get or create contact
-      let contactId = signature.contactId
-      if (!contactId) {
-        // Check if contact exists
-        const { data: existingContact } = await supabase
-          .from('contacts')
+    try {
+      await validateResourceOwnership('campaigns', signature.campaignId)
+      const organizationId = await getCurrentOrganizationId()
+      
+      return withRetry(async () => {
+        // First check if email already signed
+        const { data: existing } = await supabase
+          .from('petition_signatures')
           .select('id')
+          .eq('campaign_id', signature.campaignId)
           .eq('email', signature.email)
           .single()
 
-        if (existingContact) {
-          contactId = existingContact.id
-        } else {
-          // Create new contact
-          const { data: newContact, error: contactError } = await supabase
+        if (existing) {
+          throw new Error('This email has already signed the petition')
+        }
+
+        // Get or create contact
+        let contactId = signature.contactId
+        if (!contactId) {
+          // Check if contact exists in the same organization
+          const { data: existingContact } = await supabase
             .from('contacts')
-            .insert({
-              first_name: signature.firstName,
-              last_name: signature.lastName,
-              email: signature.email,
-              phone: signature.phone,
-              metadata: { source: 'petition', zip_code: signature.zipCode }
-            })
-            .select()
+            .select('id')
+            .eq('email', signature.email)
+            .eq('organization_id', organizationId)
             .single()
 
-          if (contactError) throw contactError
-          contactId = newContact.id
+          if (existingContact) {
+            contactId = existingContact.id
+          } else {
+            // Create new contact
+            const { data: newContact, error: contactError } = await supabase
+              .from('contacts')
+              .insert({
+                first_name: signature.firstName,
+                last_name: signature.lastName,
+                email: signature.email,
+                phone: signature.phone,
+                organization_id: organizationId,
+                metadata: { source: 'petition', zip_code: signature.zipCode }
+              })
+              .select()
+              .single()
+
+            if (contactError) throw contactError
+            contactId = newContact.id
 
           // Add to campaign contacts
           await supabase
@@ -110,34 +124,38 @@ export class PetitionService {
         }
       }
 
-      // Create signature
-      const { data, error } = await supabase
-        .from('petition_signatures')
-        .insert({
-          campaign_id: signature.campaignId,
-          contact_id: contactId,
-          first_name: signature.firstName,
-          last_name: signature.lastName,
-          email: signature.email,
-          phone: signature.phone,
-          zip_code: signature.zipCode,
-          comment: signature.comment,
-          is_public: signature.isPublic ?? true,
-          signed_at: new Date().toISOString()
+        // Create signature
+        const { data, error } = await supabase
+          .from('petition_signatures')
+          .insert({
+            campaign_id: signature.campaignId,
+            contact_id: contactId,
+            first_name: signature.firstName,
+            last_name: signature.lastName,
+            email: signature.email,
+            phone: signature.phone,
+            zip_code: signature.zipCode,
+            comment: signature.comment,
+            is_public: signature.isPublic ?? true,
+            signed_at: new Date().toISOString()
+          })
+          .select()
+          .single()
+
+        if (error) throw error
+
+        // Update campaign stats
+        await this.updateCampaignStats(signature.campaignId, { 
+          participants: 1,
+          conversions: 1 
         })
-        .select()
-        .single()
 
-      if (error) throw error
-
-      // Update campaign stats
-      await this.updateCampaignStats(signature.campaignId, { 
-        participants: 1,
-        conversions: 1 
+        return data
       })
-
-      return data
-    })
+    } catch (error) {
+      console.error('Error in signPetition:', error)
+      throw error
+    }
   }
 
   /**
@@ -151,18 +169,21 @@ export class PetitionService {
       publicOnly?: boolean
     } = {}
   ) {
-    return withRetry(async () => {
-      let query = supabase
-        .from('petition_signatures')
-        .select(`
-          *,
-          contacts (
-            full_name,
-            tags
-          )
-        `, { count: 'exact' })
-        .eq('campaign_id', campaignId)
-        .order('signed_at', { ascending: false })
+    try {
+      await validateResourceOwnership('campaigns', campaignId)
+      
+      return withRetry(async () => {
+        let query = supabase
+          .from('petition_signatures')
+          .select(`
+            *,
+            contacts (
+              full_name,
+              tags
+            )
+          `, { count: 'exact' })
+          .eq('campaign_id', campaignId)
+          .order('signed_at', { ascending: false })
 
       if (options.publicOnly) {
         query = query.eq('is_public', true)
@@ -176,23 +197,30 @@ export class PetitionService {
         query = query.range(options.offset, options.offset + (options.limit || 10) - 1)
       }
 
-      const { data, error, count } = await query
+        const { data, error, count } = await query
 
-      if (error) throw error
-      return { signatures: data || [], total: count || 0 }
-    })
+        if (error) throw error
+        return { signatures: data || [], total: count || 0 }
+      })
+    } catch (error) {
+      console.error('Error in getSignatures:', error)
+      throw error
+    }
   }
 
   /**
    * Get petition statistics
    */
   static async getPetitionStats(campaignId: string): Promise<PetitionStats> {
-    return withRetry(async () => {
-      // Get total signatures
-      const { count: totalSignatures } = await supabase
-        .from('petition_signatures')
-        .select('*', { count: 'exact', head: true })
-        .eq('campaign_id', campaignId)
+    try {
+      await validateResourceOwnership('campaigns', campaignId)
+      
+      return withRetry(async () => {
+        // Get total signatures
+        const { count: totalSignatures } = await supabase
+          .from('petition_signatures')
+          .select('*', { count: 'exact', head: true })
+          .eq('campaign_id', campaignId)
 
       // Get recent signatures (last 24 hours)
       const yesterday = new Date()
@@ -242,20 +270,25 @@ export class PetitionService {
         })
       }
 
-      return {
-        totalSignatures: totalSignatures || 0,
-        recentSignatures: recentSignatures || 0,
-        topZipCodes,
-        signaturesByDay
-      }
-    })
+        return {
+          totalSignatures: totalSignatures || 0,
+          recentSignatures: recentSignatures || 0,
+          topZipCodes,
+          signaturesByDay
+        }
+      })
+    } catch (error) {
+      console.error('Error in getPetitionStats:', error)
+      throw error
+    }
   }
 
   /**
    * Export signatures to CSV
    */
   static async exportSignatures(campaignId: string) {
-    const { signatures } = await this.getSignatures(campaignId, { limit: 10000 })
+    try {
+      const { signatures } = await this.getSignatures(campaignId, { limit: 10000 })
     
     const headers = [
       'First Name',
@@ -279,12 +312,16 @@ export class PetitionService {
       sig.is_public ? 'Yes' : 'No'
     ])
 
-    const csv = [
+      const csv = [
       headers.join(','),
       ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
     ].join('\n')
 
-    return csv
+      return csv
+    } catch (error) {
+      console.error('Error in exportSignatures:', error)
+      throw error
+    }
   }
 
   /**
@@ -299,13 +336,16 @@ export class PetitionService {
       newContacts?: number
     }
   ) {
-    return withRetry(async () => {
-      // Get current stats
-      const { data: currentStats } = await supabase
-        .from('campaign_stats')
-        .select('*')
-        .eq('campaign_id', campaignId)
-        .single()
+    try {
+      await validateResourceOwnership('campaigns', campaignId)
+      
+      return withRetry(async () => {
+        // Get current stats
+        const { data: currentStats } = await supabase
+          .from('campaign_stats')
+          .select('*')
+          .eq('campaign_id', campaignId)
+          .single()
 
       if (currentStats) {
         // Update existing stats
@@ -333,8 +373,12 @@ export class PetitionService {
             shares: updates.shares || 0,
             new_contacts: updates.newContacts || 0
           })
-      }
-    })
+        }
+      })
+    } catch (error) {
+      console.error('Error in updateCampaignStats:', error)
+      throw error
+    }
   }
 
   /**
@@ -347,21 +391,28 @@ export class PetitionService {
     deliveryMethod?: string
     customFields?: any[]
   }) {
-    return withRetry(async () => {
-      const { data, error } = await supabase
-        .from('petitions')
-        .upsert({
-          campaign_id: petition.campaignId,
-          target_name: petition.targetName,
-          target_title: petition.targetTitle,
-          delivery_method: petition.deliveryMethod,
-          custom_fields: petition.customFields || []
-        })
-        .select()
-        .single()
+    try {
+      await validateResourceOwnership('campaigns', petition.campaignId)
+      
+      return withRetry(async () => {
+        const { data, error } = await supabase
+          .from('petitions')
+          .upsert({
+            campaign_id: petition.campaignId,
+            target_name: petition.targetName,
+            target_title: petition.targetTitle,
+            delivery_method: petition.deliveryMethod,
+            custom_fields: petition.customFields || []
+          })
+          .select()
+          .single()
 
-      if (error) throw error
-      return data
-    })
+        if (error) throw error
+        return data
+      })
+    } catch (error) {
+      console.error('Error in savePetition:', error)
+      throw error
+    }
   }
 }
