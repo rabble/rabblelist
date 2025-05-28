@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Makes it easier to set up production databases without demo data
   - Updated all setup scripts and documentation to use new file names
   - Cleaner separation of concerns for database initialization
+- **Enhanced Demo Data** - Massive expansion of seed data for realistic demo (2025-05-28)
+  - Created `seed-data-enhanced.sql` with 500+ diverse contacts
+  - Added 8 active campaigns with thousands of activities
+  - 10+ events showing past successes and upcoming actions
+  - 7 active groups with realistic membership
+  - Multiple engagement pathways with members at different stages
+  - Thousands of interactions, phone calls, emails, and activities
+  - Petition signatures, donations, event registrations
+  - Makes the demo look like a very active grassroots campaign
 
 ### Fixed
 - Allow logged-in users to view landing page at "/" instead of auto-redirecting to dashboard
