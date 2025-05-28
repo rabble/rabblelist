@@ -152,6 +152,7 @@ CREATE TABLE groups (
     tags TEXT[] DEFAULT '{}',
     is_active BOOLEAN DEFAULT true,
     group_type TEXT CHECK (group_type IN ('volunteer_team', 'action_team', 'donor_circle', 'leadership', 'working_group', 'other')) DEFAULT 'other',
+    member_count INTEGER DEFAULT 0,
     created_by UUID REFERENCES users(id),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
