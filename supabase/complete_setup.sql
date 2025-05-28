@@ -781,7 +781,7 @@ ON CONFLICT (id) DO UPDATE SET
 -- Create demo user
 INSERT INTO users (id, email, full_name, organization_id, role)
 VALUES (
-    'demo-user',
+    '00000000-0000-0000-0000-000000000002',
     'demo@example.com',
     'Demo User',
     '00000000-0000-0000-0000-000000000001',
@@ -796,7 +796,7 @@ ON CONFLICT (id) DO UPDATE SET
 -- Add demo user to user_organizations
 INSERT INTO user_organizations (user_id, organization_id, role, is_primary)
 VALUES (
-    'demo-user',
+    '00000000-0000-0000-0000-000000000002',
     '00000000-0000-0000-0000-000000000001',
     'admin',
     true

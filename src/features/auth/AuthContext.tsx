@@ -38,16 +38,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedSession = localStorage.getItem('mock_session')
     if (storedSession) {
       const mockUser = {
-        id: 'demo-user',
+        id: '00000000-0000-0000-0000-000000000002',
         email: 'demo@example.com',
         role: 'admin'
       } as any
 
       const mockProfile = {
-        id: 'demo-user',
+        id: '00000000-0000-0000-0000-000000000002',
         email: 'demo@example.com',
         full_name: 'Demo User',
-        organization_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        organization_id: '00000000-0000-0000-0000-000000000001',
         role: 'admin',
         settings: {},
         phone: null,
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } as User
 
       const mockOrg = {
-        id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        id: '00000000-0000-0000-0000-000000000001',
         name: 'Demo Organization',
         country_code: 'US',
         settings: {},
@@ -78,16 +78,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Accept demo@example.com with demo123, or any other email/password
     if ((email === 'demo@example.com' && password === 'demo123') || email) {
       const mockUser = {
-        id: 'demo-user',
+        id: '00000000-0000-0000-0000-000000000002',
         email: email || 'demo@example.com',
         role: 'admin'
       } as any
 
       const mockProfile = {
-        id: 'demo-user',
+        id: '00000000-0000-0000-0000-000000000002',
         email: email || 'demo@example.com',
         full_name: 'Demo User',
-        organization_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        organization_id: '00000000-0000-0000-0000-000000000001',
         role: 'admin',
         settings: {},
         phone: null,
@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } as User
 
       const mockOrg = {
-        id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        id: '00000000-0000-0000-0000-000000000001',
         name: 'Demo Organization',
         country_code: 'US',
         settings: {},
