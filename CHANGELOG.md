@@ -48,6 +48,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Contact Creation** - Fixed database field mismatch (2025-05-28)
   - Updated contact form to use full_name instead of first_name/last_name
   - Fixed contact creation failing due to schema mismatch
+- **Contact Queue** - Fixed "no contacts" issue and improved empty state (2025-05-28)
+  - Updated getCallQueue to load contacts directly from contacts table
+  - Fixed field name to use 'last_contacted' instead of 'last_called_at'
+  - Added helpful navigation to pathways, events, and campaigns when no contacts available
+  - Prioritize contacts that have never been called over those called 30+ days ago
 - **Navigation Issues** - Fixed broken navigation flows (2025-05-28)
   - Add Contact button now navigates to full form instead of inline creation
   - View All Activity button in Engagement Dashboard now works correctly

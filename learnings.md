@@ -293,3 +293,14 @@ contact-manager-pwa/
   - GDPR and CCPA compliance sections
   - Security measures documentation
   - Routing at /privacy with login page integration
+
+## Contact Queue Implementation (2025-05-28)
+- The contact queue was showing "no contacts" because it was looking for a `call_assignments` table that doesn't exist
+- Solution: Load contacts directly from the contacts table, prioritizing those never called
+- The contacts table uses `last_contacted` field, not `last_called_at`
+- The contacts table uses a single `full_name` field instead of `first_name`/`last_name` (see migration 003)
+- When no contacts are available, provide helpful navigation to pathways, events, and campaigns
+- Contacts become available for calling based on:
+  - Never been contacted (highest priority)
+  - Not contacted in 30+ days (secondary priority)
+- Empty state now provides actionable next steps for volunteers
