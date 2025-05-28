@@ -325,7 +325,7 @@ BEGIN
 
   -- Add phone bank calls
   INSERT INTO campaign_activities (
-    campaign_id, contact_id, organization_id, activity_type, outcome, notes, created_by, created_at
+    campaign_id, contact_id, organization_id, activity_type, outcome, notes, user_id, created_at
   )
   SELECT 
     v_campaign_id,
@@ -464,7 +464,7 @@ BEGIN
 
   -- Add canvassing results
   INSERT INTO campaign_activities (
-    campaign_id, contact_id, organization_id, activity_type, outcome, notes, metadata, created_by, created_at
+    campaign_id, contact_id, organization_id, activity_type, outcome, notes, details, user_id, created_at
   )
   SELECT 
     v_campaign_id,
