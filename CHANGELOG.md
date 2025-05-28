@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Allow logged-in users to view landing page at "/" instead of auto-redirecting to dashboard
+
 ### Added
 - **Sentry Error Tracking** - Application monitoring and error reporting (2025-05-28)
   - Integrated Sentry for real-time error tracking and monitoring
