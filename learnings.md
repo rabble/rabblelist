@@ -319,3 +319,44 @@ contact-manager-pwa/
   - Template IDs for each email type (optional)
 - Free tier provides 100 emails/day which is good for testing
 - Production would need Essentials ($19.95/mo) or Pro (usage-based) plan
+
+## Organization API Keys Implementation (2025-05-28)
+- Designed and implemented per-organization API key management system
+- Key features:
+  - Organizations can use their own API keys for third-party services
+  - Automatic fallback to system keys for unpaid organizations
+  - Rate limiting based on subscription plan (free/basic/pro/enterprise)
+  - Usage tracking and cost estimation
+  - Encrypted key storage (placeholder for Supabase Vault)
+- Database schema:
+  - `organization_api_keys`: Encrypted storage for service credentials
+  - `organization_subscriptions`: Billing and plan management
+  - `organization_api_usage`: Monthly partitioned usage tracking
+  - `rate_limit_rules`: Configurable limits by plan and service
+  - `organization_api_key_audit`: Audit trail for security
+- Service layer implementation:
+  - `OrganizationAPIKeyService`: Singleton for key management
+  - Key CRUD operations with audit logging
+  - Rate limit checking before API calls
+  - Usage tracking after successful calls
+  - Service configuration with custom key fallback
+- Modified services:
+  - `EmailService`: Now checks org keys before system keys
+  - `SMSService`: Supports org-specific Twilio credentials
+  - Both services track usage for billing/rate limiting
+- Admin UI:
+  - `APIKeysManagement` component at `/admin/api-keys`
+  - Secure input fields with masking
+  - Test connection functionality
+  - Shows subscription status and rate limits
+- Implementation notes:
+  - Keys should be encrypted using Supabase Vault in production
+  - Cloudflare Worker needs updates to accept org-specific keys
+  - Rate limiting uses database functions for accuracy
+  - Usage partitioned by month for performance
+- Next steps for completion:
+  - Implement Stripe billing integration
+  - Create usage monitoring dashboard
+  - Add real encryption with Supabase Vault
+  - Update Cloudflare Workers to use org keys
+  - Add webhook for Stripe subscription events
