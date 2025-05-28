@@ -783,78 +783,45 @@ ON CONFLICT (id) DO UPDATE SET
     features = EXCLUDED.features,
     updated_at = NOW();
 
--- Create demo user in auth.users first (this would normally be done by Supabase Auth)
--- Note: In a real setup, users are created through Supabase Auth, not directly in auth.users
+-- Get the existing demo user ID and use it for all references
 DO $$
+DECLARE
+    demo_user_id UUID;
 BEGIN
-    -- Only insert if the user doesn't already exist
-    IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = '00000000-0000-0000-0000-000000000002') THEN
-        INSERT INTO auth.users (
-            instance_id,
-            id,
-            aud,
-            role,
-            email,
-            encrypted_password,
-            email_confirmed_at,
-            recovery_sent_at,
-            last_sign_in_at,
-            raw_app_meta_data,
-            raw_user_meta_data,
-            created_at,
-            updated_at,
-            confirmation_token,
-            email_change,
-            email_change_token_new,
-            recovery_token
-        ) VALUES (
-            '00000000-0000-0000-0000-000000000000',
-            '00000000-0000-0000-0000-000000000002',
-            'authenticated',
-            'authenticated',
+    -- Get existing demo user ID
+    SELECT id INTO demo_user_id FROM auth.users WHERE email = 'demo@example.com';
+    
+    -- If no demo user exists, this setup requires one to be created manually
+    -- through Supabase Auth dashboard first
+    IF demo_user_id IS NOT NULL THEN
+        -- Create or update demo user in public.users
+        INSERT INTO users (id, email, full_name, organization_id, role)
+        VALUES (
+            demo_user_id,
             'demo@example.com',
-            crypt('demo123', gen_salt('bf')),
-            NOW(),
-            NOW(),
-            NOW(),
-            '{"provider": "email", "providers": ["email"]}',
-            '{"full_name": "Demo User"}',
-            NOW(),
-            NOW(),
-            '',
-            '',
-            '',
-            ''
-        );
+            'Demo User',
+            '00000000-0000-0000-0000-000000000001',
+            'admin'
+        )
+        ON CONFLICT (id) DO UPDATE SET
+            full_name = EXCLUDED.full_name,
+            organization_id = EXCLUDED.organization_id,
+            role = EXCLUDED.role,
+            updated_at = NOW();
+
+        -- Add demo user to user_organizations
+        INSERT INTO user_organizations (user_id, organization_id, role, is_primary)
+        VALUES (
+            demo_user_id,
+            '00000000-0000-0000-0000-000000000001',
+            'admin',
+            true
+        )
+        ON CONFLICT (user_id, organization_id) DO UPDATE SET
+            role = EXCLUDED.role,
+            is_primary = EXCLUDED.is_primary;
     END IF;
 END $$;
-
--- Create demo user in public.users
-INSERT INTO users (id, email, full_name, organization_id, role)
-VALUES (
-    '00000000-0000-0000-0000-000000000002',
-    'demo@example.com',
-    'Demo User',
-    '00000000-0000-0000-0000-000000000001',
-    'admin'
-)
-ON CONFLICT (id) DO UPDATE SET
-    full_name = EXCLUDED.full_name,
-    organization_id = EXCLUDED.organization_id,
-    role = EXCLUDED.role,
-    updated_at = NOW();
-
--- Add demo user to user_organizations
-INSERT INTO user_organizations (user_id, organization_id, role, is_primary)
-VALUES (
-    '00000000-0000-0000-0000-000000000002',
-    '00000000-0000-0000-0000-000000000001',
-    'admin',
-    true
-)
-ON CONFLICT (user_id, organization_id) DO UPDATE SET
-    role = EXCLUDED.role,
-    is_primary = EXCLUDED.is_primary;
 
 -- SETUP COMPLETE
 -- You can now add demo data by running the seed file separately
