@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow logged-in users to view landing page at "/" instead of auto-redirecting to dashboard
 
 ### Added
+- **Contact History Timeline** - Complete interaction log showing all activities for a contact (2025-01-28)
+  - Aggregates data from multiple sources: interactions, campaigns, events, and calls
+  - Visual timeline with color-coded icons for different activity types
+  - Relative timestamps and activity metadata display
+  - Empty state and loading animations
+  - Added `getContactInteractions` method to ContactService
+  - Added `getCampaignActivitiesByContact` and `getEventRegistrationsByContact` to AnalyticsService
 - **Sentry Error Tracking** - Application monitoring and error reporting (2025-05-28)
   - Integrated Sentry for real-time error tracking and monitoring
   - Added error boundaries to gracefully handle runtime errors

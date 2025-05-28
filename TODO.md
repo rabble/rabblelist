@@ -14,7 +14,7 @@
 - [x] Custom fields configuration
 - [x] Contact search and filtering
 - [x] Contact tags management
-- [ ] **Contact history timeline** - Complete interaction log with all activities
+- [x] **Contact history timeline** - Complete interaction log with all activities
 - [ ] **Contact merge UI** - Visual interface for reviewing and merging duplicates
 - [ ] **Bulk tag operations** - Add/remove tags from multiple contacts at once
 - [ ] **Smart lists** - Dynamic contact lists based on criteria

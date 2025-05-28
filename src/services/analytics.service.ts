@@ -253,6 +253,44 @@ export class AnalyticsService {
   }
 
   /**
+   * Get campaign activities for a specific contact
+   */
+  static async getCampaignActivitiesByContact(contactId: string) {
+    return withRetry(async () => {
+      const { data, error } = await supabase
+        .from('campaign_activities')
+        .select(`
+          *,
+          campaigns(name, type)
+        `)
+        .eq('contact_id', contactId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      return data || []
+    })
+  }
+
+  /**
+   * Get event registrations for a specific contact
+   */
+  static async getEventRegistrationsByContact(contactId: string) {
+    return withRetry(async () => {
+      const { data, error } = await supabase
+        .from('event_registrations')
+        .select(`
+          *,
+          events(name, date, location)
+        `)
+        .eq('contact_id', contactId)
+        .order('registered_at', { ascending: false })
+
+      if (error) throw error
+      return data || []
+    })
+  }
+
+  /**
    * Get recent engagement activities for an organization
    */
   static async getRecentEngagementActivities(organizationId: string, limit = 10) {

@@ -4,6 +4,7 @@ import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { ContactService } from './contacts.service'
+import { ContactHistory } from './ContactHistory'
 import { 
   Phone,
   Mail,
@@ -325,54 +326,14 @@ export function ContactDetail() {
             </Card>
           </div>
 
-          {/* Call History */}
+          {/* Contact History Timeline */}
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>Call History</CardTitle>
+                <CardTitle>Activity History</CardTitle>
               </CardHeader>
               <CardContent>
-                {callHistory.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Phone className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-500">No call history</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {callHistory.map((call) => (
-                      <div 
-                        key={call.id}
-                        className="border rounded-lg p-4 hover:bg-gray-50"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-start gap-3">
-                            {getOutcomeIcon(call.outcome)}
-                            <div>
-                              <div className="font-medium text-gray-900 capitalize">
-                                {call.outcome.replace('_', ' ')}
-                              </div>
-                              <div className="text-sm text-gray-500 mt-1">
-                                <Clock className="w-3 h-3 inline mr-1" />
-                                {new Date(call.called_at).toLocaleString()}
-                              </div>
-                            </div>
-                          </div>
-                          {call.duration_seconds && (
-                            <span className="text-sm text-gray-500">
-                              {Math.floor(call.duration_seconds / 60)}:
-                              {(call.duration_seconds % 60).toString().padStart(2, '0')}
-                            </span>
-                          )}
-                        </div>
-                        {call.notes && (
-                          <p className="text-sm text-gray-700 mt-3 pl-7">
-                            {call.notes}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <ContactHistory contactId={contact.id} />
               </CardContent>
             </Card>
 

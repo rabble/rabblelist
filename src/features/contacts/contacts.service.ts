@@ -302,6 +302,27 @@ export class ContactService {
     }
   }
 
+  // Get all interactions for a contact
+  static async getContactInteractions(contactId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('contact_interactions')
+        .select(`
+          *,
+          user:users(full_name, email)
+        `)
+        .eq('contact_id', contactId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      return { data: data || [], error: null }
+    } catch (error) {
+      console.error('Error fetching contact interactions:', error)
+      return { data: [], error }
+    }
+  }
+
   // Get contact stats
   static async getContactStats() {
     try {
