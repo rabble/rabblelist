@@ -60,12 +60,16 @@ export function EngagementDashboard() {
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
   const [refreshing, setRefreshing] = useState(false)
+  const [ladderData, setLadderData] = useState<any>(null)
+  const [campaignPerformance, setCampaignPerformance] = useState<any[]>([])
   const { user } = useAuthStore()
 
   useEffect(() => {
     if (user?.organization_id) {
       loadEngagementStats()
       loadRecentActivities()
+      loadLadderData()
+      loadCampaignPerformance()
     }
   }, [user?.organization_id, timeframe])
 
@@ -76,6 +80,8 @@ export function EngagementDashboard() {
     const interval = setInterval(() => {
       loadEngagementStats()
       loadRecentActivities()
+      loadLadderData()
+      loadCampaignPerformance()
       setLastRefresh(new Date())
     }, 30000) // 30 seconds
 
@@ -104,6 +110,28 @@ export function EngagementDashboard() {
       setRecentActivities(activities)
     } catch (error) {
       console.error('Failed to load recent activities:', error)
+    }
+  }
+
+  const loadLadderData = async () => {
+    if (!user?.organization_id) return
+    
+    try {
+      const data = await AnalyticsService.getEngagementLadder(user.organization_id)
+      setLadderData(data)
+    } catch (error) {
+      console.error('Failed to load ladder data:', error)
+    }
+  }
+
+  const loadCampaignPerformance = async () => {
+    if (!user?.organization_id) return
+    
+    try {
+      const data = await AnalyticsService.getCampaignPerformance(user.organization_id)
+      setCampaignPerformance(data)
+    } catch (error) {
+      console.error('Failed to load campaign performance:', error)
     }
   }
 
@@ -185,13 +213,13 @@ export function EngagementDashboard() {
     }
   ]
 
-  // Engagement ladder stages
-  const ladderStages = [
-    { stage: 'Supporter', count: 1523, icon: <Users className="w-4 h-4" /> },
-    { stage: 'Volunteer', count: 342, icon: <UserCheck className="w-4 h-4" /> },
-    { stage: 'Organizer', count: 87, icon: <Target className="w-4 h-4" /> },
-    { stage: 'Leader', count: 23, icon: <Zap className="w-4 h-4" /> }
-  ]
+  // Engagement ladder stages using real data
+  const ladderStages = ladderData ? [
+    { stage: 'Supporter', count: ladderData.supporter || 0, icon: <Users className="w-4 h-4" /> },
+    { stage: 'Volunteer', count: ladderData.volunteer || 0, icon: <UserCheck className="w-4 h-4" /> },
+    { stage: 'Organizer', count: ladderData.organizer || 0, icon: <Target className="w-4 h-4" /> },
+    { stage: 'Leader', count: ladderData.leader || 0, icon: <Zap className="w-4 h-4" /> }
+  ] : []
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -219,7 +247,9 @@ export function EngagementDashboard() {
     try {
       await Promise.all([
         loadEngagementStats(),
-        loadRecentActivities()
+        loadRecentActivities(),
+        loadLadderData(),
+        loadCampaignPerformance()
       ])
       setLastRefresh(new Date())
     } finally {
@@ -440,56 +470,58 @@ export function EngagementDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="p-4 border border-gray-200 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium">Climate Action Petition</h4>
-                    <span className="text-sm text-green-600 font-medium">Active</span>
+                {campaignPerformance.length > 0 ? (
+                  campaignPerformance.slice(0, 2).map((campaign) => (
+                    <div key={campaign.id} className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium">{campaign.name}</h4>
+                        <span className={`text-sm font-medium ${
+                          campaign.status === 'active' ? 'text-green-600' : 'text-blue-600'
+                        }`}>
+                          {campaign.status === 'active' ? 'Active' : 'Completed'}
+                        </span>
+                      </div>
+                      {campaign.type === 'petition' && campaign.metrics && (
+                        <>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="text-gray-600">Signatures</p>
+                              <p className="font-bold text-lg">{campaign.metrics.signatures}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-600">Goal</p>
+                              <p className="font-bold text-lg">{campaign.metrics.goal}</p>
+                            </div>
+                          </div>
+                          <div className="mt-3">
+                            <div className="flex items-center justify-between text-sm mb-1">
+                              <span className="text-gray-600">Goal Progress</span>
+                              <span className="font-medium">{campaign.metrics.progress}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-green-500 h-2 rounded-full" 
+                                style={{ width: `${Math.min(campaign.metrics.progress, 100)}%` }} 
+                              />
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center p-8 text-gray-500">
+                    <p>No active campaigns</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-4"
+                      onClick={() => navigate('/campaigns')}
+                    >
+                      Create Campaign
+                    </Button>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-600">Signatures</p>
-                      <p className="font-bold text-lg">1,847</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Shares</p>
-                      <p className="font-bold text-lg">423</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">New Contacts</p>
-                      <p className="font-bold text-lg">267</p>
-                    </div>
-                  </div>
-                  <div className="mt-3">
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-gray-600">Goal Progress</span>
-                      <span className="font-medium">92%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-green-500 h-2 rounded-full" style={{ width: '92%' }} />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 border border-gray-200 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium">Day of Action - March 15</h4>
-                    <span className="text-sm text-blue-600 font-medium">Upcoming</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-600">RSVPs</p>
-                      <p className="font-bold text-lg">124</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Volunteers</p>
-                      <p className="font-bold text-lg">45</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Locations</p>
-                      <p className="font-bold text-lg">8</p>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             </CardContent>
           </Card>

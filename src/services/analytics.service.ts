@@ -68,9 +68,9 @@ export class AnalyticsService {
         .gte('created_at', startDate.toISOString())
 
       const { data: callLogs } = await supabase
-        .from('phonebank_calls')
-        .select('*, phonebank_sessions!inner(*)')
-        .eq('phonebank_sessions.campaign_id', campaignId)
+        .from('phonebank_sessions')
+        .select('*')
+        .eq('campaign_id', campaignId)
         .gte('created_at', startDate.toISOString())
 
       // Process time series data
@@ -168,26 +168,26 @@ export class AnalyticsService {
       activities.push({
         id: sig.id,
         type: 'signature',
-        description: `${sig.first_name} ${sig.last_name} signed the petition`,
+        description: `${sig.full_name} signed the petition`,
         timestamp: sig.signed_at
       })
     })
 
-    // Get recent calls
-    const { data: calls } = await supabase
-      .from('phonebank_calls')
-      .select('*, phonebank_sessions!inner(*), contacts(*)')
-      .eq('phonebank_sessions.campaign_id', campaignId)
+    // Get recent phone bank sessions
+    const { data: sessions } = await supabase
+      .from('phonebank_sessions')
+      .select('*, contacts(*)')
+      .eq('campaign_id', campaignId)
       .order('created_at', { ascending: false })
       .limit(5)
 
-    calls?.forEach(call => {
-      if (call.outcome === 'supporter') {
+    sessions?.forEach(session => {
+      if (session.outcome === 'answered') {
         activities.push({
-          id: call.id,
+          id: session.id,
           type: 'call',
-          description: `${call.contacts?.full_name || 'Contact'} became a supporter`,
-          timestamp: call.created_at
+          description: `Called ${session.contacts?.full_name || 'Contact'}`,
+          timestamp: session.created_at
         })
       }
     })
@@ -215,10 +215,11 @@ export class AnalyticsService {
 
       // Get recent activity counts
       const { count: recentCalls } = await supabase
-        .from('call_logs')
+        .from('contact_interactions')
         .select('*', { count: 'exact' })
         .eq('organization_id', organizationId)
-        .gte('called_at', sevenDaysAgo.toISOString())
+        .eq('type', 'call')
+        .gte('created_at', sevenDaysAgo.toISOString())
 
       const { count: recentEvents } = await supabase
         .from('event_registrations')
@@ -291,6 +292,104 @@ export class AnalyticsService {
   }
 
   /**
+   * Get engagement ladder statistics
+   */
+  static async getEngagementLadder(organizationId: string) {
+    return withRetry(async () => {
+      // Count contacts by their tags
+      const { data: contacts } = await supabase
+        .from('contacts')
+        .select('tags')
+        .eq('organization_id', organizationId)
+        .eq('status', 'active')
+
+      let supporter = 0
+      let volunteer = 0
+      let organizer = 0
+      let leader = 0
+
+      contacts?.forEach(contact => {
+        const tags = contact.tags || []
+        if (tags.includes('leader') || tags.includes('board-member')) {
+          leader++
+        } else if (tags.includes('organizer') || tags.includes('event-organizer')) {
+          organizer++
+        } else if (tags.includes('volunteer') || tags.includes('phone-banker') || tags.includes('canvasser')) {
+          volunteer++
+        } else {
+          supporter++
+        }
+      })
+
+      return {
+        supporter,
+        volunteer,
+        organizer,
+        leader
+      }
+    })
+  }
+
+  /**
+   * Get campaign performance data
+   */
+  static async getCampaignPerformance(organizationId: string) {
+    return withRetry(async () => {
+      // Get active campaigns
+      const { data: campaigns } = await supabase
+        .from('campaigns')
+        .select('*')
+        .eq('organization_id', organizationId)
+        .in('status', ['active', 'completed'])
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      const campaignData = []
+
+      for (const campaign of campaigns || []) {
+        if (campaign.type === 'petition') {
+          // Get petition signature count
+          const { count } = await supabase
+            .from('petition_signatures')
+            .select('*', { count: 'exact' })
+            .eq('campaign_id', campaign.id)
+
+          campaignData.push({
+            id: campaign.id,
+            name: campaign.name,
+            type: campaign.type,
+            status: campaign.status,
+            metrics: {
+              signatures: count || 0,
+              goal: campaign.goal || 0,
+              progress: campaign.goal ? Math.round(((count || 0) / campaign.goal) * 100) : 0
+            }
+          })
+        } else if (campaign.type === 'event') {
+          // For event campaigns, count registrations
+          const { count } = await supabase
+            .from('event_registrations')
+            .select('*', { count: 'exact' })
+            .eq('organization_id', organizationId)
+
+          campaignData.push({
+            id: campaign.id,
+            name: campaign.name,
+            type: campaign.type,
+            status: campaign.status,
+            metrics: {
+              registrations: count || 0,
+              goal: campaign.goal || 0
+            }
+          })
+        }
+      }
+
+      return campaignData
+    })
+  }
+
+  /**
    * Get recent engagement activities for an organization
    */
   static async getRecentEngagementActivities(organizationId: string, limit = 10) {
@@ -325,7 +424,7 @@ export class AnalyticsService {
         .from('petition_signatures')
         .select(`
           *,
-          campaigns!inner(title, organization_id)
+          campaigns!inner(name, organization_id)
         `)
         .eq('campaigns.organization_id', organizationId)
         .order('signed_at', { ascending: false })
@@ -335,8 +434,8 @@ export class AnalyticsService {
         activities.push({
           id: sig.id,
           type: 'action',
-          contact: `${sig.first_name} ${sig.last_name}`,
-          description: `Signed ${sig.campaigns.title}`,
+          contact: sig.full_name,
+          description: `Signed ${sig.campaigns.name}`,
           timestamp: new Date(sig.signed_at),
           status: 'completed' as const
         })
@@ -377,7 +476,7 @@ export class AnalyticsService {
 
       // Get recent volunteer actions from pathways
       const { data: pathwayActions } = await supabase
-        .from('contact_pathway_progress')
+        .from('pathway_members')
         .select(`
           *,
           contacts(full_name),
