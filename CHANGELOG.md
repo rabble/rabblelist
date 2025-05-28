@@ -27,6 +27,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow logged-in users to view landing page at "/" instead of auto-redirecting to dashboard
 
 ### Added
+- **QR Code Event Check-in** - Mobile-friendly QR code scanning for event attendance (2025-05-28)
+  - QRCodeService for generating unique check-in codes
+  - Real-time QR scanner using device camera
+  - Public check-in pages accessible via QR code
+  - Printable event badges with QR codes
+  - Bulk QR code generation for all registrations
+  - Duplicate scan prevention
+  - Self check-in option for attendees
 - **Contact History Timeline** - Complete interaction log showing all activities for a contact (2025-01-28)
   - Aggregates data from multiple sources: interactions, campaigns, events, and calls
   - Visual timeline with color-coded icons for different activity types
