@@ -43,6 +43,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Bulk QR code generation for all registrations
   - Duplicate scan prevention
   - Self check-in option for attendees
+- **Real-time Attendance Dashboard** - Live event attendance monitoring (2025-05-28)
+  - Real-time statistics with auto-refresh capability
+  - Live updates via Supabase subscriptions
+  - Check-in progress visualization
+  - Recent check-ins feed with attendee details
+  - Export attendance reports as CSV
+  - Quick access to QR scanner and walk-in registration
+- **Walk-in Registration** - On-site event registration system (2025-05-28)
+  - Search existing contacts or create new ones
+  - Auto check-in upon registration
+  - Generate QR codes for walk-in attendees
+  - Support for guest registration without contact creation
+  - Ticket type selection and notes
+  - Integration with contact management system
 - **Contact History Timeline** - Complete interaction log showing all activities for a contact (2025-01-28)
   - Aggregates data from multiple sources: interactions, campaigns, events, and calls
   - Visual timeline with color-coded icons for different activity types
