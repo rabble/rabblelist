@@ -402,6 +402,123 @@ export interface Database {
           is_primary?: boolean
         }
       }
+      webhook_configs: {
+        Row: {
+          id: string
+          organization_id: string
+          url: string
+          events: string[]
+          active: boolean
+          secret: string
+          description: string | null
+          headers: Json
+          created_at: string
+          updated_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          organization_id: string
+          url: string
+          events: string[]
+          active?: boolean
+          secret: string
+          description?: string | null
+          headers?: Json
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          url?: string
+          events?: string[]
+          active?: boolean
+          secret?: string
+          description?: string | null
+          headers?: Json
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+        }
+      }
+      webhook_events: {
+        Row: {
+          id: string
+          webhook_config_id: string
+          event_type: string
+          payload: Json
+          status: 'pending' | 'success' | 'failed'
+          attempts: number
+          next_retry_at: string | null
+          last_error: string | null
+          response_status: number | null
+          response_body: string | null
+          delivered_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          webhook_config_id: string
+          event_type: string
+          payload: Json
+          status?: 'pending' | 'success' | 'failed'
+          attempts?: number
+          next_retry_at?: string | null
+          last_error?: string | null
+          response_status?: number | null
+          response_body?: string | null
+          delivered_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          webhook_config_id?: string
+          event_type?: string
+          payload?: Json
+          status?: 'pending' | 'success' | 'failed'
+          attempts?: number
+          next_retry_at?: string | null
+          last_error?: string | null
+          response_status?: number | null
+          response_body?: string | null
+          delivered_at?: string | null
+          created_at?: string
+        }
+      }
+      webhook_delivery_attempts: {
+        Row: {
+          id: string
+          webhook_event_id: string
+          attempt_number: number
+          status_code: number | null
+          response_body: string | null
+          error_message: string | null
+          duration_ms: number | null
+          attempted_at: string
+        }
+        Insert: {
+          id?: string
+          webhook_event_id: string
+          attempt_number: number
+          status_code?: number | null
+          response_body?: string | null
+          error_message?: string | null
+          duration_ms?: number | null
+          attempted_at?: string
+        }
+        Update: {
+          id?: string
+          webhook_event_id?: string
+          attempt_number?: number
+          status_code?: number | null
+          response_body?: string | null
+          error_message?: string | null
+          duration_ms?: number | null
+          attempted_at?: string
+        }
+      }
     }
     Views: {}
     Functions: {

@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Webhook Automation System** - Real-time event notifications and integrations (2025-05-28)
+  - Complete webhook management interface for configuring endpoints
+  - Support for 20+ event types across contacts, campaigns, events, and pathways
+  - Webhook testing interface to validate endpoints
+  - HMAC signature verification for security
+  - Retry mechanism with exponential backoff for reliability
+  - Comprehensive API documentation with interactive examples
+  - n8n integration guide with pre-built workflow templates
+  - Database schema for webhook configs, events, and delivery attempts
+  - Real-time webhook delivery with queueing system
 - **Analytics Implementation** - Replaced mock data with real queries (2025-05-28)
   - Created AnalyticsService for campaign and engagement statistics
   - Campaign Analytics now fetches real time series data
@@ -33,6 +43,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added 30-second auto-refresh to Engagement Dashboard
   - Toggle controls and manual refresh buttons
   - Visual indication of last update time
+
+### Fixed
+- **Contact Creation** - Fixed database field mismatch (2025-05-28)
+  - Updated contact form to use full_name instead of first_name/last_name
+  - Fixed contact creation failing due to schema mismatch
+- **Navigation Issues** - Fixed broken navigation flows (2025-05-28)
+  - Add Contact button now navigates to full form instead of inline creation
+  - View All Activity button in Engagement Dashboard now works correctly
+  - Create Automation button properly navigates to automation integrations
+- **Campaign Forms** - Created type-specific campaign forms (2025-05-28)
+  - Each campaign type now has appropriate custom fields
+  - Fixed template loading in campaign creation
+  - Added proper form validation for each campaign type
+- **Pathway Creation** - Fixed pathway template functionality (2025-05-28)
+  - Templates now properly pass through navigation state
+  - Fixed pathway creation with pre-populated templates
+- **Admin Actions** - Implemented working admin functionality (2025-05-28)
+  - Added routes for user creation form
+  - Custom fields configuration now accessible
+  - Fixed admin dashboard action buttons
 
 ### Changed
 - **Platform Evaluation** - Comprehensive assessment of Rise.protest.net capabilities (2025-01-27)

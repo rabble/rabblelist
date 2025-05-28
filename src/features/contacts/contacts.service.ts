@@ -159,27 +159,44 @@ export class ContactService {
       const { data: userId } = await supabase.auth.getUser()
       if (!userId?.user) throw new Error('Not authenticated')
 
-      const { data, error } = await supabase
-        .from('call_assignments')
-        .select(`
-          *,
-          contact:contacts(*)
-        `)
-        .eq('ringer_id', userId.user.id)
-        .is('completed_at', null)
-        .order('priority', { ascending: true })
-        .order('assigned_at', { ascending: true })
+      // For now, load contacts that haven't been called recently
+      // In the future, this could use assignments or more sophisticated logic
+      const thirtyDaysAgo = new Date()
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-      if (error) throw error
+      // First, try to get contacts that have never been called
+      let { data: neverCalled, error: neverCalledError } = await supabase
+        .from('contacts')
+        .select('*')
+        .is('last_contacted', null)
+        .order('created_at', { ascending: true })
+        .limit(50)
 
-      // Extract contacts from assignments
-      const contacts = data?.map(assignment => ({
-        ...assignment.contact,
-        priority: assignment.priority,
-        assigned_at: assignment.assigned_at
-      })) || []
+      if (neverCalledError) throw neverCalledError
 
-      return { data: contacts, error: null }
+      // If we don't have enough, get contacts not called in 30+ days
+      let contacts = neverCalled || []
+      if (contacts.length < 20) {
+        const { data: notRecentlyCalled, error: notRecentlyError } = await supabase
+          .from('contacts')
+          .select('*')
+          .lt('last_contacted', thirtyDaysAgo.toISOString())
+          .order('last_contacted', { ascending: true })
+          .limit(50 - contacts.length)
+
+        if (!notRecentlyError && notRecentlyCalled) {
+          contacts = [...contacts, ...notRecentlyCalled]
+        }
+      }
+
+      // Add priority based on how long since last call
+      const prioritizedContacts = contacts.map(contact => ({
+        ...contact,
+        priority: contact.last_contacted ? 2 : 1, // Never called = higher priority
+        assigned_at: new Date().toISOString()
+      }))
+
+      return { data: prioritizedContacts, error: null }
     } catch (error) {
       console.error('Error fetching call queue:', error)
       return { data: [], error }

@@ -24,7 +24,9 @@ import { EngagementDashboard } from '@/features/engagement/EngagementDashboard'
 import { AllActivities } from '@/features/engagement/AllActivities'
 import { AutomationIntegrations } from '@/features/automation/AutomationIntegrations'
 import { WebhookManagement } from '@/features/automation/WebhookManagement'
+import { WebhookTester } from '@/features/automation/WebhookTester'
 import { ApiDocumentation } from '@/features/docs/ApiDocumentation'
+import { N8nIntegrationGuide } from '@/features/docs/N8nIntegrationGuide'
 import { CampaignManagement } from '@/features/campaigns/CampaignManagement'
 import { CampaignFormEnhanced } from '@/features/campaigns/CampaignFormEnhanced'
 import { CampaignDetail } from '@/features/campaigns/CampaignDetail'
@@ -236,9 +238,21 @@ function AppRoutes() {
             </ProtectedRoute>
           } />
           
+          <Route path="/automation/webhooks/test" element={
+            <ProtectedRoute>
+              <WebhookTester />
+            </ProtectedRoute>
+          } />
+          
           <Route path="/docs/api" element={
             <ProtectedRoute>
               <ApiDocumentation />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/docs/integrations/n8n" element={
+            <ProtectedRoute>
+              <N8nIntegrationGuide />
             </ProtectedRoute>
           } />
           

@@ -151,20 +151,51 @@ export class WebhookService {
     eventType: WebhookEventType, 
     payload: any
   ): Promise<void> {
-    try {
-      // Get active webhooks that subscribe to this event
-      const webhooks = await this.getWebhooks(organizationId)
-      const activeWebhooks = webhooks.filter(w => 
-        w.is_active && 
-        (w.events.includes(eventType) || w.events.includes('*'))
-      )
+    const webhooks = await this.getWebhooks(organizationId)
+    const activeWebhooks = webhooks.filter(w => 
+      w.is_active && w.events.includes(eventType)
+    )
 
-      // Queue webhook events for delivery
-      for (const webhook of activeWebhooks) {
-        await this.queueWebhookEvent(webhook, eventType, payload)
+    for (const webhook of activeWebhooks) {
+      await this.queueWebhookEvent(webhook, eventType, payload)
+    }
+  }
+
+  /**
+   * Send webhook immediately (for testing)
+   */
+  private static async sendWebhook(
+    webhook: WebhookConfig,
+    eventType: string,
+    payload: any
+  ): Promise<void> {
+    const webhookPayload = {
+      event: eventType,
+      data: payload,
+      timestamp: new Date().toISOString(),
+      organization_id: webhook.organization_id
+    }
+
+    const signature = this.generateSignature(webhookPayload, webhook.secret)
+
+    try {
+      const response = await fetch(webhook.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Webhook-Signature': signature,
+          'X-Webhook-Event': eventType,
+          'X-Webhook-ID': webhook.id
+        },
+        body: JSON.stringify(webhookPayload)
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
       }
     } catch (error) {
-      console.error('Error triggering webhooks:', error)
+      console.error(`Failed to send webhook to ${webhook.url}:`, error)
+      throw error
     }
   }
 

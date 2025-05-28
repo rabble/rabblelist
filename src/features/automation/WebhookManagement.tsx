@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
@@ -20,7 +21,9 @@ import {
   RefreshCw,
   Eye,
   EyeOff,
-  Webhook
+  Webhook,
+  TestTube2,
+  ArrowLeft
 } from 'lucide-react'
 
 const eventTypes: { value: WebhookEventType; label: string; category: string }[] = [
@@ -59,6 +62,7 @@ const eventTypes: { value: WebhookEventType; label: string; category: string }[]
 ]
 
 export function WebhookManagement() {
+  const navigate = useNavigate()
   const { organization } = useAuth()
   const [webhooks, setWebhooks] = useState<WebhookConfig[]>([])
   const [loading, setLoading] = useState(true)
@@ -133,6 +137,13 @@ export function WebhookManagement() {
       <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-6">
+          <button
+            onClick={() => navigate('/engagement/automations')}
+            className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Automations
+          </button>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Webhooks</h1>
@@ -140,10 +151,19 @@ export function WebhookManagement() {
                 Configure webhooks to receive real-time event notifications
               </p>
             </div>
-            <Button onClick={() => setShowNewWebhook(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Webhook
-            </Button>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/automation/webhooks/test')}
+              >
+                <TestTube2 className="w-4 h-4 mr-2" />
+                Test Webhooks
+              </Button>
+              <Button onClick={() => setShowNewWebhook(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Webhook
+              </Button>
+            </div>
           </div>
         </div>
 

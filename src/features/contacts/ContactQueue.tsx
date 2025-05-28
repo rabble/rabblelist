@@ -3,6 +3,7 @@ import { useSync } from '@/hooks/useSync'
 import { useContactQueue } from '@/hooks/useContactQueue'
 import { ContactCard } from './ContactCard'
 import { Layout } from '@/components/layout/Layout'
+import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Wifi, WifiOff, Phone } from 'lucide-react'
 
 export function ContactQueue() {
@@ -24,7 +25,7 @@ export function ContactQueue() {
   const handleComplete = () => {
     if (currentContact) {
       updateContact(currentContact.id, {
-        last_contact_date: new Date().toISOString()
+        last_contacted: new Date().toISOString()
       })
     }
   }
@@ -46,14 +47,50 @@ export function ContactQueue() {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[60vh] p-6">
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-6 max-w-md">
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Phone className="w-10 h-10 text-gray-400" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">No Contacts</h2>
-            <p className="text-gray-600 max-w-xs mx-auto">
-              You don't have any contacts assigned to call right now.
+            <h2 className="text-2xl font-bold text-gray-900">No Contacts Available</h2>
+            <p className="text-gray-600">
+              There are no contacts ready to call right now. Here are some other ways you can help:
             </p>
+            
+            <div className="space-y-4 mt-8">
+              <Link 
+                to="/pathways" 
+                className="block w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                View Engagement Pathways
+              </Link>
+              
+              <Link 
+                to="/events" 
+                className="block w-full px-6 py-3 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+              >
+                Check Upcoming Events
+              </Link>
+              
+              <Link 
+                to="/contacts" 
+                className="block w-full px-6 py-3 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+              >
+                Import New Contacts
+              </Link>
+              
+              <Link 
+                to="/campaigns" 
+                className="block w-full px-6 py-3 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+              >
+                Review Active Campaigns
+              </Link>
+            </div>
+            
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <p className="text-sm text-gray-500">
+                Tip: Contacts become available for calling after 30 days, or you can ask your organizer to assign specific contacts to you.
+              </p>
+            </div>
           </div>
         </div>
       </Layout>
