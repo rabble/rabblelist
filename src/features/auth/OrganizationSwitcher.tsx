@@ -47,7 +47,6 @@ export function OrganizationSwitcher() {
 
       // If the join fails, try the view as fallback
       if (error?.code === 'PGRST200') {
-        console.log('Falling back to view-based query')
         const { data: viewData, error: viewError } = await supabase
           .from('user_organizations_with_org')
           .select('*')

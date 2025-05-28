@@ -542,3 +542,120 @@ contact-manager-pwa/
   - Generated thousands of interactions and activities
   - Fixed PostgreSQL array syntax: `ARRAY['value']` instead of string concatenation
 - **Result**: Dashboard now shows actual campaign activity and engagement metrics from database
+
+## Critical Feature Implementations (2025-05-28)
+
+### Contact History Timeline
+- Unified activity view aggregating data from multiple tables
+- Color-coded timeline with icons for different activity types
+- Efficient parallel data fetching with Promise.all()
+- Shows interactions, campaigns, events, and calls in chronological order
+
+### Contact Merge UI
+- Visual side-by-side comparison for duplicate resolution
+- Field-by-field selection with preview
+- Comprehensive data transfer across all related tables
+- Audit trail creation for compliance
+
+### Bulk Tag Operations
+- Multi-select interface for tag management
+- Real-time statistics showing tag distribution
+- Batch processing with audit trails
+- Visual feedback for pending changes
+
+### Smart Lists
+- Dynamic contact segmentation saved as reusable filters
+- Multiple criteria types: tags, dates, events, custom fields
+- Real-time count calculation without loading all contacts
+- Stored in organization settings for persistence
+
+### Contact Scoring
+- Configurable engagement scoring system
+- Rules-based scoring across multiple categories
+- Automatic calculation based on activities
+- Visual score distribution
+
+### Email Tracking Dashboard
+- Campaign performance metrics (opens, clicks, bounces)
+- Link-level analytics
+- Recipient engagement timeline
+- Visual charts and metrics
+
+### Two-way SMS Conversations
+- Real-time message threading
+- Inbound/outbound tracking with delivery status
+- Conversation search and filtering
+- Integration with Supabase real-time subscriptions
+
+### Event Confirmation Emails
+- Automated emails on registration
+- Reminder emails with configurable timing
+- Check-in links and QR codes
+- HTML templates with personalization
+
+### Complete Offline Sync with Conflict Resolution
+- Enhanced sync service with multiple resolution strategies
+- Automatic conflict detection based on timestamps
+- Visual conflict resolution interface
+- Cross-tab synchronization
+- Batch processing for efficiency
+- Sync status indicator in header
+- Admin dashboard for conflict management
+
+### Key Technical Patterns Learned
+1. **Parallel Data Fetching**: Use Promise.all() for independent queries
+2. **Audit Trails**: Create interaction records for all data modifications
+3. **Conflict Resolution**: Timestamp-based detection with merge strategies
+4. **Real-time Updates**: Supabase channels for live data
+5. **Batch Processing**: Handle bulk operations efficiently
+6. **Visual Feedback**: Always show pending changes before applying
+7. **Empty States**: Provide helpful next actions when no data
+8. **Progressive Enhancement**: Build offline-first with sync capabilities
+
+## Security Audit: Organization ID Filtering (2025-05-29)
+
+### Critical Security Issue Discovered
+- **Problem**: Multiple services lack proper organization_id filtering, allowing potential cross-organization data access
+- **Impact**: Users from one organization could potentially view/modify data from other organizations
+- **Root Cause**: Inconsistent implementation of organization filtering across services
+
+### Services with Missing Organization Filters
+1. **ContactService**: Most methods missing org filter (getContacts, getContact, updateContact, deleteContact, etc.)
+2. **CampaignService**: Several methods missing validation (getCampaign, updateCampaign, deleteCampaign)
+3. **EventService**: Update/delete operations missing org validation
+4. **GroupsService**: All methods missing organization_id filtering
+5. **PathwayService**: Most read operations missing org filter
+6. **PetitionService**: All methods missing organization validation
+7. **AnalyticsService**: Some methods missing org validation
+
+### Security Best Practices Identified
+1. **Always filter by organization_id**: Every query should include organization_id
+2. **Validate ownership before updates/deletes**: Check resource belongs to user's org
+3. **Use Row Level Security (RLS)**: Database-level protection as backup
+4. **Avoid hardcoded IDs**: ContactService uses hardcoded demo org ID
+5. **Create service base class**: Automatically include org_id in all queries
+6. **Test with multiple orgs**: Verify data isolation works correctly
+
+### Recommended Pattern for Fixes
+```typescript
+// Get org ID from authenticated user
+const { data: profile } = await supabase
+  .from('users')
+  .select('organization_id')
+  .eq('id', user?.user?.id)
+  .single()
+
+// Include in all queries
+query.eq('organization_id', profile.organization_id)
+
+// Validate before updates
+if (existing?.organization_id !== profile.organization_id) {
+  throw new Error('Unauthorized')
+}
+```
+
+### Action Items
+- Created `organization_id_audit.md` with detailed findings
+- All data services need security updates
+- Add integration tests for organization isolation
+- Consider using RLS policies as additional protection layer

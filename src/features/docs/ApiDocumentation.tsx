@@ -438,7 +438,6 @@ createContact({
   email: 'jane@example.com',
   tags: ['volunteer']
 }).then(contact => {
-  console.log('Contact created:', contact);
 });`}
                         </pre>
                         <button

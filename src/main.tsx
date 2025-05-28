@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import * as Sentry from '@sentry/react'
 import App from './App.tsx'
 import './index.css'
+import { EnhancedSyncService } from './lib/enhancedSyncService'
 
 // Initialize Sentry (only in production or if explicitly enabled)
 if (import.meta.env.PROD || import.meta.env.VITE_ENABLE_SENTRY === 'true') {
@@ -25,7 +26,6 @@ if (import.meta.env.PROD || import.meta.env.VITE_ENABLE_SENTRY === 'true') {
     environment: import.meta.env.MODE,
   })
 } else {
-  console.log('Sentry disabled in development. Set VITE_ENABLE_SENTRY=true to enable.')
 }
 
 // Clean up any existing service workers and caches
@@ -34,7 +34,6 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then(registrations => {
     registrations.forEach(registration => {
       registration.unregister()
-      console.log('Unregistered service worker:', registration.scope)
     })
   })
 }
@@ -44,24 +43,31 @@ if ('caches' in window) {
   caches.keys().then(names => {
     names.forEach(name => {
       caches.delete(name)
-      console.log('Deleted cache:', name)
     })
   })
 }
 
-// Register service worker (currently disabled until properly configured)
-// TODO: Re-enable service worker after fixing implementation
-// if ('serviceWorker' in navigator) {
-//   window.addEventListener('load', () => {
-//     navigator.serviceWorker.register('/sw.js')
-//       .then(registration => {
-//         console.log('ServiceWorker registration successful:', registration.scope);
-//       })
-//       .catch(err => {
-//         console.log('ServiceWorker registration failed:', err);
-//       });
-//   });
-// }
+// Register service worker for offline functionality
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(registration => {
+        // Service worker registered successfully
+      })
+      .catch(err => {
+        console.error('ServiceWorker registration failed:', err);
+      });
+  });
+}
+
+// Initialize enhanced sync service
+window.addEventListener('load', () => {
+  EnhancedSyncService.start({
+    conflictResolution: { strategy: 'merge' },
+    syncInterval: 30000, // 30 seconds
+    batchSize: 10
+  })
+})
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

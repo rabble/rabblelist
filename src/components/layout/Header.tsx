@@ -3,6 +3,7 @@ import { LogOut, ChevronDown, Megaphone } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { OrganizationSwitcher } from '@/features/auth/OrganizationSwitcher'
+import { SyncStatusIndicator } from '@/features/sync/SyncStatusIndicator'
 
 export function Header() {
   const { user, profile, signOut } = useAuth()
@@ -37,6 +38,7 @@ export function Header() {
         </div>
         
         <div className="flex items-center gap-4">
+          <SyncStatusIndicator />
           <OrganizationSwitcher />
           
           <div className="relative">

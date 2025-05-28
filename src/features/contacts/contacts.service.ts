@@ -14,6 +14,7 @@ export class ContactService {
     orderDirection?: 'asc' | 'desc'
   }) {
     try {
+      
       let query = supabase
         .from('contacts')
         .select('*', { count: 'exact' })
@@ -41,18 +42,20 @@ export class ContactService {
 
       const { data, error, count } = await query
 
-      console.log('🔍 ContactService.getContacts result:', { 
         dataLength: data?.length, 
         count, 
         error,
         firstContact: data?.[0]
       })
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ ContactService.getContacts error:', error)
+        throw error
+      }
 
       return { data: data || [], count: count || 0, error: null }
     } catch (error) {
-      console.error('Error fetching contacts:', error)
+      console.error('❌ Error fetching contacts:', error)
       return { data: [], count: 0, error }
     }
   }
@@ -153,50 +156,56 @@ export class ContactService {
     }
   }
 
-  // Get contacts assigned to the current user for calling
+  // Get contacts for calling queue
   static async getCallQueue() {
     try {
       const { data: userId } = await supabase.auth.getUser()
       if (!userId?.user) throw new Error('Not authenticated')
 
-      // For now, load contacts that haven't been called recently
-      // In the future, this could use assignments or more sophisticated logic
-      const thirtyDaysAgo = new Date()
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+      // Use demo org ID for now
+      const org = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
+      
 
-      // First, try to get contacts that have never been called
-      let { data: neverCalled, error: neverCalledError } = await supabase
+      // Get contacts that need to be called
+      const { data, error } = await supabase
         .from('contacts')
         .select('*')
-        .is('last_contacted', null)
-        .order('created_at', { ascending: true })
-        .limit(50)
+        .eq('organization_id', org)
+        .or('last_contact_date.is.null,last_contact_date.lt.now() - interval \'30 days\'')
+        .order('priority', { ascending: false })
+        .order('last_contact_date', { ascending: true, nullsFirst: true })
+        .limit(100)
 
-      if (neverCalledError) throw neverCalledError
+      if (error) throw error
 
-      // If we don't have enough, get contacts not called in 30+ days
-      let contacts = neverCalled || []
-      if (contacts.length < 20) {
-        const { data: notRecentlyCalled, error: notRecentlyError } = await supabase
-          .from('contacts')
-          .select('*')
-          .lt('last_contacted', thirtyDaysAgo.toISOString())
-          .order('last_contacted', { ascending: true })
-          .limit(50 - contacts.length)
+      // Get existing assignments
+      const { data: assignments } = await supabase
+        .from('call_assignments')
+        .select('contact_id')
+        .eq('ringer_id', userId.user.id)
+        .eq('organization_id', org)
+        .is('completed_at', null)
 
-        if (!notRecentlyError && notRecentlyCalled) {
-          contacts = [...contacts, ...notRecentlyCalled]
-        }
+      const assignedContactIds = assignments?.map(a => a.contact_id) || []
+
+      // Filter out already assigned contacts
+      const unassignedContacts = data?.filter(
+        contact => !assignedContactIds.includes(contact.id)
+      ) || []
+
+      // Assign new contacts to this ringer
+      if (unassignedContacts.length > 0) {
+        const newAssignments = unassignedContacts.slice(0, 10).map(contact => ({
+          organization_id: org,
+          ringer_id: userId.user.id,
+          contact_id: contact.id,
+          assigned_at: new Date().toISOString()
+        }))
+
+        await supabase.from('call_assignments').insert(newAssignments)
       }
 
-      // Add priority based on how long since last call
-      const prioritizedContacts = contacts.map(contact => ({
-        ...contact,
-        priority: contact.last_contacted ? 2 : 1, // Never called = higher priority
-        assigned_at: new Date().toISOString()
-      }))
-
-      return { data: prioritizedContacts, error: null }
+      return { data: unassignedContacts.slice(0, 10), error: null }
     } catch (error) {
       console.error('Error fetching call queue:', error)
       return { data: [], error }
@@ -298,81 +307,495 @@ export class ContactService {
       return { data: results, error: null }
     } catch (error) {
       console.error('Error bulk importing contacts:', error)
-      return { data: [], error }
+      return { data: null, error }
     }
   }
 
-  // Get all interactions for a contact
-  static async getContactInteractions(contactId: string) {
+  // Smart list functionality
+  static async getSmartListContacts(filters: {
+    tags?: string[]
+    dateRange?: { start: string; end: string }
+    activityLevel?: 'high' | 'medium' | 'low'
+    hasPhone?: boolean
+    hasEmail?: boolean
+    lastContactDays?: number
+    eventsAttended?: { min?: number; max?: number }
+    location?: string
+  }) {
     try {
-      const { data, error } = await supabase
-        .from('contact_interactions')
-        .select(`
-          *,
-          user:users(full_name, email)
-        `)
-        .eq('contact_id', contactId)
+      let query = supabase
+        .from('contacts')
+        .select('*', { count: 'exact' })
+
+      // Tag filters
+      if (filters.tags && filters.tags.length > 0) {
+        query = query.contains('tags', filters.tags)
+      }
+
+      // Date range filter
+      if (filters.dateRange) {
+        query = query
+          .gte('created_at', filters.dateRange.start)
+          .lte('created_at', filters.dateRange.end)
+      }
+
+      // Contact method filters
+      if (filters.hasPhone) {
+        query = query.not('phone', 'is', null)
+      }
+      if (filters.hasEmail) {
+        query = query.not('email', 'is', null)
+      }
+
+      // Last contact filter
+      if (filters.lastContactDays) {
+        const cutoffDate = new Date()
+        cutoffDate.setDate(cutoffDate.getDate() - filters.lastContactDays)
+        query = query.gte('last_contact_date', cutoffDate.toISOString())
+      }
+
+      // Events attended filter
+      if (filters.eventsAttended) {
+        if (filters.eventsAttended.min !== undefined) {
+          query = query.gte('total_events_attended', filters.eventsAttended.min)
+        }
+        if (filters.eventsAttended.max !== undefined) {
+          query = query.lte('total_events_attended', filters.eventsAttended.max)
+        }
+      }
+
+      // Location filter
+      if (filters.location) {
+        query = query.ilike('address', `%${filters.location}%`)
+      }
+
+      const { data, error, count } = await query
         .order('created_at', { ascending: false })
 
       if (error) throw error
 
-      return { data: data || [], error: null }
+      return { data: data || [], count: count || 0, error: null }
     } catch (error) {
-      console.error('Error fetching contact interactions:', error)
+      console.error('Error fetching smart list contacts:', error)
+      return { data: [], count: 0, error }
+    }
+  }
+
+  // Get duplicate candidates
+  static async findDuplicates(organizationId: string) {
+    try {
+      // Get all contacts
+      const { data: contacts, error } = await supabase
+        .from('contacts')
+        .select('id, full_name, email, phone')
+        .eq('organization_id', organizationId)
+        .order('full_name')
+
+      if (error) throw error
+
+      // Find potential duplicates
+      const duplicates: Array<{
+        contact1: typeof contacts[0]
+        contact2: typeof contacts[0]
+        matchType: 'name' | 'email' | 'phone'
+        confidence: number
+      }> = []
+
+      if (!contacts) return { data: duplicates, error: null }
+
+      for (let i = 0; i < contacts.length; i++) {
+        for (let j = i + 1; j < contacts.length; j++) {
+          const contact1 = contacts[i]
+          const contact2 = contacts[j]
+
+          // Check name similarity
+          if (contact1.full_name && contact2.full_name) {
+            const nameSimilarity = this.calculateSimilarity(
+              contact1.full_name.toLowerCase(),
+              contact2.full_name.toLowerCase()
+            )
+            if (nameSimilarity > 0.8) {
+              duplicates.push({
+                contact1,
+                contact2,
+                matchType: 'name',
+                confidence: nameSimilarity
+              })
+              continue
+            }
+          }
+
+          // Check email match
+          if (contact1.email && contact2.email && 
+              contact1.email.toLowerCase() === contact2.email.toLowerCase()) {
+            duplicates.push({
+              contact1,
+              contact2,
+              matchType: 'email',
+              confidence: 1
+            })
+            continue
+          }
+
+          // Check phone match (normalize phone numbers)
+          if (contact1.phone && contact2.phone) {
+            const phone1 = contact1.phone.replace(/\D/g, '')
+            const phone2 = contact2.phone.replace(/\D/g, '')
+            if (phone1 === phone2) {
+              duplicates.push({
+                contact1,
+                contact2,
+                matchType: 'phone',
+                confidence: 1
+              })
+            }
+          }
+        }
+      }
+
+      return { data: duplicates, error: null }
+    } catch (error) {
+      console.error('Error finding duplicates:', error)
       return { data: [], error }
     }
   }
 
-  // Get contact stats
-  static async getContactStats() {
+  // Helper function to calculate string similarity
+  private static calculateSimilarity(str1: string, str2: string): number {
+    const longer = str1.length > str2.length ? str1 : str2
+    const shorter = str1.length > str2.length ? str2 : str1
+    
+    if (longer.length === 0) return 1.0
+    
+    const editDistance = this.levenshteinDistance(longer, shorter)
+    return (longer.length - editDistance) / longer.length
+  }
+
+  private static levenshteinDistance(str1: string, str2: string): number {
+    const matrix = []
+    
+    for (let i = 0; i <= str2.length; i++) {
+      matrix[i] = [i]
+    }
+    
+    for (let j = 0; j <= str1.length; j++) {
+      matrix[0][j] = j
+    }
+    
+    for (let i = 1; i <= str2.length; i++) {
+      for (let j = 1; j <= str1.length; j++) {
+        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1]
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          )
+        }
+      }
+    }
+    
+    return matrix[str2.length][str1.length]
+  }
+
+  // Merge contacts
+  static async mergeContacts(
+    primaryContactId: string,
+    mergeContactIds: string[],
+    mergedData: Partial<Contact>
+  ) {
     try {
-      // Use demo org ID for now
-      const org = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
-      
+      // Start a transaction-like operation
+      const results = {
+        primaryUpdate: null as any,
+        mergedDeletes: [] as any[],
+        errors: [] as any[]
+      }
 
-      // Get total contacts
-      const { count: totalContacts } = await supabase
+      // 1. Update the primary contact with merged data
+      const { data: primaryUpdate, error: primaryError } = await supabase
         .from('contacts')
-        .select('*', { count: 'exact', head: true })
-        .eq('organization_id', org)
+        .update(mergedData)
+        .eq('id', primaryContactId)
+        .select()
+        .single()
 
-      // Get contacts called today
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      
-      const { count: contactsCalledToday } = await supabase
-        .from('call_logs')
-        .select('*', { count: 'exact', head: true })
-        .eq('organization_id', org)
-        .gte('called_at', today.toISOString())
+      if (primaryError) {
+        results.errors.push({ step: 'primaryUpdate', error: primaryError })
+        return { success: false, results, error: primaryError }
+      }
+      results.primaryUpdate = primaryUpdate
 
-      // Get contacts by tag
-      const { data: tagCounts } = await supabase
-        .from('contacts')
-        .select('tags')
-        .eq('organization_id', org)
+      // 2. Update all related records to point to primary contact
+      const tables = [
+        'call_logs',
+        'call_assignments',
+        'event_registrations',
+        'group_members',
+        'campaign_activities',
+        'contact_interactions'
+      ]
 
-      const tagStats: Record<string, number> = {}
-      tagCounts?.forEach(contact => {
-        contact.tags?.forEach((tag: string) => {
-          tagStats[tag] = (tagStats[tag] || 0) + 1
-        })
-      })
+      for (const table of tables) {
+        for (const mergeId of mergeContactIds) {
+          const { error } = await supabase
+            .from(table)
+            .update({ contact_id: primaryContactId })
+            .eq('contact_id', mergeId)
 
-      return {
-        totalContacts: totalContacts || 0,
-        contactsCalledToday: contactsCalledToday || 0,
-        tagStats,
-        error: null
+          if (error) {
+            console.warn(`Error updating ${table} for contact ${mergeId}:`, error)
+            results.errors.push({ step: `update_${table}`, contactId: mergeId, error })
+          }
+        }
+      }
+
+      // 3. Delete the merged contacts
+      for (const mergeId of mergeContactIds) {
+        const { error } = await supabase
+          .from('contacts')
+          .delete()
+          .eq('id', mergeId)
+
+        if (error) {
+          results.errors.push({ step: 'delete', contactId: mergeId, error })
+        } else {
+          results.mergedDeletes.push({ id: mergeId, success: true })
+        }
+      }
+
+      return { 
+        success: results.errors.length === 0, 
+        results,
+        error: results.errors.length > 0 ? results.errors[0].error : null
       }
     } catch (error) {
-      console.error('Error fetching contact stats:', error)
-      return {
-        totalContacts: 0,
-        contactsCalledToday: 0,
-        tagStats: {},
-        error
+      console.error('Error merging contacts:', error)
+      return { success: false, results: null, error }
+    }
+  }
+
+  // Score contacts based on engagement
+  static async scoreContacts(organizationId: string) {
+    try {
+      // Get all contacts with their activity data
+      const { data: contacts, error: contactsError } = await supabase
+        .from('contacts')
+        .select(`
+          id,
+          full_name,
+          created_at,
+          total_events_attended,
+          tags,
+          last_contact_date
+        `)
+        .eq('organization_id', organizationId)
+
+      if (contactsError) throw contactsError
+      if (!contacts) return { success: false, error: 'No contacts found' }
+
+      // Get recent activities for scoring
+      const thirtyDaysAgo = new Date()
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+      const { data: recentCalls } = await supabase
+        .from('call_logs')
+        .select('contact_id')
+        .eq('organization_id', organizationId)
+        .gte('called_at', thirtyDaysAgo.toISOString())
+
+      const { data: recentEmails } = await supabase
+        .from('communication_logs')
+        .select('contact_id')
+        .eq('organization_id', organizationId)
+        .eq('type', 'email')
+        .gte('created_at', thirtyDaysAgo.toISOString())
+
+      // Calculate scores
+      const scoredContacts = contacts.map(contact => {
+        let score = 0
+
+        // Base score from profile completeness
+        if (contact.tags && contact.tags.length > 0) score += 10
+
+        // Event attendance (10 points per event, max 50)
+        score += Math.min(contact.total_events_attended * 10, 50)
+
+        // Recent contact (20 points if contacted in last 30 days)
+        if (contact.last_contact_date) {
+          const lastContact = new Date(contact.last_contact_date)
+          if (lastContact >= thirtyDaysAgo) score += 20
+        }
+
+        // Recent calls (10 points)
+        if (recentCalls?.some(c => c.contact_id === contact.id)) score += 10
+
+        // Recent emails (5 points)
+        if (recentEmails?.some(e => e.contact_id === contact.id)) score += 5
+
+        // Volunteer/donor tags (15 points each)
+        if (contact.tags?.includes('volunteer')) score += 15
+        if (contact.tags?.includes('donor')) score += 15
+
+        return {
+          ...contact,
+          engagement_score: Math.min(score, 100) // Cap at 100
+        }
+      })
+
+      // Update scores in database
+      for (const contact of scoredContacts) {
+        await supabase
+          .from('contacts')
+          .update({ engagement_score: contact.engagement_score })
+          .eq('id', contact.id)
       }
+
+      return { 
+        success: true, 
+        data: scoredContacts.sort((a, b) => b.engagement_score - a.engagement_score),
+        error: null 
+      }
+    } catch (error) {
+      console.error('Error scoring contacts:', error)
+      return { success: false, data: null, error }
+    }
+  }
+
+  // Get all contact interactions (for timeline view)
+  static async getContactInteractions(contactId: string) {
+    try {
+      // Get all interactions from different sources
+      const [
+        { data: callLogs },
+        { data: emails },
+        { data: events },
+        { data: campaigns },
+        { data: interactions }
+      ] = await Promise.all([
+        // Call logs
+        supabase
+          .from('call_logs')
+          .select('*')
+          .eq('contact_id', contactId),
+        
+        // Communication logs (emails/SMS)
+        supabase
+          .from('communication_logs')
+          .select('*')
+          .eq('contact_id', contactId),
+        
+        // Event registrations
+        supabase
+          .from('event_registrations')
+          .select(`
+            *,
+            events(name, start_time)
+          `)
+          .eq('contact_id', contactId),
+        
+        // Campaign activities
+        supabase
+          .from('campaign_activities')
+          .select(`
+            *,
+            campaigns(name)
+          `)
+          .eq('contact_id', contactId),
+        
+        // Generic interactions
+        supabase
+          .from('contact_interactions')
+          .select('*')
+          .eq('contact_id', contactId)
+      ])
+
+      // Combine and format all interactions
+      const allInteractions = []
+
+      // Add call logs
+      if (callLogs) {
+        allInteractions.push(...callLogs.map(log => ({
+          id: log.id,
+          type: 'call',
+          description: `Call: ${log.outcome || 'No outcome recorded'}`,
+          timestamp: log.called_at,
+          metadata: {
+            duration: log.duration,
+            outcome: log.outcome,
+            notes: log.notes
+          }
+        })))
+      }
+
+      // Add emails/SMS
+      if (emails) {
+        allInteractions.push(...emails.map(log => ({
+          id: log.id,
+          type: log.type,
+          description: `${log.type === 'email' ? 'Email' : 'SMS'}: ${log.subject || 'No subject'}`,
+          timestamp: log.created_at,
+          metadata: {
+            status: log.status,
+            opens: log.metadata?.opens || 0,
+            clicks: log.metadata?.clicks || 0
+          }
+        })))
+      }
+
+      // Add event registrations
+      if (events) {
+        allInteractions.push(...events.map(reg => ({
+          id: reg.id,
+          type: 'event',
+          description: `Registered for: ${reg.events?.name || 'Unknown event'}`,
+          timestamp: reg.registered_at,
+          metadata: {
+            eventDate: reg.events?.start_time,
+            status: reg.status,
+            checkedIn: reg.checked_in_at
+          }
+        })))
+      }
+
+      // Add campaign activities
+      if (campaigns) {
+        allInteractions.push(...campaigns.map(activity => ({
+          id: activity.id,
+          type: 'campaign',
+          description: `${activity.activity_type}: ${activity.campaigns?.name || 'Unknown campaign'}`,
+          timestamp: activity.created_at,
+          metadata: {
+            activityType: activity.activity_type,
+            data: activity.activity_data
+          }
+        })))
+      }
+
+      // Add generic interactions
+      if (interactions) {
+        allInteractions.push(...interactions.map(interaction => ({
+          id: interaction.id,
+          type: interaction.type,
+          description: interaction.description || `${interaction.type} interaction`,
+          timestamp: interaction.created_at,
+          metadata: {
+            notes: interaction.notes,
+            data: interaction.metadata
+          }
+        })))
+      }
+
+      // Sort by timestamp (most recent first)
+      allInteractions.sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      )
+
+      return { data: allInteractions, error: null }
+    } catch (error) {
+      console.error('Error fetching contact interactions:', error)
+      return { data: [], error }
     }
   }
 }

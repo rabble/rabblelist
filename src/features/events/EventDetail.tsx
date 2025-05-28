@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { useEventStore } from '@/stores/eventStore'
 import { useEventRegistrationStore } from '@/stores/eventRegistrationStore'
+import { EventRegistrationService } from './eventRegistration.service'
 import { QRScanner } from './QRScanner'
 
 export function EventDetail() {
@@ -41,6 +42,7 @@ export function EventDetail() {
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState(false)
   const [showQRScanner, setShowQRScanner] = useState(false)
+  const [sendingReminder, setSendingReminder] = useState(false)
 
   const event = events.find(e => e.id === id)
   const eventRegistrations = id ? registrations[id] || [] : []
@@ -116,6 +118,21 @@ export function EventDetail() {
     const link = `${window.location.origin}/events/${id}/register`
     navigator.clipboard.writeText(link)
     alert('Registration link copied to clipboard!')
+  }
+
+  const handleSendReminder = async () => {
+    if (!id) return
+    
+    setSendingReminder(true)
+    try {
+      const result = await EventRegistrationService.sendEventReminders(id, 1)
+      alert(`Event reminders sent to ${result.remindersSent} attendees!`)
+    } catch (error) {
+      console.error('Failed to send reminders:', error)
+      alert('Failed to send event reminders')
+    } finally {
+      setSendingReminder(false)
+    }
   }
 
   if (loading) {
@@ -321,10 +338,20 @@ export function EventDetail() {
                 <Button 
                   fullWidth 
                   variant="outline" 
-                  onClick={() => alert('Send reminder feature coming soon!')}
+                  onClick={handleSendReminder}
+                  disabled={sendingReminder}
                 >
-                  <Send className="w-4 h-4 mr-2" />
-                  Send Reminder
+                  {sendingReminder ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Send Reminder
+                    </>
+                  )}
                 </Button>
                 <Button 
                   fullWidth 

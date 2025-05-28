@@ -38,7 +38,6 @@ export function LoginPage() {
     setEmail('demo@example.com')
     setPassword('demo123')
     
-    console.log('Attempting demo login...')
     
     try {
       const { error } = await signIn('demo@example.com', 'demo123')
@@ -48,7 +47,6 @@ export function LoginPage() {
         setError(`Login failed: ${error.message || 'Demo user may not be set up correctly'}`)
         setIsLoading(false)
       } else {
-        console.log('Demo login successful, navigating to dashboard')
         navigate(redirectTo, { replace: true })
       }
     } catch (err) {
@@ -64,11 +62,9 @@ export function LoginPage() {
     setSuccess(null)
     setIsLoading(true)
 
-    console.log('Form submitted:', { mode, email, fullName, organizationName, createNewOrg })
 
     try {
       if (mode === 'signin') {
-        console.log('Attempting sign in...')
         const { error } = await signIn(email, password)
         
         if (error) {
@@ -85,12 +81,10 @@ export function LoginPage() {
           }
           setIsLoading(false)
         } else {
-          console.log('Sign in successful, navigating to:', from)
           navigate(redirectTo, { replace: true })
         }
       } else {
         // Sign up
-        console.log('Attempting sign up...')
         const { error } = await signUp(
           email, 
           password, 
@@ -111,7 +105,6 @@ export function LoginPage() {
           }
           setIsLoading(false)
         } else {
-          console.log('Sign up successful!')
           // Since email confirmation is required, show success message and switch to sign in
           setSuccess('Account created successfully! Please check your email to confirm your account before signing in.')
           setPassword('')

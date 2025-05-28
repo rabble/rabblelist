@@ -13,7 +13,6 @@ export function DebugAuth() {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
         const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
         
-        console.log('Environment check:', {
           hasUrl: !!supabaseUrl,
           hasKey: !!supabaseKey,
           url: supabaseUrl
@@ -21,7 +20,6 @@ export function DebugAuth() {
         
         // Try to get session
         const { data, error } = await supabase.auth.getSession()
-        console.log('Session check:', { data, error })
         
         if (error) {
           setSupabaseStatus(`Error: ${error.message}`)

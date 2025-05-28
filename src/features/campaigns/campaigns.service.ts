@@ -9,6 +9,24 @@ export class CampaignService {
     status?: string
     search?: string
   }) {
+    // Get current user's organization
+    const { data: user } = await supabase.auth.getUser()
+    if (!user?.user) {
+      console.error('No authenticated user')
+      return []
+    }
+
+    const { data: profile } = await supabase
+      .from('users')
+      .select('organization_id')
+      .eq('id', user.user.id)
+      .single()
+
+    if (!profile?.organization_id) {
+      console.error('No organization found for user')
+      return []
+    }
+
     let query = supabase
       .from('campaigns')
       .select(`
@@ -20,6 +38,7 @@ export class CampaignService {
           new_contacts
         )
       `)
+      .eq('organization_id', profile.organization_id)
       .order('created_at', { ascending: false })
 
     if (filters?.type && filters.type !== 'all') {
@@ -31,12 +50,15 @@ export class CampaignService {
     }
 
     if (filters?.search) {
-      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
+      query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
     }
 
     const { data, error } = await query
-    if (error) throw error
-    return data
+    if (error) {
+      console.error('Error fetching campaigns:', error)
+      throw error
+    }
+    return data || []
   }
 
   // Get single campaign with full details

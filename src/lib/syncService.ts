@@ -42,7 +42,6 @@ export class SyncService {
    * Handle online event
    */
   private static handleOnline = () => {
-    console.log('Connection restored, syncing pending changes...')
     this.syncPendingChanges()
   }
 
@@ -51,7 +50,6 @@ export class SyncService {
    */
   static async syncPendingChanges() {
     if (this.isRunning) {
-      console.log('Sync already in progress, skipping...')
       return
     }
 
@@ -63,14 +61,12 @@ export class SyncService {
     }
 
     if (!navigator.onLine) {
-      console.log('Offline, skipping sync...')
       return
     }
 
     this.isRunning = true
     startSync()
 
-    console.log(`Starting sync of ${pendingChanges.length} pending changes...`)
 
     try {
       // Process each pending change
@@ -93,7 +89,6 @@ export class SyncService {
       // If all items processed successfully
       if (useSyncStore.getState().pendingChanges.length === 0) {
         syncComplete()
-        console.log('Sync completed successfully')
       }
     } catch (error: any) {
       console.error('Sync failed:', error)

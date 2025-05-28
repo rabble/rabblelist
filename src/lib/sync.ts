@@ -12,12 +12,10 @@ class SyncService {
   startAutoSync(intervalMs = 30000) {
     // Sync when coming online
     this.onlineListener = () => {
-      console.log('Network online - starting sync')
       this.sync()
     }
     
     this.offlineListener = () => {
-      console.log('Network offline')
     }
 
     window.addEventListener('online', this.onlineListener)

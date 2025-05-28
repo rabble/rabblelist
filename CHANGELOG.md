@@ -48,6 +48,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Live updates via Supabase subscriptions
   - Check-in progress visualization
   - Recent check-ins feed with attendee details
+- **Contact History Timeline** - Complete interaction log with all activities (2025-05-28)
+  - Unified timeline showing all contact interactions
+  - Activities from campaigns, events, calls, and general interactions
+  - Color-coded activity types with icons
+  - Chronological display with timestamps
+- **Contact Merge UI** - Visual interface for reviewing and merging duplicates (2025-05-28)
+  - Side-by-side comparison of duplicate contacts
+  - Field-by-field selection for merge
+  - Automatic transfer of all related records
+  - Audit trail creation for merged contacts
+- **Bulk Tag Operations** - Add/remove tags from multiple contacts at once (2025-05-28)
+  - Multi-select tag management interface
+  - Current tag distribution visualization
+  - Bulk add/remove capabilities
+  - Audit trail for all tag changes
+- **Smart Lists** - Dynamic contact lists based on criteria (2025-05-28)
+  - Save custom filters as reusable smart lists
+  - Multiple filter types: tags, dates, events, custom fields
+  - Real-time contact count calculation
+  - Stored in organization settings
+- **Contact Scoring** - Engagement scoring based on activities (2025-05-28)
+  - Configurable scoring rules by category
+  - Automatic score calculation based on activities
+  - Score distribution visualization
+  - Default rules for engagement indicators
+- **Email Tracking Dashboard** - Track email campaign performance (2025-05-28)
+  - Opens, clicks, and bounce tracking
+  - Link performance analytics
+  - Recipient engagement timeline
+  - Visual metrics and charts
+- **Two-way SMS Conversations** - Full SMS conversation management (2025-05-28)
+  - Real-time message threading
+  - Inbound/outbound message tracking
+  - Conversation search and filtering
+  - Read receipts and delivery status
+  - Integration with campaign SMS
+- **Event Confirmation Emails** - Automated event registration emails (2025-05-28)
+  - Confirmation emails on registration
+  - Event reminder emails (1 day before)
+  - Check-in links and QR codes
+  - Special requirements acknowledgment
+  - HTML email templates
+- **Complete Offline Sync with Conflict Resolution** - Enhanced sync system (2025-05-28)
+  - Full offline capability with IndexedDB
+  - Automatic conflict detection
+  - Multiple resolution strategies (client-wins, server-wins, merge)
+  - Visual conflict resolution interface
+  - Cross-tab synchronization
+  - Batch processing for efficiency
+  - Sync status indicator in header
+  - Admin conflict management dashboard
   - Export attendance reports as CSV
   - Quick access to QR scanner and walk-in registration
 - **Walk-in Registration** - On-site event registration system (2025-05-28)

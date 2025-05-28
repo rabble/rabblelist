@@ -445,7 +445,6 @@ export function ContactScoring() {
               contact.total_events_attended >= rule.conditions.min_events_attended) {
             categoryScores.events += rule.points
           }
-          // TODO: Check recent event attendance when event_registrations are accessible
           break
       }
     }

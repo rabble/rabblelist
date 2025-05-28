@@ -6,6 +6,7 @@ import { useCampaignStore } from '@/stores/campaignStore'
 import { CampaignTemplateModal } from './CampaignTemplateModal'
 import { campaignTemplates } from './campaignTemplates'
 import type { CampaignTemplate } from './campaignTemplates'
+import { useAuth } from '@/features/auth/AuthContext'
 import { 
   Plus,
   Users,
@@ -20,11 +21,13 @@ import {
   Heart,
   Loader2,
   Trash2,
-  Sparkles
+  Sparkles,
+  MessageSquare
 } from 'lucide-react'
 
 export function CampaignManagement() {
   const navigate = useNavigate()
+  const { user, loading: authLoading } = useAuth()
   const [selectedType, setSelectedType] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
   const [searchTerm] = useState('')
@@ -33,12 +36,15 @@ export function CampaignManagement() {
   const { campaigns, isLoadingCampaigns, loadCampaigns, deleteCampaign } = useCampaignStore()
 
   useEffect(() => {
-    loadCampaigns({
-      type: selectedType,
-      status: selectedStatus,
-      search: searchTerm
-    })
-  }, [selectedType, selectedStatus, searchTerm, loadCampaigns])
+    // Only load campaigns if we have an authenticated user
+    if (!authLoading && user) {
+      loadCampaigns({
+        type: selectedType,
+        status: selectedStatus,
+        search: searchTerm
+      })
+    }
+  }, [selectedType, selectedStatus, searchTerm, loadCampaigns, user, authLoading])
 
   const campaignTypes = [
     { value: 'petition', label: 'Petition', icon: <FileText className="w-4 h-4" /> },
@@ -98,6 +104,10 @@ export function CampaignManagement() {
               </Button>
               <Button variant="outline" onClick={() => navigate('/campaigns/phonebank-scripts')}>
                 Call Scripts
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/campaigns/sms-conversations')}>
+                <MessageSquare className="w-4 h-4 mr-2" />
+                SMS Inbox
               </Button>
               <Button variant="secondary" onClick={() => setShowTemplateModal(true)}>
                 <Sparkles className="w-4 h-4 mr-2" />

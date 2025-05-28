@@ -222,7 +222,6 @@ export class EmailService {
         }
       }
 
-      console.log(`Campaign sent: ${successCount} successful, ${failureCount} failed`)
 
       // Update campaign stats
       await supabase

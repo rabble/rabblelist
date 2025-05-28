@@ -83,7 +83,6 @@ export function OrganizationInvite() {
         setInviteLink(link)
         
         // For now, just show the link
-        console.log('Invite link generated:', link)
       }
     } catch (err) {
       console.error('Error inviting user:', err)
