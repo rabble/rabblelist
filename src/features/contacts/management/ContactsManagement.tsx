@@ -24,6 +24,7 @@ import {
   Tag,
   Merge
 } from 'lucide-react'
+import { BulkTagOperations } from '../BulkTagOperations'
 
 interface FilterOptions {
   tags: string[]
@@ -56,6 +57,7 @@ export function ContactsManagement() {
     searchTerm: ''
   })
   const [showFilters, setShowFilters] = useState(false)
+  const [showBulkTagOperations, setShowBulkTagOperations] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [sortOption, setSortOption] = useState<SortOption>({
     field: 'created_at',
@@ -331,6 +333,14 @@ export function ContactsManagement() {
                 <X className="w-4 h-4 mr-2" />
                 Clear
               </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowBulkTagOperations(true)}
+              >
+                <Tag className="w-4 h-4 mr-2" />
+                Manage Tags
+              </Button>
               <Button 
                 size="sm" 
                 variant="outline"
@@ -577,6 +587,19 @@ export function ContactsManagement() {
           </Card>
         )}
       </div>
+
+      {/* Bulk Tag Operations Modal */}
+      {showBulkTagOperations && (
+        <BulkTagOperations
+          selectedContacts={selectedContacts}
+          onClose={() => setShowBulkTagOperations(false)}
+          onComplete={() => {
+            setShowBulkTagOperations(false)
+            setSelectedContacts([])
+            loadContactsWithFilters()
+          }}
+        />
+      )}
     </Layout>
   )
 }

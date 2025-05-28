@@ -33,6 +33,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Comprehensive data transfer across all related tables
   - Audit trail creation for merge history
   - Choice between "Quick Merge" and "Visual Merge" options
+- **Bulk Tag Operations** - Add/remove tags from multiple contacts at once (2025-01-28)
+  - Manage tags for multiple selected contacts simultaneously
+  - Visual display of current tag distribution with statistics
+  - Add new tags to all selected contacts
+  - Remove existing tags from selected contacts
+  - Create new tags on the fly during bulk operations
+  - Real-time search and filtering of available tags
+  - Summary view of pending changes before applying
+  - Audit trail in contact_interactions for all tag changes
 - **Sentry Error Tracking** - Application monitoring and error reporting (2025-05-28)
   - Integrated Sentry for real-time error tracking and monitoring
   - Added error boundaries to gracefully handle runtime errors
