@@ -304,3 +304,18 @@ contact-manager-pwa/
   - Never been contacted (highest priority)
   - Not contacted in 30+ days (secondary priority)
 - Empty state now provides actionable next steps for volunteers
+
+## Email Service Integration (2025-05-28)
+- Replaced mocked Mailgun implementation with Twilio SendGrid
+- SendGrid integrates seamlessly with existing Twilio account (single billing)
+- Key implementation details:
+  - SendGrid API uses different format than Mailgun (personalizations array)
+  - Batch sending supports up to 1000 recipients per API call
+  - Dynamic templates can be stored in SendGrid or our database
+  - Webhook events come as arrays, not single objects
+- Environment variables needed:
+  - `VITE_SENDGRID_API_KEY`: API key from SendGrid dashboard
+  - `VITE_SENDGRID_FROM_EMAIL`: Verified sender email
+  - Template IDs for each email type (optional)
+- Free tier provides 100 emails/day which is good for testing
+- Production would need Essentials ($19.95/mo) or Pro (usage-based) plan
