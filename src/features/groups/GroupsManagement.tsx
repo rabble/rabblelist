@@ -4,6 +4,7 @@ import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { useAuth } from '@/features/auth/AuthContext'
+import { useGroupStore } from '@/stores/groupStore'
 import { 
   Plus,
   Users,
@@ -18,42 +19,24 @@ import {
   TrendingUp
 } from 'lucide-react'
 
-interface Group {
-  id: string
-  name: string
-  description: string
-  type: 'geographic' | 'interest' | 'working' | 'affinity'
-  parent_id?: string
-  member_count: number
-  leader_count: number
-  active: boolean
-  created_at: string
-  last_activity?: string
-  organization_id: string
-}
-
-interface GroupMember {
-  id: string
-  group_id: string
-  contact_id: string
-  role: 'member' | 'leader' | 'coordinator'
-  joined_at: string
-  contact?: {
-    full_name: string
-    email?: string
-    phone: string
-  }
-}
 
 export function GroupsManagement() {
   const { } = useAuth()
   const navigate = useNavigate()
-  const [groups, setGroups] = useState<Group[]>([])
-  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null)
-  const [groupMembers, setGroupMembers] = useState<GroupMember[]>([])
-  const [loading, setLoading] = useState(true)
+  const { 
+    groups, 
+    isLoadingGroups,
+    selectedGroup,
+    groupMembers,
+    isLoadingMembers,
+    loadGroups,
+    selectGroup,
+    deleteGroup,
+    clearSelection
+  } = useGroupStore()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState<string>('all')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
 
   // Mock data
   const mockGroups: Group[] = [

@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Demo Campaign Data** - Comprehensive demo campaigns with realistic data (2025-05-28)
+  - Created 8 fully-featured campaigns across all campaign types
+  - Climate petition with 3,847 signatures and public comments
+  - Town hall event with 147 registrations and attendance tracking
+  - Phone bank campaign with 1,456 calls and detailed outcomes
+  - Completed email campaign with open/click statistics
+  - Active SMS rapid response system with 423 subscribers
+  - Fundraising campaign at 77% of $50k goal with 155 donations
+  - Door-to-door canvassing with 673 contacts and field notes
+  - Social media campaign with hashtag tracking and reach metrics
+  - Added campaign updates, milestones, and activity logs
+  - Created supporting tables for activities, stats, donations, and communications
 - **Webhook Automation System** - Real-time event notifications and integrations (2025-05-28)
   - Complete webhook management interface for configuring endpoints
   - Support for 20+ event types across contacts, campaigns, events, and pathways
