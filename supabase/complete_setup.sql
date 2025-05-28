@@ -108,6 +108,11 @@ CREATE TABLE events (
     start_time TIMESTAMPTZ NOT NULL,
     end_time TIMESTAMPTZ,
     capacity INTEGER,
+    event_type TEXT,
+    tags TEXT[] DEFAULT '{}',
+    is_published BOOLEAN DEFAULT true,
+    registration_required BOOLEAN DEFAULT false,
+    settings JSONB DEFAULT '{}',
     created_by UUID REFERENCES users(id),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -778,7 +783,53 @@ ON CONFLICT (id) DO UPDATE SET
     features = EXCLUDED.features,
     updated_at = NOW();
 
--- Create demo user
+-- Create demo user in auth.users first (this would normally be done by Supabase Auth)
+-- Note: In a real setup, users are created through Supabase Auth, not directly in auth.users
+DO $$
+BEGIN
+    -- Only insert if the user doesn't already exist
+    IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = '00000000-0000-0000-0000-000000000002') THEN
+        INSERT INTO auth.users (
+            instance_id,
+            id,
+            aud,
+            role,
+            email,
+            encrypted_password,
+            email_confirmed_at,
+            recovery_sent_at,
+            last_sign_in_at,
+            raw_app_meta_data,
+            raw_user_meta_data,
+            created_at,
+            updated_at,
+            confirmation_token,
+            email_change,
+            email_change_token_new,
+            recovery_token
+        ) VALUES (
+            '00000000-0000-0000-0000-000000000000',
+            '00000000-0000-0000-0000-000000000002',
+            'authenticated',
+            'authenticated',
+            'demo@example.com',
+            crypt('demo123', gen_salt('bf')),
+            NOW(),
+            NOW(),
+            NOW(),
+            '{"provider": "email", "providers": ["email"]}',
+            '{"full_name": "Demo User"}',
+            NOW(),
+            NOW(),
+            '',
+            '',
+            '',
+            ''
+        );
+    END IF;
+END $$;
+
+-- Create demo user in public.users
 INSERT INTO users (id, email, full_name, organization_id, role)
 VALUES (
     '00000000-0000-0000-0000-000000000002',

@@ -7,14 +7,14 @@
 
 -- Create demo organization if it doesn't exist
 INSERT INTO organizations (id, name, created_at, updated_at)
-VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Demo Organization', NOW(), NOW())
+VALUES ('00000000-0000-0000-0000-000000000001'::uuid, 'Demo Organization', NOW(), NOW())
 ON CONFLICT (id) DO NOTHING;
 
 -- Update demo user to admin
 UPDATE users 
 SET 
   role = 'admin',
-  organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid,
+  organization_id = '00000000-0000-0000-0000-000000000001'::uuid,
   settings = '{"demo": true}'::jsonb,
   phone = '+1234567890'
 WHERE email = 'demo@example.com';
@@ -23,64 +23,64 @@ WHERE email = 'demo@example.com';
 -- =====================================
 
 -- Clear existing demo contacts to avoid conflicts
-DELETE FROM contact_interactions WHERE contact_id IN (SELECT id FROM contacts WHERE organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid);
-DELETE FROM event_registrations WHERE contact_id IN (SELECT id FROM contacts WHERE organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid);
-DELETE FROM group_members WHERE contact_id IN (SELECT id FROM contacts WHERE organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid);
-DELETE FROM contacts WHERE organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid;
+DELETE FROM contact_interactions WHERE contact_id IN (SELECT id FROM contacts WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid);
+DELETE FROM event_registrations WHERE contact_id IN (SELECT id FROM contacts WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid);
+DELETE FROM group_members WHERE contact_id IN (SELECT id FROM contacts WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid);
+DELETE FROM contacts WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid;
 
 -- Insert activist/organizer contacts
 INSERT INTO contacts (organization_id, full_name, email, phone, status, tags, custom_fields, source, engagement_score, created_by)
 VALUES 
-  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Maria Rodriguez', 'maria.rodriguez@example.com', '+1234567001', 'active', ARRAY['community-leader', 'volunteer', 'high-engagement'], '{"preferred_contact": "phone", "language": "Spanish", "district": "Downtown"}'::jsonb, 'manual', 95, (SELECT id FROM users WHERE email = 'demo@example.com')),
-  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'James Chen', 'james.chen@example.com', '+1234567002', 'active', ARRAY['volunteer', 'event-organizer', 'youth-leader'], '{"preferred_contact": "email", "skills": ["social media", "graphic design"], "district": "Eastside"}'::jsonb, 'manual', 88, (SELECT id FROM users WHERE email = 'demo@example.com')),
-  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Sarah Thompson', 'sarah.t@example.com', '+1234567003', 'active', ARRAY['donor', 'board-member', 'high-value'], '{"preferred_contact": "email", "donation_history": "$5000", "employer": "Tech Corp", "district": "Northside"}'::jsonb, 'manual', 92, (SELECT id FROM users WHERE email = 'demo@example.com')),
-  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'David Kim', 'dkim@example.com', '+1234567004', 'active', ARRAY['volunteer', 'canvasser', 'phone-banker'], '{"availability": "weekends", "languages": ["English", "Korean"], "district": "Westside"}'::jsonb, 'import', 75, (SELECT id FROM users WHERE email = 'demo@example.com')),
-  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Lisa Johnson', 'lisa.j@example.com', '+1234567005', 'active', ARRAY['volunteer', 'event-support', 'social-media'], '{"skills": ["photography", "writing"], "district": "Downtown"}'::jsonb, 'manual', 82, (SELECT id FROM users WHERE email = 'demo@example.com')),
-  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Robert Williams', 'rwilliams@example.com', '+1234567006', 'active', ARRAY['volunteer', 'driver', 'setup-crew'], '{"has_vehicle": true, "availability": "flexible", "district": "Southside"}'::jsonb, 'manual', 70, (SELECT id FROM users WHERE email = 'demo@example.com')),
-  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Emily Brown', 'emily.brown@example.com', '+1234567007', 'active', ARRAY['prospect', 'interested', 'parent'], '{"interests": ["education", "school-funding"], "children": 2, "district": "Eastside"}'::jsonb, 'api', 65, (SELECT id FROM users WHERE email = 'demo@example.com')),
-  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Michael Davis', 'mdavis@example.com', '+1234567008', 'active', ARRAY['lead', 'union-member', 'warm-lead'], '{"union": "Teachers Union", "interests": ["labor-rights"], "district": "Downtown"}'::jsonb, 'import', 78, (SELECT id FROM users WHERE email = 'demo@example.com')),
-  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Angela White', 'angela.w@example.com', '+1234567009', 'active', ARRAY['prospect', 'small-business', 'community-supporter'], '{"business": "Whites Bakery", "interests": ["local-economy"], "district": "Northside"}'::jsonb, 'manual', 60, (SELECT id FROM users WHERE email = 'demo@example.com')),
-  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Patricia Martinez', 'pmartinez@example.com', '+1234567010', 'inactive', ARRAY['past-volunteer', 'donor', 'reactivation-target'], '{"last_activity": "2023-06-15", "past_donations": "$500", "district": "Westside"}'::jsonb, 'import', 45, (SELECT id FROM users WHERE email = 'demo@example.com'));
+  ('00000000-0000-0000-0000-000000000001'::uuid, 'Maria Rodriguez', 'maria.rodriguez@example.com', '+1234567001', 'active', ARRAY['community-leader', 'volunteer', 'high-engagement'], '{"preferred_contact": "phone", "language": "Spanish", "district": "Downtown"}'::jsonb, 'manual', 95, (SELECT id FROM users WHERE email = 'demo@example.com')),
+  ('00000000-0000-0000-0000-000000000001'::uuid, 'James Chen', 'james.chen@example.com', '+1234567002', 'active', ARRAY['volunteer', 'event-organizer', 'youth-leader'], '{"preferred_contact": "email", "skills": ["social media", "graphic design"], "district": "Eastside"}'::jsonb, 'manual', 88, (SELECT id FROM users WHERE email = 'demo@example.com')),
+  ('00000000-0000-0000-0000-000000000001'::uuid, 'Sarah Thompson', 'sarah.t@example.com', '+1234567003', 'active', ARRAY['donor', 'board-member', 'high-value'], '{"preferred_contact": "email", "donation_history": "$5000", "employer": "Tech Corp", "district": "Northside"}'::jsonb, 'manual', 92, (SELECT id FROM users WHERE email = 'demo@example.com')),
+  ('00000000-0000-0000-0000-000000000001'::uuid, 'David Kim', 'dkim@example.com', '+1234567004', 'active', ARRAY['volunteer', 'canvasser', 'phone-banker'], '{"availability": "weekends", "languages": ["English", "Korean"], "district": "Westside"}'::jsonb, 'import', 75, (SELECT id FROM users WHERE email = 'demo@example.com')),
+  ('00000000-0000-0000-0000-000000000001'::uuid, 'Lisa Johnson', 'lisa.j@example.com', '+1234567005', 'active', ARRAY['volunteer', 'event-support', 'social-media'], '{"skills": ["photography", "writing"], "district": "Downtown"}'::jsonb, 'manual', 82, (SELECT id FROM users WHERE email = 'demo@example.com')),
+  ('00000000-0000-0000-0000-000000000001'::uuid, 'Robert Williams', 'rwilliams@example.com', '+1234567006', 'active', ARRAY['volunteer', 'driver', 'setup-crew'], '{"has_vehicle": true, "availability": "flexible", "district": "Southside"}'::jsonb, 'manual', 70, (SELECT id FROM users WHERE email = 'demo@example.com')),
+  ('00000000-0000-0000-0000-000000000001'::uuid, 'Emily Brown', 'emily.brown@example.com', '+1234567007', 'active', ARRAY['prospect', 'interested', 'parent'], '{"interests": ["education", "school-funding"], "children": 2, "district": "Eastside"}'::jsonb, 'api', 65, (SELECT id FROM users WHERE email = 'demo@example.com')),
+  ('00000000-0000-0000-0000-000000000001'::uuid, 'Michael Davis', 'mdavis@example.com', '+1234567008', 'active', ARRAY['lead', 'union-member', 'warm-lead'], '{"union": "Teachers Union", "interests": ["labor-rights"], "district": "Downtown"}'::jsonb, 'import', 78, (SELECT id FROM users WHERE email = 'demo@example.com')),
+  ('00000000-0000-0000-0000-000000000001'::uuid, 'Angela White', 'angela.w@example.com', '+1234567009', 'active', ARRAY['prospect', 'small-business', 'community-supporter'], '{"business": "Whites Bakery", "interests": ["local-economy"], "district": "Northside"}'::jsonb, 'manual', 60, (SELECT id FROM users WHERE email = 'demo@example.com')),
+  ('00000000-0000-0000-0000-000000000001'::uuid, 'Patricia Martinez', 'pmartinez@example.com', '+1234567010', 'inactive', ARRAY['past-volunteer', 'donor', 'reactivation-target'], '{"last_activity": "2023-06-15", "past_donations": "$500", "district": "Westside"}'::jsonb, 'import', 45, (SELECT id FROM users WHERE email = 'demo@example.com'));
 
 -- 3. GROUPS
 -- =========
 
-DELETE FROM groups WHERE organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid;
+DELETE FROM groups WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid;
 
 INSERT INTO groups (organization_id, name, description, settings, tags, is_active, group_type, created_by)
 VALUES
-  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Core Volunteers', 'Our most active and reliable volunteers', '{"meeting_schedule": "weekly", "communication": "slack"}'::jsonb, ARRAY['volunteers', 'core'], true, 'volunteer_team', (SELECT id FROM users WHERE email = 'demo@example.com')),
-  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Phone Bank Team', 'Volunteers who make calls for campaigns', '{"training_required": true, "tools": ["dialer", "scripts"]}'::jsonb, ARRAY['phone-bank', 'outreach'], true, 'action_team', (SELECT id FROM users WHERE email = 'demo@example.com')),
-  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Major Donors', 'Supporters who have donated over $1000', '{"benefits": ["quarterly-briefings", "exclusive-events"]}'::jsonb, ARRAY['donors', 'vip'], true, 'donor_circle', (SELECT id FROM users WHERE email = 'demo@example.com'));
+  ('00000000-0000-0000-0000-000000000001'::uuid, 'Core Volunteers', 'Our most active and reliable volunteers', '{"meeting_schedule": "weekly", "communication": "slack"}'::jsonb, ARRAY['volunteers', 'core'], true, 'volunteer_team', (SELECT id FROM users WHERE email = 'demo@example.com')),
+  ('00000000-0000-0000-0000-000000000001'::uuid, 'Phone Bank Team', 'Volunteers who make calls for campaigns', '{"training_required": true, "tools": ["dialer", "scripts"]}'::jsonb, ARRAY['phone-bank', 'outreach'], true, 'action_team', (SELECT id FROM users WHERE email = 'demo@example.com')),
+  ('00000000-0000-0000-0000-000000000001'::uuid, 'Major Donors', 'Supporters who have donated over $1000', '{"benefits": ["quarterly-briefings", "exclusive-events"]}'::jsonb, ARRAY['donors', 'vip'], true, 'donor_circle', (SELECT id FROM users WHERE email = 'demo@example.com'));
 
 -- Add group members
 INSERT INTO group_members (group_id, contact_id, added_by)
 SELECT 
-  (SELECT id FROM groups WHERE name = 'Core Volunteers' AND organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid),
+  (SELECT id FROM groups WHERE name = 'Core Volunteers' AND organization_id = '00000000-0000-0000-0000-000000000001'::uuid),
   id,
   (SELECT id FROM users WHERE email = 'demo@example.com')
 FROM contacts 
-WHERE organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid
+WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid
   AND tags && ARRAY['volunteer']
 ON CONFLICT DO NOTHING;
 
 INSERT INTO group_members (group_id, contact_id, added_by)
 SELECT 
-  (SELECT id FROM groups WHERE name = 'Phone Bank Team' AND organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid),
+  (SELECT id FROM groups WHERE name = 'Phone Bank Team' AND organization_id = '00000000-0000-0000-0000-000000000001'::uuid),
   id,
   (SELECT id FROM users WHERE email = 'demo@example.com')
 FROM contacts 
-WHERE organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid
+WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid
   AND tags && ARRAY['phone-banker']
 ON CONFLICT DO NOTHING;
 
 INSERT INTO group_members (group_id, contact_id, added_by)
 SELECT 
-  (SELECT id FROM groups WHERE name = 'Major Donors' AND organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid),
+  (SELECT id FROM groups WHERE name = 'Major Donors' AND organization_id = '00000000-0000-0000-0000-000000000001'::uuid),
   id,
   (SELECT id FROM users WHERE email = 'demo@example.com')
 FROM contacts 
-WHERE organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid
+WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid
   AND tags && ARRAY['donor']
 ON CONFLICT DO NOTHING;
 
@@ -92,57 +92,66 @@ UPDATE groups SET member_count = (
 -- 4. EVENTS
 -- =========
 
-DELETE FROM event_registrations WHERE event_id IN (SELECT id FROM events WHERE organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid);
-DELETE FROM events WHERE organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid;
+DELETE FROM event_registrations WHERE event_id IN (SELECT id FROM events WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid);
+DELETE FROM events WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid;
 
-INSERT INTO events (organization_id, name, description, event_date, event_type, location, capacity, tags, created_by, is_published, registration_required, settings) VALUES
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Community Justice Rally', 'Join us for a powerful rally demanding justice and equity in our community. Speakers include local leaders and activists.', NOW() + INTERVAL '7 days', 'rally', 'City Hall Plaza, 123 Main St, Downtown', 500, ARRAY['rally', 'justice', 'community'], (SELECT id FROM users WHERE email = 'demo@example.com'), true, true, '{"livestream": true}'::jsonb),
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'New Volunteer Orientation', 'Comprehensive training for new volunteers. Learn about our mission, values, and how you can make a difference.', NOW() + INTERVAL '3 days', 'training', 'Community Center, 456 Oak Ave, Conference Room A', 30, ARRAY['training', 'volunteers', 'orientation'], (SELECT id FROM users WHERE email = 'demo@example.com'), true, true, '{"materials_provided": true}'::jsonb),
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Phone Bank for Change', 'Join us for phone banking! We will be calling supporters to mobilize for upcoming actions.', NOW() + INTERVAL '2 days', 'phone_bank', 'Campaign HQ, 789 Elm St, Free parking in rear', 20, ARRAY['phone-bank', 'outreach', 'volunteers'], (SELECT id FROM users WHERE email = 'demo@example.com'), true, true, '{"food_provided": true}'::jsonb),
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Town Hall: Education Funding', 'Community discussion on the state of education funding. Hear from teachers, parents, and students.', NOW() + INTERVAL '10 days', 'meeting', 'Lincoln High School Auditorium, 321 School St', 200, ARRAY['town-hall', 'education', 'community'], (SELECT id FROM users WHERE email = 'demo@example.com'), true, true, '{"childcare": true}'::jsonb),
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Voter Registration Drive', 'Help us register new voters in the downtown area!', NOW() - INTERVAL '14 days', 'canvass', 'Downtown Park, 100 Park Ave', 100, ARRAY['voter-reg', 'outreach', 'success'], (SELECT id FROM users WHERE email = 'demo@example.com'), true, false, '{"completed": true}'::jsonb),
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Direct Action Training', 'Learn nonviolent direct action tactics and legal rights. Required for participation in upcoming actions.', NOW() + INTERVAL '5 days', 'training', 'Union Hall, 222 Labor Way', 50, ARRAY['training', 'direct-action', 'required'], (SELECT id FROM users WHERE email = 'demo@example.com'), true, true, '{"mandatory": true}'::jsonb),
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Community Potluck & Strategy Session', 'Share a meal and plan our next campaign. Bring a dish to share!', NOW() + INTERVAL '12 days', 'meeting', 'First Baptist Church, 555 Community Blvd', 75, ARRAY['community', 'planning', 'social'], (SELECT id FROM users WHERE email = 'demo@example.com'), true, false, '{"potluck": true}'::jsonb);
+INSERT INTO events (organization_id, name, description, start_time, event_type, location, capacity, tags, created_by, is_published, registration_required, settings) VALUES
+('00000000-0000-0000-0000-000000000001'::uuid, 'Community Justice Rally', 'Join us for a powerful rally demanding justice and equity in our community. Speakers include local leaders and activists.', NOW() + INTERVAL '7 days', 'rally', 'City Hall Plaza, 123 Main St, Downtown', 500, ARRAY['rally', 'justice', 'community'], '00000000-0000-0000-0000-000000000002'::uuid, true, true, '{"livestream": true}'::jsonb),
+('00000000-0000-0000-0000-000000000001'::uuid, 'New Volunteer Orientation', 'Comprehensive training for new volunteers. Learn about our mission, values, and how you can make a difference.', NOW() + INTERVAL '3 days', 'training', 'Community Center, 456 Oak Ave, Conference Room A', 30, ARRAY['training', 'volunteers', 'orientation'], '00000000-0000-0000-0000-000000000002'::uuid, true, true, '{"materials_provided": true}'::jsonb),
+('00000000-0000-0000-0000-000000000001'::uuid, 'Phone Bank for Change', 'Join us for phone banking! We will be calling supporters to mobilize for upcoming actions.', NOW() + INTERVAL '2 days', 'phone_bank', 'Campaign HQ, 789 Elm St, Free parking in rear', 20, ARRAY['phone-bank', 'outreach', 'volunteers'], '00000000-0000-0000-0000-000000000002'::uuid, true, true, '{"food_provided": true}'::jsonb),
+('00000000-0000-0000-0000-000000000001'::uuid, 'Town Hall: Education Funding', 'Community discussion on the state of education funding. Hear from teachers, parents, and students.', NOW() + INTERVAL '10 days', 'meeting', 'Lincoln High School Auditorium, 321 School St', 200, ARRAY['town-hall', 'education', 'community'], '00000000-0000-0000-0000-000000000002'::uuid, true, true, '{"childcare": true}'::jsonb),
+('00000000-0000-0000-0000-000000000001'::uuid, 'Voter Registration Drive', 'Help us register new voters in the downtown area!', NOW() - INTERVAL '14 days', 'canvass', 'Downtown Park, 100 Park Ave', 100, ARRAY['voter-reg', 'outreach', 'success'], '00000000-0000-0000-0000-000000000002'::uuid, true, false, '{"completed": true}'::jsonb),
+('00000000-0000-0000-0000-000000000001'::uuid, 'Direct Action Training', 'Learn nonviolent direct action tactics and legal rights. Required for participation in upcoming actions.', NOW() + INTERVAL '5 days', 'training', 'Union Hall, 222 Labor Way', 50, ARRAY['training', 'direct-action', 'required'], '00000000-0000-0000-0000-000000000002'::uuid, true, true, '{"mandatory": true}'::jsonb),
+('00000000-0000-0000-0000-000000000001'::uuid, 'Community Potluck & Strategy Session', 'Share a meal and plan our next campaign. Bring a dish to share!', NOW() + INTERVAL '12 days', 'meeting', 'First Baptist Church, 555 Community Blvd', 75, ARRAY['community', 'planning', 'social'], '00000000-0000-0000-0000-000000000002'::uuid, true, false, '{"potluck": true}'::jsonb);
 
 -- Register people for events
-INSERT INTO event_registrations (event_id, contact_id, status, registered_by)
+INSERT INTO event_registrations (event_id, contact_id, organization_id, full_name, email, phone, status)
 SELECT 
   e.id,
   c.id,
-  CASE WHEN RANDOM() < 0.7 THEN 'confirmed' ELSE 'registered' END,
-  (SELECT id FROM users WHERE email = 'demo@example.com')
+  c.organization_id,
+  c.full_name,
+  c.email,
+  c.phone,
+  CASE WHEN RANDOM() < 0.7 THEN 'attended' ELSE 'registered' END
 FROM events e
 CROSS JOIN contacts c
-WHERE e.organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid
-  AND c.organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid
+WHERE e.organization_id = '00000000-0000-0000-0000-000000000001'::uuid
+  AND c.organization_id = '00000000-0000-0000-0000-000000000001'::uuid
   AND e.name = 'Community Justice Rally'
   AND c.tags && ARRAY['volunteer', 'community-leader']
 LIMIT 8;
 
-INSERT INTO event_registrations (event_id, contact_id, status, registered_by)
+INSERT INTO event_registrations (event_id, contact_id, organization_id, full_name, email, phone, status)
 SELECT 
   e.id,
   c.id,
-  'registered',
-  (SELECT id FROM users WHERE email = 'demo@example.com')
+  c.organization_id,
+  c.full_name,
+  c.email,
+  c.phone,
+  'registered'
 FROM events e
 CROSS JOIN contacts c
-WHERE e.organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid
-  AND c.organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid
+WHERE e.organization_id = '00000000-0000-0000-0000-000000000001'::uuid
+  AND c.organization_id = '00000000-0000-0000-0000-000000000001'::uuid
   AND e.name = 'New Volunteer Orientation'
   AND c.tags && ARRAY['prospect', 'interested']
 LIMIT 5;
 
-INSERT INTO event_registrations (event_id, contact_id, status, registered_by)
+INSERT INTO event_registrations (event_id, contact_id, organization_id, full_name, email, phone, status)
 SELECT 
   e.id,
   c.id,
-  'confirmed',
-  (SELECT id FROM users WHERE email = 'demo@example.com')
+  c.organization_id,
+  c.full_name,
+  c.email,
+  c.phone,
+  'registered'
 FROM events e
 CROSS JOIN contacts c
-WHERE e.organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid
-  AND c.organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid
+WHERE e.organization_id = '00000000-0000-0000-0000-000000000001'::uuid
+  AND c.organization_id = '00000000-0000-0000-0000-000000000001'::uuid
   AND e.name = 'Phone Bank for Change'
   AND c.tags && ARRAY['phone-banker']
 LIMIT 4;
@@ -150,15 +159,15 @@ LIMIT 4;
 -- 5. PATHWAYS (ENGAGEMENT JOURNEYS)
 -- =================================
 
-DELETE FROM pathway_steps WHERE pathway_id IN (SELECT id FROM pathways WHERE organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid);
-DELETE FROM pathways WHERE organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid;
+DELETE FROM pathway_steps WHERE pathway_id IN (SELECT id FROM pathways WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid);
+DELETE FROM pathways WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid;
 
 INSERT INTO pathways (organization_id, name, description, pathway_type, status, created_by) VALUES
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'New Volunteer Onboarding', 'Standard pathway for onboarding new volunteers into active participation', 'engagement', 'active', (SELECT id FROM users WHERE email = 'demo@example.com')),
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Prospect to Activist', 'Convert interested community members into active organizers', 'engagement', 'active', (SELECT id FROM users WHERE email = 'demo@example.com')),
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Donor Cultivation', 'Build relationships with potential major donors', 'fundraising', 'active', (SELECT id FROM users WHERE email = 'demo@example.com')),
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Leadership Development', 'Develop volunteers into campaign leaders and organizers', 'leadership', 'active', (SELECT id FROM users WHERE email = 'demo@example.com')),
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid, 'Re-engagement Campaign', 'Win back inactive supporters and past volunteers', 'reactivation', 'active', (SELECT id FROM users WHERE email = 'demo@example.com'));
+('00000000-0000-0000-0000-000000000001'::uuid, 'New Volunteer Onboarding', 'Standard pathway for onboarding new volunteers into active participation', 'engagement', 'active', (SELECT id FROM users WHERE email = 'demo@example.com')),
+('00000000-0000-0000-0000-000000000001'::uuid, 'Prospect to Activist', 'Convert interested community members into active organizers', 'engagement', 'active', (SELECT id FROM users WHERE email = 'demo@example.com')),
+('00000000-0000-0000-0000-000000000001'::uuid, 'Donor Cultivation', 'Build relationships with potential major donors', 'fundraising', 'active', (SELECT id FROM users WHERE email = 'demo@example.com')),
+('00000000-0000-0000-0000-000000000001'::uuid, 'Leadership Development', 'Develop volunteers into campaign leaders and organizers', 'leadership', 'active', (SELECT id FROM users WHERE email = 'demo@example.com')),
+('00000000-0000-0000-0000-000000000001'::uuid, 'Re-engagement Campaign', 'Win back inactive supporters and past volunteers', 'reactivation', 'active', (SELECT id FROM users WHERE email = 'demo@example.com'));
 
 -- Add pathway steps (sample for New Volunteer Onboarding)
 INSERT INTO pathway_steps (pathway_id, step_order, name, description, step_type, trigger_type, trigger_value, action_type, action_value, created_by)
@@ -167,7 +176,7 @@ SELECT
   'action', 'immediate', NULL, 'email', 
   '{"template": "welcome_volunteer", "subject": "Welcome to the movement!"}',
   (SELECT id FROM users WHERE email = 'demo@example.com')
-FROM pathways WHERE name = 'New Volunteer Onboarding' AND organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid;
+FROM pathways WHERE name = 'New Volunteer Onboarding' AND organization_id = '00000000-0000-0000-0000-000000000001'::uuid;
 
 INSERT INTO pathway_steps (pathway_id, step_order, name, description, step_type, trigger_type, trigger_value, action_type, action_value, created_by)
 SELECT 
@@ -175,7 +184,7 @@ SELECT
   'action', 'delay', '{"days": 2}', 'task', 
   '{"task": "Send orientation session invite", "priority": "high"}',
   (SELECT id FROM users WHERE email = 'demo@example.com')
-FROM pathways WHERE name = 'New Volunteer Onboarding' AND organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid;
+FROM pathways WHERE name = 'New Volunteer Onboarding' AND organization_id = '00000000-0000-0000-0000-000000000001'::uuid;
 
 INSERT INTO pathway_steps (pathway_id, step_order, name, description, step_type, trigger_type, trigger_value, action_type, action_value, created_by)
 SELECT 
@@ -183,7 +192,7 @@ SELECT
   'action', 'delay', '{"days": 7}', 'call', 
   '{"script": "Welcome check-in", "duration": 15}',
   (SELECT id FROM users WHERE email = 'demo@example.com')
-FROM pathways WHERE name = 'New Volunteer Onboarding' AND organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid;
+FROM pathways WHERE name = 'New Volunteer Onboarding' AND organization_id = '00000000-0000-0000-0000-000000000001'::uuid;
 
 INSERT INTO pathway_steps (pathway_id, step_order, name, description, step_type, trigger_type, trigger_value, action_type, action_value, created_by)
 SELECT 
@@ -191,14 +200,14 @@ SELECT
   'action', 'delay', '{"days": 14}', 'email', 
   '{"template": "first_action", "subject": "Ready for your first action?"}',
   (SELECT id FROM users WHERE email = 'demo@example.com')
-FROM pathways WHERE name = 'New Volunteer Onboarding' AND organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid;
+FROM pathways WHERE name = 'New Volunteer Onboarding' AND organization_id = '00000000-0000-0000-0000-000000000001'::uuid;
 
 -- 6. CAMPAIGNS
 -- ============
 
 DO $$
 DECLARE
-  v_org_id UUID := 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid;
+  v_org_id UUID := '00000000-0000-0000-0000-000000000001'::uuid;
   v_demo_user_id UUID;
   v_campaign_ids UUID[];
   v_contact_ids UUID[];
@@ -505,7 +514,7 @@ SELECT
   END
 FROM contacts c
 CROSS JOIN users u
-WHERE c.organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid
+WHERE c.organization_id = '00000000-0000-0000-0000-000000000001'::uuid
   AND u.email = 'demo@example.com'
   AND c.email IN ('maria.rodriguez@example.com', 'james.chen@example.com', 'sarah.t@example.com', 'david.kim@example.com');
 
@@ -521,7 +530,7 @@ SELECT
   'Discussed upcoming rally. Confirmed attendance.'
 FROM contacts c
 CROSS JOIN users u
-WHERE c.organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid
+WHERE c.organization_id = '00000000-0000-0000-0000-000000000001'::uuid
   AND u.email = 'demo@example.com'
   AND c.email IN ('maria.rodriguez@example.com', 'david.kim@example.com');
 
@@ -536,7 +545,7 @@ SELECT
   'Sent volunteer orientation materials and schedule'
 FROM contacts c
 CROSS JOIN users u
-WHERE c.organization_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid
+WHERE c.organization_id = '00000000-0000-0000-0000-000000000001'::uuid
   AND u.email = 'demo@example.com'
   AND c.tags && ARRAY['volunteer']
 LIMIT 5;
