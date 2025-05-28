@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/common/Card'
 import { Button } from '../../components/common/Button'
-import { Plus, Edit, Trash2, Copy, Phone, Search, FileText, Users } from 'lucide-react'
+import { Plus, Edit, Trash2, Copy, Phone, Search } from 'lucide-react'
 
 interface PhoneBankScript {
   id: string
@@ -285,14 +285,19 @@ export function PhoneBankScripts() {
           script={editingScript}
           onSave={(script) => {
             if (editingScript) {
-              setScripts(scripts.map(s => s.id === editingScript.id ? script : s))
+              const updatedScript: PhoneBankScript = {
+                ...editingScript,
+                ...script
+              }
+              setScripts(scripts.map(s => s.id === editingScript.id ? updatedScript : s))
             } else {
-              setScripts([...scripts, {
+              const newScript: PhoneBankScript = {
                 ...script,
                 id: Date.now().toString(),
                 usageCount: 0,
                 createdAt: new Date().toISOString()
-              }])
+              }
+              setScripts([...scripts, newScript])
             }
             setShowScriptModal(false)
           }}

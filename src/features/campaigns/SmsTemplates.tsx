@@ -255,14 +255,19 @@ export function SmsTemplates() {
           template={editingTemplate}
           onSave={(template) => {
             if (editingTemplate) {
-              setTemplates(templates.map(t => t.id === editingTemplate.id ? template : t))
+              const updatedTemplate: SmsTemplate = {
+                ...editingTemplate,
+                ...template
+              }
+              setTemplates(templates.map(t => t.id === editingTemplate.id ? updatedTemplate : t))
             } else {
-              setTemplates([...templates, {
+              const newTemplate: SmsTemplate = {
                 ...template,
                 id: Date.now().toString(),
                 usageCount: 0,
                 createdAt: new Date().toISOString()
-              }])
+              }
+              setTemplates([...templates, newTemplate])
             }
             setShowTemplateModal(false)
           }}

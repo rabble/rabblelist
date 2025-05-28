@@ -16,7 +16,6 @@ import {
   Download,
   RefreshCw,
   Activity,
-  Target,
   DollarSign,
   MessageSquare,
   UserPlus
@@ -413,7 +412,7 @@ export function CampaignAnalytics() {
         <CardContent>
           <div className="space-y-4">
             {(analytics?.recentActivity || []).length > 0 ? (
-              analytics.recentActivity.map((activity) => {
+              analytics?.recentActivity.map((activity) => {
                 const getIcon = () => {
                   switch (activity.type) {
                     case 'signature': return Users
