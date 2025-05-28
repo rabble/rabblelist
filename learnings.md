@@ -99,17 +99,18 @@ contact-manager-pwa/
   - Created SQL script to fix the issue: `fix-rls-recursion.sql`
 
 ### ❌ Not Implemented / Using Mocks
-- **SMS/Email Communication**: No messaging capabilities
-- **Integrated Calling**: No Twilio/telephony integration
+- **SMS/Email Communication**: No messaging capabilities (templates UI created but no backend)
+- **Integrated Calling**: No Twilio/telephony integration (scripts UI created but no backend)
 - **Fundraising**: No donation processing
 - **Petitions**: Not implemented
-- **Advanced Analytics**: Only basic stats
 - **User Registration**: No signup flow
 - **Service Worker**: Referenced but file doesn't exist
 - **Push Notifications**: Not implemented
 - **Background Sync**: Not implemented
 - **Conflict Resolution**: Not implemented
 - **Real-time Updates**: Not implemented
+- **Organization Switching**: UI exists but functionality not implemented
+- **Email Template Management**: Not implemented (per user directive - low priority)
 
 ### 🐛 Known Issues
 1. Service worker registration fails (file doesn't exist)
@@ -247,3 +248,44 @@ contact-manager-pwa/
 - Public registration form at /events/:id/register
 - Real-time statistics in EventDetail view
 - Support for ticket types and pricing (payment processing not implemented)
+
+## Feature Implementations (2025-05-28)
+
+### Analytics and Engagement
+- **Campaign Analytics**: Replaced all mock data with real Supabase queries
+  - Created AnalyticsService with methods for campaign and engagement statistics
+  - Time series data aggregated from campaign_stats table
+  - Channel performance metrics from communication logs and phonebank calls
+  - Recent activity feed from signatures, calls, and events
+- **Engagement Dashboard**: Converted from static mockup to dynamic data
+  - Real-time engagement metrics from contact activity
+  - Segment calculation based on last contact date
+  - Integration with event registrations and petition signatures
+  - Reusable analytics service for organization-wide stats
+
+### Template Management UIs
+- **SMS Templates**: Created comprehensive template management system
+  - Template creation with variable substitution support
+  - Character count with multi-part SMS detection
+  - Usage tracking and tagging system
+  - Search and filter capabilities
+  - Template duplication for quick variations
+- **Phone Banking Scripts**: Built script management interface
+  - Multi-section scripts (intro, main, objections, closing)
+  - Objection handling with paired responses
+  - Variable insertion for personalization
+  - Usage statistics and categorization
+  - Script templates for common scenarios (GOTV, recruitment, education)
+
+### Legal Pages
+- **Terms of Service**: Created React component version
+  - Catalyst/organizing specific terms
+  - Communication compliance requirements
+  - Open source acknowledgments
+  - Proper routing at /terms
+- **Privacy Policy**: Built comprehensive privacy page
+  - Detailed data collection and usage policies
+  - Contact data handling responsibilities
+  - GDPR and CCPA compliance sections
+  - Security measures documentation
+  - Routing at /privacy with login page integration

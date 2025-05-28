@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -7,6 +7,7 @@ import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { usePathwayStore } from '@/stores/pathwayStore'
+import type { PathwayTemplate } from './pathwayTemplates'
 import { 
   ArrowLeft,
   Plus,
@@ -16,7 +17,8 @@ import {
   Loader2,
   Target,
   Clock,
-  Tag
+  Tag,
+  Route
 } from 'lucide-react'
 
 const pathwaySchema = z.object({
@@ -43,8 +45,12 @@ interface PathwayStepForm {
 
 export function PathwayForm() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { id } = useParams()
   const isEditing = !!id
+  
+  // Get template from navigation state
+  const template = location.state?.template as PathwayTemplate | undefined
   
   const { 
     currentPathway, 
@@ -78,6 +84,31 @@ export function PathwayForm() {
   })
 
   const selectedTags = watch('tags') || []
+  
+  // Load template data if provided
+  useEffect(() => {
+    if (template && !isEditing) {
+      reset({
+        name: template.name,
+        description: template.description,
+        is_active: true,
+        tags: [template.category]
+      })
+      
+      // Set steps from template
+      setSteps(template.steps.map((step, index) => ({
+        name: step.name,
+        description: step.description || '',
+        order_index: index,
+        step_type: step.type,
+        is_required: true, // Default to required
+        settings: {
+          estimated_duration: step.estimatedTime,
+          requirements: step.resources?.map(r => r.name) || []
+        }
+      })))
+    }
+  }, [template, isEditing, reset])
 
   useEffect(() => {
     if (isEditing && id) {
@@ -238,9 +269,17 @@ export function PathwayForm() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Pathways
           </button>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            {isEditing ? 'Edit Pathway' : 'Create New Pathway'}
-          </h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              {isEditing ? 'Edit Pathway' : 'Create New Pathway'}
+            </h1>
+            {template && !isEditing && (
+              <div className="flex items-center gap-2 px-3 py-1 bg-primary-50 text-primary-700 rounded-lg">
+                <Route className="w-4 h-4" />
+                <span className="text-sm font-medium">Using Template: {template.name}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

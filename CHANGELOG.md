@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Analytics Implementation** - Replaced mock data with real queries (2025-05-28)
+  - Created AnalyticsService for campaign and engagement statistics
+  - Campaign Analytics now fetches real time series data
+  - Engagement Dashboard displays actual contact activity metrics
+  - Recent activity feeds pull from multiple data sources
+- **Template Management UIs** - Created management interfaces for communication
+  - SMS Templates component with variable substitution and character counting
+  - Phone Banking Scripts interface with objection handling
+  - Both include search, filtering, and usage tracking
+- **Legal Pages** - Added Terms of Service and Privacy Policy
+  - React component versions replacing static HTML
+  - Proper routing at /terms and /privacy
+  - Catalyst-specific terms focused on organizing
+  - Comprehensive privacy policy with GDPR/CCPA sections
+
 ### Changed
 - **Platform Evaluation** - Comprehensive assessment of Rise.protest.net capabilities (2025-01-27)
   - Conducted systematic review of all features and functionality

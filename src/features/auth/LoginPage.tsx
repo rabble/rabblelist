@@ -346,9 +346,9 @@ export function LoginPage() {
         <div className="mt-6 text-center text-sm text-gray-500">
           <p>By signing up, you agree to our</p>
           <p>
-            <a href="#" className="text-primary-600 hover:underline">Terms of Service</a>
+            <Link to="/terms" className="text-primary-600 hover:underline">Terms of Service</Link>
             {' and '}
-            <a href="#" className="text-primary-600 hover:underline">Privacy Policy</a>
+            <Link to="/privacy" className="text-primary-600 hover:underline">Privacy Policy</Link>
           </p>
         </div>
       </div>

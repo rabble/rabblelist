@@ -93,6 +93,12 @@ export function CampaignManagement() {
               </p>
             </div>
             <div className="flex gap-2">
+              <Button variant="outline" onClick={() => navigate('/campaigns/sms-templates')}>
+                SMS Templates
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/campaigns/phonebank-scripts')}>
+                Call Scripts
+              </Button>
               <Button variant="secondary" onClick={() => setShowTemplateModal(true)}>
                 <Sparkles className="w-4 h-4 mr-2" />
                 Use Template

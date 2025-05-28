@@ -21,18 +21,26 @@ import { PathwayForm } from '@/features/pathways/PathwayForm'
 import { PathwayMembers } from '@/features/pathways/PathwayMembers'
 import { CampaignAnalytics } from '@/features/campaigns/CampaignAnalytics'
 import { EngagementDashboard } from '@/features/engagement/EngagementDashboard'
+import { AllActivities } from '@/features/engagement/AllActivities'
+import { AutomationIntegrations } from '@/features/automation/AutomationIntegrations'
 import { CampaignManagement } from '@/features/campaigns/CampaignManagement'
-import { CampaignForm } from '@/features/campaigns/CampaignForm'
+import { CampaignFormEnhanced } from '@/features/campaigns/CampaignFormEnhanced'
 import { CampaignDetail } from '@/features/campaigns/CampaignDetail'
 import { EmailCampaign } from '@/features/campaigns/EmailCampaign'
 import { SMSCampaign } from '@/features/campaigns/SMSCampaign'
 import { PhoneBankCampaign } from '@/features/campaigns/PhoneBankCampaign'
 import { PetitionSign } from '@/features/campaigns/PetitionSign'
+import { SmsTemplates } from '@/features/campaigns/SmsTemplates'
+import { PhoneBankScripts } from '@/features/campaigns/PhoneBankScripts'
 import { AdminDashboard } from '@/features/admin/AdminDashboard'
+import { CustomFieldsConfig } from '@/features/admin/CustomFieldsConfig'
+import { UserForm } from '@/features/admin/UserForm'
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute'
 import { LoginPage } from '@/features/auth/LoginPage'
 import LandingPage from '@/features/landing/LandingPage'
 import AboutPage from '@/features/landing/AboutPage'
+import { TermsOfService } from '@/features/legal/TermsOfService'
+import { PrivacyPolicy } from '@/features/legal/PrivacyPolicy'
 import EventRegistrationForm from '@/features/events/EventRegistrationForm'
 
 function App() {
@@ -53,6 +61,8 @@ function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/terms" element={<TermsOfService />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/events/:eventId/register" element={<EventRegistrationForm />} />
           
           {/* Protected routes */}
@@ -205,6 +215,18 @@ function AppRoutes() {
             </ProtectedRoute>
           } />
           
+          <Route path="/engagement/activities" element={
+            <ProtectedRoute>
+              <AllActivities />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/engagement/automations" element={
+            <ProtectedRoute>
+              <AutomationIntegrations />
+            </ProtectedRoute>
+          } />
+          
           <Route path="/campaigns" element={
             <ProtectedRoute>
               <Layout>
@@ -215,13 +237,13 @@ function AppRoutes() {
           
           <Route path="/campaigns/new" element={
             <ProtectedRoute>
-              <CampaignForm />
+              <CampaignFormEnhanced />
             </ProtectedRoute>
           } />
           
           <Route path="/campaigns/:id/edit" element={
             <ProtectedRoute>
-              <CampaignForm />
+              <CampaignFormEnhanced />
             </ProtectedRoute>
           } />
           
@@ -263,6 +285,22 @@ function AppRoutes() {
             </ProtectedRoute>
           } />
           
+          <Route path="/campaigns/sms-templates" element={
+            <ProtectedRoute>
+              <Layout>
+                <SmsTemplates />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/campaigns/phonebank-scripts" element={
+            <ProtectedRoute>
+              <Layout>
+                <PhoneBankScripts />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
           <Route path="/campaigns/:id/sign" element={
             <PetitionSign />
           } />
@@ -271,6 +309,20 @@ function AppRoutes() {
             <ProtectedRoute allowedRoles={['admin']}>
               <Layout>
                 <AdminDashboard />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/admin/users/new" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <UserForm />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/admin/custom-fields" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Layout>
+                <CustomFieldsConfig />
               </Layout>
             </ProtectedRoute>
           } />

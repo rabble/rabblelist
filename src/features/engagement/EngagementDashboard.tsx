@@ -1,6 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
+import { AnalyticsService } from '@/services/analytics.service'
+import { useAuthStore } from '@/stores/authStore'
 import { 
   TrendingUp,
   TrendingDown,
@@ -48,95 +51,122 @@ interface EngagementSegment {
 }
 
 export function EngagementDashboard() {
+  const navigate = useNavigate()
   const [timeframe, setTimeframe] = useState('7d')
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null)
+  const [engagementStats, setEngagementStats] = useState<any>(null)
+  const [recentActivities, setRecentActivities] = useState<EngagementActivity[]>([])
+  const [loading, setLoading] = useState(true)
+  const { user } = useAuthStore()
 
-  // Mock data for engagement metrics
-  const metrics: EngagementMetric[] = [
+  useEffect(() => {
+    if (user?.organization_id) {
+      loadEngagementStats()
+      loadRecentActivities()
+    }
+  }, [user?.organization_id, timeframe])
+
+  const loadEngagementStats = async () => {
+    if (!user?.organization_id) return
+    
+    setLoading(true)
+    try {
+      const stats = await AnalyticsService.getEngagementStats(user.organization_id)
+      setEngagementStats(stats)
+    } catch (error) {
+      console.error('Failed to load engagement stats:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadRecentActivities = async () => {
+    if (!user?.organization_id) return
+    
+    try {
+      const activities = await AnalyticsService.getRecentEngagementActivities(user.organization_id)
+      setRecentActivities(activities)
+    } catch (error) {
+      console.error('Failed to load recent activities:', error)
+    }
+  }
+
+  // Calculate metrics from real data
+  const metrics: EngagementMetric[] = engagementStats ? [
     {
-      label: 'Active Members',
-      value: 342,
-      change: 12,
-      trend: 'up',
+      label: 'Total Members',
+      value: engagementStats.totalMembers,
+      change: engagementStats.newThisMonth,
+      trend: engagementStats.newThisMonth > 0 ? 'up' : 'neutral',
       icon: <Users className="w-5 h-5" />,
       color: 'text-blue-600'
     },
     {
       label: 'Engagement Rate',
-      value: 78,
-      change: -3,
-      trend: 'down',
+      value: engagementStats.engagementRate,
+      change: 0, // Would need historical data to calculate
+      trend: 'neutral',
       icon: <Activity className="w-5 h-5" />,
       color: 'text-green-600'
     },
     {
-      label: 'Actions Taken',
-      value: 1248,
-      change: 23,
-      trend: 'up',
+      label: 'Active This Week',
+      value: engagementStats.activeThisWeek,
+      change: 0, // Would need historical data
+      trend: 'neutral',
       icon: <Zap className="w-5 h-5" />,
       color: 'text-purple-600'
     },
     {
-      label: 'Response Rate',
-      value: 64,
-      change: 5,
-      trend: 'up',
-      icon: <MessageSquare className="w-5 h-5" />,
+      label: 'New This Month',
+      value: engagementStats.newThisMonth,
+      change: 0, // Would need historical data
+      trend: 'neutral',
+      icon: <UserCheck className="w-5 h-5" />,
       color: 'text-orange-600'
     }
-  ]
-
-  // Mock recent activities
-  const recentActivities: EngagementActivity[] = [
-    {
-      id: '1',
-      type: 'email',
-      contact: 'Alex Rivera',
-      description: 'Opened campaign update email',
-      timestamp: new Date(Date.now() - 1000 * 60 * 30),
-      status: 'completed'
-    },
-    {
-      id: '2',
-      type: 'event',
-      contact: 'Jamie Chen',
-      description: 'Registered for Phone Bank Training',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-      status: 'completed'
-    },
-    {
-      id: '3',
-      type: 'action',
-      contact: 'Morgan Smith',
-      description: 'Signed petition',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3),
-      status: 'completed'
-    },
-    {
-      id: '4',
-      type: 'social',
-      contact: 'Sam Johnson',
-      description: 'Shared campaign on Twitter',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4),
-      status: 'completed'
-    },
-    {
-      id: '5',
-      type: 'sms',
-      contact: 'Taylor Brown',
-      description: 'Replied to SMS survey',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5),
-      status: 'completed'
-    }
-  ]
+  ] : []
 
   // Engagement segments
+  const totalSegmentContacts = 
+    (engagementStats?.segments?.highlyEngaged || 0) +
+    (engagementStats?.segments?.moderate || 0) +
+    (engagementStats?.segments?.low || 0) +
+    (engagementStats?.segments?.inactive || 0)
+  
   const segments: EngagementSegment[] = [
-    { name: 'Highly Engaged', count: 89, percentage: 26, color: 'bg-green-500' },
-    { name: 'Moderately Engaged', count: 156, percentage: 46, color: 'bg-blue-500' },
-    { name: 'Low Engagement', count: 67, percentage: 20, color: 'bg-yellow-500' },
-    { name: 'Inactive', count: 30, percentage: 8, color: 'bg-red-500' }
+    { 
+      name: 'Highly Engaged', 
+      count: engagementStats?.segments?.highlyEngaged || 0, 
+      percentage: totalSegmentContacts > 0 
+        ? Math.round((engagementStats?.segments?.highlyEngaged || 0) / totalSegmentContacts * 100)
+        : 0,
+      color: 'bg-green-500' 
+    },
+    { 
+      name: 'Moderately Engaged', 
+      count: engagementStats?.segments?.moderate || 0, 
+      percentage: totalSegmentContacts > 0
+        ? Math.round((engagementStats?.segments?.moderate || 0) / totalSegmentContacts * 100)
+        : 0,
+      color: 'bg-blue-500' 
+    },
+    { 
+      name: 'Low Engagement', 
+      count: engagementStats?.segments?.low || 0, 
+      percentage: totalSegmentContacts > 0
+        ? Math.round((engagementStats?.segments?.low || 0) / totalSegmentContacts * 100)
+        : 0,
+      color: 'bg-yellow-500' 
+    },
+    { 
+      name: 'Inactive', 
+      count: engagementStats?.segments?.inactive || 0, 
+      percentage: totalSegmentContacts > 0
+        ? Math.round((engagementStats?.segments?.inactive || 0) / totalSegmentContacts * 100)
+        : 0,
+      color: 'bg-red-500' 
+    }
   ]
 
   // Engagement ladder stages
@@ -344,7 +374,11 @@ export function EngagementDashboard() {
                 ))}
               </div>
               <div className="mt-4">
-                <Button className="w-full" variant="outline">
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => navigate('/engagement/activities')}
+                >
                   View All Activity
                 </Button>
               </div>
@@ -464,7 +498,10 @@ export function EngagementDashboard() {
                   </div>
                 </div>
 
-                <Button className="w-full">
+                <Button 
+                  className="w-full"
+                  onClick={() => navigate('/engagement/automations')}
+                >
                   <Zap className="w-4 h-4 mr-2" />
                   Create Automation
                 </Button>

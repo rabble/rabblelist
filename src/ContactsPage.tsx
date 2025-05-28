@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 // Simple contact manager that just works
 export function ContactsPage() {
+  const navigate = useNavigate()
   const [contacts, setContacts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [newContact, setNewContact] = useState({ full_name: '', email: '', phone: '', tags: '' })
   const [selectedTags, setSelectedTags] = useState<string[]>([])
 
   const supabaseUrl = 'https://oxtjonaiubulnggytezf.supabase.co'
@@ -39,42 +40,6 @@ export function ContactsPage() {
     }
   }
 
-  const addContact = async () => {
-    if (!newContact.full_name) return
-    
-    try {
-      const response = await fetch(`${supabaseUrl}/rest/v1/contacts`, {
-        method: 'POST',
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation'
-        },
-        body: JSON.stringify({
-          full_name: newContact.full_name,
-          email: newContact.email,
-          phone: newContact.phone,
-          organization_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-          status: 'active',
-          tags: newContact.tags.split(',').map(t => t.trim()).filter(t => t),
-          custom_fields: {}
-        })
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setContacts([...contacts, data[0]])
-        setNewContact({ full_name: '', email: '', phone: '', tags: '' })
-        setError(null)
-      } else {
-        setError('Failed to add contact')
-      }
-    } catch (error) {
-      console.error('Error:', error)
-      setError('Failed to add contact - please try again')
-    }
-  }
 
   const updateContact = async (id: string, updates: any) => {
     try {
@@ -189,49 +154,14 @@ export function ContactsPage() {
           </div>
         )}
         
-        {/* Add Contact Form */}
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <h2 className="text-xl font-semibold mb-4">Add Contact</h2>
-          <div className="space-y-2">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              <input
-                type="text"
-                placeholder="Name *"
-                className="px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={newContact.full_name}
-                onChange={(e) => setNewContact({...newContact, full_name: e.target.value})}
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                className="px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={newContact.email}
-                onChange={(e) => setNewContact({...newContact, email: e.target.value})}
-              />
-              <input
-                type="tel"
-                placeholder="Phone"
-                className="px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={newContact.phone}
-                onChange={(e) => setNewContact({...newContact, phone: e.target.value})}
-              />
-            </div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Tags (comma separated)"
-                className="flex-1 px-3 py-2 border rounded"
-                value={newContact.tags}
-                onChange={(e) => setNewContact({...newContact, tags: e.target.value})}
-              />
-              <button
-                onClick={addContact}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Add Contact
-              </button>
-            </div>
-          </div>
+        {/* Add Contact Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => navigate('/contacts/new')}
+            className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium"
+          >
+            + Add New Contact
+          </button>
         </div>
 
         {/* Tag Filter */}

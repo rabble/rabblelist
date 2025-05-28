@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { useCampaignStore } from '@/stores/campaignStore'
+import { AnalyticsService } from '@/services/analytics.service'
+import type { CampaignAnalytics } from '@/services/analytics.service'
 import { 
   ArrowLeft,
   TrendingUp,
@@ -39,17 +41,41 @@ export function CampaignAnalytics() {
   const { currentCampaign, loadCampaign, isLoadingCampaign } = useCampaignStore()
   const [refreshing, setRefreshing] = useState(false)
   const [dateRange, setDateRange] = useState<'7d' | '30d' | 'all'>('7d')
+  const [analytics, setAnalytics] = useState<CampaignAnalytics | null>(null)
+  const [loadingAnalytics, setLoadingAnalytics] = useState(true)
 
   useEffect(() => {
     if (id) {
       loadCampaign(id)
+      loadAnalytics(id)
     }
   }, [id, loadCampaign])
+
+  useEffect(() => {
+    if (id) {
+      loadAnalytics(id)
+    }
+  }, [dateRange])
+
+  const loadAnalytics = async (campaignId: string) => {
+    setLoadingAnalytics(true)
+    try {
+      const data = await AnalyticsService.getCampaignAnalytics(campaignId, dateRange)
+      setAnalytics(data)
+    } catch (error) {
+      console.error('Failed to load analytics:', error)
+    } finally {
+      setLoadingAnalytics(false)
+    }
+  }
 
   const handleRefresh = async () => {
     if (!id) return
     setRefreshing(true)
-    await loadCampaign(id)
+    await Promise.all([
+      loadCampaign(id),
+      loadAnalytics(id)
+    ])
     setTimeout(() => setRefreshing(false), 1000)
   }
 
@@ -103,16 +129,8 @@ export function CampaignAnalytics() {
     amount_raised: 0
   }
 
-  // Mock time series data
-  const timeSeriesData = [
-    { date: 'Mon', participants: 12, conversions: 8 },
-    { date: 'Tue', participants: 19, conversions: 15 },
-    { date: 'Wed', participants: 15, conversions: 12 },
-    { date: 'Thu', participants: 25, conversions: 20 },
-    { date: 'Fri', participants: 22, conversions: 18 },
-    { date: 'Sat', participants: 30, conversions: 25 },
-    { date: 'Sun', participants: 28, conversions: 22 }
-  ]
+  // Use real data from analytics or fallback to defaults
+  const timeSeriesData = analytics?.timeSeriesData || []
 
   // Engagement funnel data
   const funnelData = [
@@ -121,13 +139,33 @@ export function CampaignAnalytics() {
     { name: 'Converted', value: stats.new_contacts, fill: '#8b5cf6' }
   ]
 
-  // Channel performance data
-  const channelData = [
-    { channel: 'Email', sent: stats.emails_sent, opened: stats.emails_opened, clicked: stats.emails_clicked },
-    { channel: 'Phone', attempted: stats.calls_made, completed: stats.calls_completed, converted: Math.round(stats.calls_completed * 0.3) },
-    { channel: 'SMS', sent: 150, delivered: 145, responded: 32 },
-    { channel: 'Social', posts: 12, shares: stats.shares, clicks: 89 }
-  ]
+  // Channel performance data from real analytics
+  const channelData = analytics ? [
+    { 
+      channel: 'Email', 
+      sent: analytics.channelPerformance.email.sent, 
+      opened: analytics.channelPerformance.email.opened, 
+      clicked: analytics.channelPerformance.email.clicked 
+    },
+    { 
+      channel: 'Phone', 
+      attempted: analytics.channelPerformance.phone.attempted, 
+      completed: analytics.channelPerformance.phone.completed, 
+      converted: analytics.channelPerformance.phone.converted 
+    },
+    { 
+      channel: 'SMS', 
+      sent: analytics.channelPerformance.sms.sent, 
+      delivered: analytics.channelPerformance.sms.delivered, 
+      responded: analytics.channelPerformance.sms.responded 
+    },
+    { 
+      channel: 'Social', 
+      posts: analytics.channelPerformance.social.posts, 
+      shares: analytics.channelPerformance.social.shares, 
+      clicks: analytics.channelPerformance.social.clicks 
+    }
+  ] : []
 
 
   return (
@@ -374,20 +412,32 @@ export function CampaignAnalytics() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {[
-              { icon: CheckCircle, text: 'John Smith completed action', time: '2 hours ago', color: 'text-green-600' },
-              { icon: Mail, text: 'Email campaign sent to 500 contacts', time: '5 hours ago', color: 'text-blue-600' },
-              { icon: Users, text: '12 new participants joined', time: '1 day ago', color: 'text-purple-600' },
-              { icon: Target, text: 'Campaign reached 75% of goal', time: '2 days ago', color: 'text-orange-600' }
-            ].map((activity, index) => (
-              <div key={index} className="flex items-center gap-3">
-                <activity.icon className={`w-5 h-5 ${activity.color}`} />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{activity.text}</p>
-                  <p className="text-xs text-gray-500">{activity.time}</p>
-                </div>
-              </div>
-            ))}
+            {(analytics?.recentActivity || []).length > 0 ? (
+              analytics.recentActivity.map((activity) => {
+                const getIcon = () => {
+                  switch (activity.type) {
+                    case 'signature': return Users
+                    case 'call': return Phone
+                    case 'email': return Mail
+                    default: return CheckCircle
+                  }
+                }
+                const Icon = getIcon()
+                const timeAgo = new Date(activity.timestamp).toRelativeTimeString()
+                
+                return (
+                  <div key={activity.id} className="flex items-center gap-3">
+                    <Icon className="w-5 h-5 text-gray-600" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{activity.description}</p>
+                      <p className="text-xs text-gray-500">{timeAgo}</p>
+                    </div>
+                  </div>
+                )
+              })
+            ) : (
+              <p className="text-gray-500 text-center">No recent activity</p>
+            )}
           </div>
         </CardContent>
       </Card>
