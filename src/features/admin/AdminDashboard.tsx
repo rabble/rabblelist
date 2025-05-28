@@ -155,10 +155,10 @@ export function AdminDashboard() {
               <Button 
                 className="justify-start" 
                 variant="outline"
-                onClick={() => navigate('/admin/users/new')}
+                onClick={() => navigate('/admin/invite')}
               >
                 <UserPlus className="w-4 h-4 mr-2" />
-                Add Ringer
+                Invite Users
               </Button>
               <Button 
                 className="justify-start" 

@@ -149,10 +149,14 @@ contact-manager-pwa/
 - Intelligent retry that skips auth/permission/validation errors
 - Applied to ContactService and can be used across all services
 
-### Organization Switching
+### Organization Switching (Completed 2025-05-28)
 - Created `OrganizationSwitcher` component for multi-org users
 - Added migration for `user_organizations` junction table
-- Simulated multi-org access for admin users
+- Created database functions for organization switching
+- Implemented real organization switching with page reload
+- Added `OrganizationInvite` component for adding users to organizations
+- Supports both existing users and generates invite links for new users
+- Organization switcher only shows when user has access to multiple orgs
 
 ### Custom Fields
 - `CustomFieldsConfig` component for admin management

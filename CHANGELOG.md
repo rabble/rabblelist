@@ -22,6 +22,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Proper routing at /terms and /privacy
   - Catalyst-specific terms focused on organizing
   - Comprehensive privacy policy with GDPR/CCPA sections
+- **Organization Switching** - Multi-organization support
+  - Created user_organizations junction table with migration
+  - Database functions for switching organizations
+  - OrganizationSwitcher component in header (only shows for multi-org users)
+  - OrganizationInvite component for admins to add users
+  - Support for both existing users and invite link generation
+- **Real-time Analytics** - Auto-refresh functionality
+  - Added 30-second auto-refresh to Campaign Analytics
+  - Added 30-second auto-refresh to Engagement Dashboard
+  - Toggle controls and manual refresh buttons
+  - Visual indication of last update time
 
 ### Changed
 - **Platform Evaluation** - Comprehensive assessment of Rise.protest.net capabilities (2025-01-27)

@@ -57,6 +57,9 @@ export function EngagementDashboard() {
   const [engagementStats, setEngagementStats] = useState<any>(null)
   const [recentActivities, setRecentActivities] = useState<EngagementActivity[]>([])
   const [loading, setLoading] = useState(true)
+  const [autoRefresh, setAutoRefresh] = useState(true)
+  const [lastRefresh, setLastRefresh] = useState(new Date())
+  const [refreshing, setRefreshing] = useState(false)
   const { user } = useAuthStore()
 
   useEffect(() => {
@@ -65,6 +68,19 @@ export function EngagementDashboard() {
       loadRecentActivities()
     }
   }, [user?.organization_id, timeframe])
+
+  // Auto-refresh every 30 seconds when enabled
+  useEffect(() => {
+    if (!autoRefresh || !user?.organization_id) return
+
+    const interval = setInterval(() => {
+      loadEngagementStats()
+      loadRecentActivities()
+      setLastRefresh(new Date())
+    }, 30000) // 30 seconds
+
+    return () => clearInterval(interval)
+  }, [autoRefresh, user?.organization_id, timeframe])
 
   const loadEngagementStats = async () => {
     if (!user?.organization_id) return
@@ -198,6 +214,19 @@ export function EngagementDashboard() {
     return `${days}d ago`
   }
 
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    try {
+      await Promise.all([
+        loadEngagementStats(),
+        loadRecentActivities()
+      ])
+      setLastRefresh(new Date())
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
   return (
     <div className="p-4 sm:p-6 lg:p-8">
         {/* Header */}
@@ -228,9 +257,25 @@ export function EngagementDashboard() {
                 <Download className="w-4 h-4 mr-2" />
                 Export
               </Button>
-              <Button size="sm">
-                <RefreshCw className="w-4 h-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={autoRefresh}
+                    onChange={(e) => setAutoRefresh(e.target.checked)}
+                    className="rounded"
+                  />
+                  Auto
+                </label>
+                <Button 
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  title={lastRefresh ? `Last updated: ${lastRefresh.toLocaleTimeString()}` : ''}
+                >
+                  <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
             </div>
           </div>
         </div>

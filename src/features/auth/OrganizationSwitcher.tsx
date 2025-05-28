@@ -10,7 +10,8 @@ type Organization = Tables<'organizations'>
 
 interface UserOrganization {
   organization_id: string
-  role: string
+  role: 'admin' | 'ringer' | 'viewer'
+  is_primary: boolean
   organization: Organization
 }
 
@@ -32,38 +33,35 @@ export function OrganizationSwitcher() {
 
     setIsLoading(true)
     try {
-      // For now, we'll simulate multi-org by checking if user is admin
-      // In a real implementation, you'd have a user_organizations junction table
-      const organizations: UserOrganization[] = []
+      // Get all organizations user has access to
+      const { data: userOrgs, error } = await supabase
+        .from('user_organizations')
+        .select(`
+          organization_id,
+          role,
+          is_primary,
+          organizations (*)
+        `)
+        .eq('user_id', profile.id)
+        .order('is_primary', { ascending: false })
 
-      // Add current organization
-      if (organization) {
+      if (error) throw error
+
+      const organizations: UserOrganization[] = userOrgs?.map(uo => ({
+        organization_id: uo.organization_id,
+        role: uo.role,
+        is_primary: uo.is_primary,
+        organization: uo.organizations as Organization
+      })) || []
+
+      // If user doesn't have any user_organization records yet, add their current org
+      if (organizations.length === 0 && organization) {
         organizations.push({
           organization_id: organization.id,
           role: profile.role,
+          is_primary: true,
           organization
         })
-      }
-
-      // If user is admin, load all organizations (simulating multi-org access)
-      if (profile.role === 'admin') {
-        const { data: allOrgs, error } = await supabase
-          .from('organizations')
-          .select('*')
-          .order('name')
-
-        if (!error && allOrgs) {
-          // Add other organizations
-          allOrgs.forEach(org => {
-            if (org.id !== organization?.id) {
-              organizations.push({
-                organization_id: org.id,
-                role: 'viewer', // Simulated role in other orgs
-                organization: org
-              })
-            }
-          })
-        }
       }
 
       setUserOrganizations(organizations)
@@ -81,11 +79,14 @@ export function OrganizationSwitcher() {
     }
 
     try {
-      // Update user's current organization
-      // TODO: Implement organization switching
-      console.log('Organization switching not implemented yet')
-      alert('Organization switching is not implemented yet')
-      setShowDropdown(false)
+      // Call the switch_organization function
+      const { data, error } = await supabase
+        .rpc('switch_organization', { target_org_id: orgId })
+
+      if (error) throw error
+
+      // Reload the page to refresh all data with new organization context
+      window.location.reload()
     } catch (error) {
       console.error('Error switching organization:', error)
       alert('Failed to switch organization')

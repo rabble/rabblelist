@@ -376,6 +376,32 @@ export interface Database {
           completed_at?: string | null
         }
       }
+      user_organizations: {
+        Row: {
+          user_id: string
+          organization_id: string
+          role: 'admin' | 'ringer' | 'viewer'
+          joined_at: string
+          invited_by: string | null
+          is_primary: boolean
+        }
+        Insert: {
+          user_id: string
+          organization_id: string
+          role: 'admin' | 'ringer' | 'viewer'
+          joined_at?: string
+          invited_by?: string | null
+          is_primary?: boolean
+        }
+        Update: {
+          user_id?: string
+          organization_id?: string
+          role?: 'admin' | 'ringer' | 'viewer'
+          joined_at?: string
+          invited_by?: string | null
+          is_primary?: boolean
+        }
+      }
     }
     Views: {}
     Functions: {
@@ -385,6 +411,14 @@ export interface Database {
       }
       is_admin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      get_user_current_organization: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      switch_organization: {
+        Args: { target_org_id: string }
         Returns: boolean
       }
     }

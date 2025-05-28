@@ -42,6 +42,8 @@ export function CampaignAnalytics() {
   const [dateRange, setDateRange] = useState<'7d' | '30d' | 'all'>('7d')
   const [analytics, setAnalytics] = useState<CampaignAnalytics | null>(null)
   const [loadingAnalytics, setLoadingAnalytics] = useState(true)
+  const [autoRefresh, setAutoRefresh] = useState(true)
+  const [lastRefresh, setLastRefresh] = useState(new Date())
 
   useEffect(() => {
     if (id) {
@@ -55,6 +57,18 @@ export function CampaignAnalytics() {
       loadAnalytics(id)
     }
   }, [dateRange])
+
+  // Auto-refresh every 30 seconds when enabled
+  useEffect(() => {
+    if (!autoRefresh || !id) return
+
+    const interval = setInterval(() => {
+      loadAnalytics(id)
+      setLastRefresh(new Date())
+    }, 30000) // 30 seconds
+
+    return () => clearInterval(interval)
+  }, [autoRefresh, id, dateRange])
 
   const loadAnalytics = async (campaignId: string) => {
     setLoadingAnalytics(true)
@@ -194,13 +208,25 @@ export function CampaignAnalytics() {
               <option value="30d">Last 30 days</option>
               <option value="all">All time</option>
             </select>
-            <Button
-              variant="outline"
-              onClick={handleRefresh}
-              disabled={refreshing}
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            </Button>
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={autoRefresh}
+                  onChange={(e) => setAutoRefresh(e.target.checked)}
+                  className="rounded"
+                />
+                Auto-refresh
+              </label>
+              <Button
+                variant="outline"
+                onClick={handleRefresh}
+                disabled={refreshing}
+                title={lastRefresh ? `Last updated: ${lastRefresh.toLocaleTimeString()}` : ''}
+              >
+                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
             <Button variant="outline" onClick={handleExport}>
               <Download className="w-4 h-4 mr-2" />
               Export

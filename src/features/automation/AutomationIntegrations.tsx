@@ -202,7 +202,11 @@ export function AutomationIntegrations() {
                     {showApiKey ? 'Hide' : 'Show'}
                   </Button>
                 </div>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate('/docs/api')}
+                >
                   <ExternalLink className="w-4 h-4 mr-2" />
                   View API Documentation
                 </Button>
@@ -252,26 +256,48 @@ export function AutomationIntegrations() {
                 
                 {integration.status === 'available' ? (
                   <div className="flex gap-2">
-                    {integration.setupUrl && (
+                    {integration.id === 'webhooks' ? (
                       <Button
-                        variant="outline"
                         size="sm"
                         className="flex-1"
-                        onClick={() => window.open(integration.setupUrl, '_blank')}
+                        onClick={() => navigate('/automation/webhooks')}
                       >
                         <Settings className="w-4 h-4 mr-1" />
-                        Setup
+                        Configure
                       </Button>
-                    )}
-                    {integration.docsUrl && (
+                    ) : integration.id === 'api' ? (
                       <Button
                         size="sm"
                         className="flex-1"
-                        onClick={() => navigate(integration.docsUrl)}
+                        onClick={() => navigate('/docs/api')}
                       >
                         <ExternalLink className="w-4 h-4 mr-1" />
-                        Docs
+                        Documentation
                       </Button>
+                    ) : (
+                      <>
+                        {integration.setupUrl && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => window.open(integration.setupUrl, '_blank')}
+                          >
+                            <Settings className="w-4 h-4 mr-1" />
+                            Setup
+                          </Button>
+                        )}
+                        {integration.docsUrl && (
+                          <Button
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => navigate(integration.docsUrl)}
+                          >
+                            <ExternalLink className="w-4 h-4 mr-1" />
+                            Docs
+                          </Button>
+                        )}
+                      </>
                     )}
                   </div>
                 ) : integration.status === 'beta' ? (
@@ -323,11 +349,14 @@ export function AutomationIntegrations() {
               </div>
               
               <div className="flex gap-3 pt-4">
-                <Button variant="outline">
+                <Button 
+                  variant="outline"
+                  onClick={() => window.open('https://n8n.io/workflows/', '_blank')}
+                >
                   <Globe className="w-4 h-4 mr-2" />
                   n8n Templates
                 </Button>
-                <Button>
+                <Button onClick={() => navigate('/docs/integrations/n8n')}>
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Full Integration Guide
                 </Button>

@@ -23,6 +23,8 @@ import { CampaignAnalytics } from '@/features/campaigns/CampaignAnalytics'
 import { EngagementDashboard } from '@/features/engagement/EngagementDashboard'
 import { AllActivities } from '@/features/engagement/AllActivities'
 import { AutomationIntegrations } from '@/features/automation/AutomationIntegrations'
+import { WebhookManagement } from '@/features/automation/WebhookManagement'
+import { ApiDocumentation } from '@/features/docs/ApiDocumentation'
 import { CampaignManagement } from '@/features/campaigns/CampaignManagement'
 import { CampaignFormEnhanced } from '@/features/campaigns/CampaignFormEnhanced'
 import { CampaignDetail } from '@/features/campaigns/CampaignDetail'
@@ -35,6 +37,7 @@ import { PhoneBankScripts } from '@/features/campaigns/PhoneBankScripts'
 import { AdminDashboard } from '@/features/admin/AdminDashboard'
 import { CustomFieldsConfig } from '@/features/admin/CustomFieldsConfig'
 import { UserForm } from '@/features/admin/UserForm'
+import { OrganizationInvite } from '@/features/admin/OrganizationInvite'
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute'
 import { LoginPage } from '@/features/auth/LoginPage'
 import LandingPage from '@/features/landing/LandingPage'
@@ -227,6 +230,18 @@ function AppRoutes() {
             </ProtectedRoute>
           } />
           
+          <Route path="/automation/webhooks" element={
+            <ProtectedRoute>
+              <WebhookManagement />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/docs/api" element={
+            <ProtectedRoute>
+              <ApiDocumentation />
+            </ProtectedRoute>
+          } />
+          
           <Route path="/campaigns" element={
             <ProtectedRoute>
               <Layout>
@@ -323,6 +338,14 @@ function AppRoutes() {
             <ProtectedRoute allowedRoles={['admin']}>
               <Layout>
                 <CustomFieldsConfig />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/admin/invite" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Layout>
+                <OrganizationInvite />
               </Layout>
             </ProtectedRoute>
           } />
