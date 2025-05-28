@@ -519,6 +519,190 @@ export interface Database {
           attempted_at?: string
         }
       }
+      organization_api_keys: {
+        Row: {
+          id: string
+          organization_id: string
+          service_name: 'twilio' | 'sendgrid' | 'openai' | 'stripe'
+          key_name: string
+          encrypted_value: string
+          is_active: boolean
+          created_at: string
+          updated_at: string
+          created_by: string | null
+          last_rotated_at: string | null
+        }
+        Insert: {
+          id?: string
+          organization_id: string
+          service_name: 'twilio' | 'sendgrid' | 'openai' | 'stripe'
+          key_name: string
+          encrypted_value: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+          last_rotated_at?: string | null
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          service_name?: 'twilio' | 'sendgrid' | 'openai' | 'stripe'
+          key_name?: string
+          encrypted_value?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+          last_rotated_at?: string | null
+        }
+      }
+      organization_subscriptions: {
+        Row: {
+          id: string
+          organization_id: string
+          plan_type: 'free' | 'basic' | 'pro' | 'enterprise'
+          status: 'active' | 'past_due' | 'canceled' | 'trialing'
+          current_period_start: string | null
+          current_period_end: string | null
+          trial_end: string | null
+          cancel_at: string | null
+          canceled_at: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id: string
+          plan_type?: 'free' | 'basic' | 'pro' | 'enterprise'
+          status?: 'active' | 'past_due' | 'canceled' | 'trialing'
+          current_period_start?: string | null
+          current_period_end?: string | null
+          trial_end?: string | null
+          cancel_at?: string | null
+          canceled_at?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          plan_type?: 'free' | 'basic' | 'pro' | 'enterprise'
+          status?: 'active' | 'past_due' | 'canceled' | 'trialing'
+          current_period_start?: string | null
+          current_period_end?: string | null
+          trial_end?: string | null
+          cancel_at?: string | null
+          canceled_at?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      organization_api_usage: {
+        Row: {
+          id: string
+          organization_id: string
+          service_name: string
+          action_type: string
+          count: number
+          cost_cents: number
+          metadata: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id: string
+          service_name: string
+          action_type: string
+          count?: number
+          cost_cents?: number
+          metadata?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          service_name?: string
+          action_type?: string
+          count?: number
+          cost_cents?: number
+          metadata?: Json
+          created_at?: string
+        }
+      }
+      rate_limit_rules: {
+        Row: {
+          id: string
+          plan_type: string
+          service_name: string
+          action_type: string
+          limit_value: number
+          window_seconds: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          plan_type: string
+          service_name: string
+          action_type: string
+          limit_value: number
+          window_seconds: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          plan_type?: string
+          service_name?: string
+          action_type?: string
+          limit_value?: number
+          window_seconds?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      organization_api_key_audit: {
+        Row: {
+          id: string
+          organization_id: string
+          user_id: string | null
+          action: 'created' | 'updated' | 'deleted' | 'rotated' | 'accessed'
+          service_name: string
+          key_name: string
+          ip_address: string | null
+          user_agent: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id: string
+          user_id?: string | null
+          action: 'created' | 'updated' | 'deleted' | 'rotated' | 'accessed'
+          service_name: string
+          key_name: string
+          ip_address?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          user_id?: string | null
+          action?: 'created' | 'updated' | 'deleted' | 'rotated' | 'accessed'
+          service_name?: string
+          key_name?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+      }
     }
     Views: {}
     Functions: {
@@ -537,6 +721,31 @@ export interface Database {
       switch_organization: {
         Args: { target_org_id: string }
         Returns: boolean
+      }
+      check_rate_limit: {
+        Args: {
+          p_organization_id: string
+          p_service_name: string
+          p_action_type: string
+        }
+        Returns: {
+          allowed: boolean
+          current_usage: number
+          limit_value: number
+          window_seconds: number
+          reset_at: string
+        }[]
+      }
+      track_api_usage: {
+        Args: {
+          p_organization_id: string
+          p_service_name: string
+          p_action_type: string
+          p_count?: number
+          p_cost_cents?: number
+          p_metadata?: Json
+        }
+        Returns: string
       }
     }
     Enums: {}
