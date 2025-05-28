@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { twilioConfig } from '@/lib/twilio.config'
 import { withRetry } from '@/lib/retryUtils'
+import { OrganizationAPIKeyService } from './api-key.service'
 
 export interface SMSMessage {
   to: string[]
@@ -32,12 +33,40 @@ export interface SMSCampaignResult {
 
 export class SMSService {
   private static twilioWorkerUrl = import.meta.env.VITE_TELEPHONY_WEBHOOK_URL || '/api/telephony'
+  private static apiKeyService = OrganizationAPIKeyService.getInstance()
+
+  /**
+   * Get current organization ID
+   */
+  private static async getCurrentOrgId(): Promise<string> {
+    const { data } = await supabase.rpc('get_user_current_organization')
+    if (!data) throw new Error('No organization found')
+    return data
+  }
 
   /**
    * Send a single SMS message
    */
   static async sendSMS(message: SMSMessage) {
     return withRetry(async () => {
+      // Get organization ID and service configuration
+      const orgId = await this.getCurrentOrgId()
+      const serviceConfig = await this.apiKeyService.getServiceConfig(orgId, 'twilio')
+      
+      // Prepare request payload with org-specific or system keys
+      const payload = {
+        to: message.to,
+        body: message.body,
+        from: twilioConfig.phoneNumbers.US,
+        mediaUrl: message.mediaUrl,
+        statusCallback: `${this.twilioWorkerUrl}/sms/status`,
+        // Include keys for the worker to use
+        twilioConfig: serviceConfig.useCustomKeys ? {
+          accountSid: serviceConfig.keys.account_sid,
+          authToken: serviceConfig.keys.auth_token
+        } : undefined
+      }
+      
       // Call our Cloudflare Worker which has the Twilio credentials
       const response = await fetch(`${this.twilioWorkerUrl}/sms/send`, {
         method: 'POST',
@@ -45,13 +74,7 @@ export class SMSService {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${await this.getAuthToken()}`
         },
-        body: JSON.stringify({
-          to: message.to,
-          body: message.body,
-          from: twilioConfig.phoneNumbers.US, // Use configured phone number
-          mediaUrl: message.mediaUrl,
-          statusCallback: `${this.twilioWorkerUrl}/sms/status`
-        })
+        body: JSON.stringify(payload)
       })
 
       if (!response.ok) {
@@ -59,6 +82,17 @@ export class SMSService {
       }
 
       const result = await response.json()
+
+      // Track usage if using system keys
+      if (!serviceConfig.useCustomKeys) {
+        await this.apiKeyService.trackUsage(
+          orgId,
+          'twilio',
+          'sms_sent',
+          message.to.length,
+          message.to.length * 1 // Approximate cost: 1 cent per SMS
+        )
+      }
 
       // Log SMS activity
       await this.logSMSActivity({

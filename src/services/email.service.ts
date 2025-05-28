@@ -2,6 +2,7 @@ import { emailConfig } from '@/lib/email.config'
 import { sendgridConfig } from '@/lib/sendgrid.config'
 import { supabase } from '@/lib/supabase'
 import { withRetry } from '@/lib/retryUtils'
+import { OrganizationAPIKeyService } from './api-key.service'
 
 export interface EmailMessage {
   to: string[]
@@ -35,9 +36,30 @@ export interface EmailCampaign {
 }
 
 export class EmailService {
+  private static apiKeyService = OrganizationAPIKeyService.getInstance()
+  
+  // Get current organization ID
+  private static async getCurrentOrgId(): Promise<string> {
+    const { data } = await supabase.rpc('get_user_current_organization')
+    if (!data) throw new Error('No organization found')
+    return data
+  }
+  
   // Use SendGrid API (Twilio's email service)
   private static async callSendGridAPI(endpoint: string, data: any) {
-    const apiKey = sendgridConfig.apiKey
+    // Get organization ID
+    const orgId = await this.getCurrentOrgId()
+    
+    // Get service configuration with org-specific or system keys
+    let serviceConfig
+    try {
+      serviceConfig = await this.apiKeyService.getServiceConfig(orgId, 'sendgrid')
+    } catch (error) {
+      console.error('[SendGrid] Rate limit or config error:', error)
+      throw error
+    }
+    
+    const apiKey = serviceConfig.keys.api_key || sendgridConfig.apiKey
     
     if (!apiKey) {
       console.warn('[SendGrid] No API key configured, logging to database only')
@@ -75,6 +97,20 @@ export class EmailService {
 
       if (!response.ok) {
         throw new Error(`SendGrid API error: ${response.status} ${response.statusText}`)
+      }
+
+      // Track usage if using system keys
+      if (!serviceConfig.useCustomKeys) {
+        const emailCount = data.personalizations?.reduce((total: number, p: any) => 
+          total + (p.to?.length || 0), 0) || 1
+        
+        await this.apiKeyService.trackUsage(
+          orgId,
+          'sendgrid',
+          'email_sent',
+          emailCount,
+          emailCount * 2 // Approximate cost: 2 cents per email
+        )
       }
 
       return { success: true, ...result }
