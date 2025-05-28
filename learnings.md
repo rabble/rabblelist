@@ -118,6 +118,13 @@ contact-manager-pwa/
 3. TypeScript build warnings about implicit any types
 4. Event schema needs migration to match application code
 
+## UI/UX Fixes (2025-05-28)
+- Fixed landing page UI issues:
+  - Resolved button styling inconsistencies
+  - Fixed security features grid rendering with React array mapping
+  - Added explicit button color classes for primary buttons
+  - Simplified icon array mapping to prevent React rendering issues
+
 ## Database Schema (from migrations)
 - Organizations table with multi-tenant support
 - Contacts with custom fields and tags

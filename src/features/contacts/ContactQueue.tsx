@@ -25,7 +25,7 @@ export function ContactQueue() {
   const handleComplete = () => {
     if (currentContact) {
       updateContact(currentContact.id, {
-        last_contacted: new Date().toISOString()
+        last_contact_date: new Date().toISOString()
       })
     }
   }

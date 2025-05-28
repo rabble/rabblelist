@@ -14,7 +14,7 @@ import {
   TestTube,
   Save
 } from 'lucide-react'
-import { OrganizationAPIKeyService, ServiceName } from '@/services/api-key.service'
+import { OrganizationAPIKeyService, type ServiceName } from '@/services/api-key.service'
 import type { Tables } from '@/lib/database.types'
 
 interface APIKeyField {
