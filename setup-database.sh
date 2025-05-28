@@ -7,20 +7,20 @@ echo "🚀 Contact Manager PWA Database Setup"
 echo "======================================"
 echo ""
 
-# Check if combined files exist, if not create them
-if [[ ! -f "supabase/complete_setup.sql" ]]; then
-    echo "❌ Missing complete_setup.sql file. Please ensure it exists."
+# Check if SQL files exist
+if [[ ! -f "supabase/schema.sql" ]]; then
+    echo "❌ Missing schema.sql file. Please ensure it exists."
     exit 1
 fi
 
-if [[ ! -f "supabase/seed.sql" ]]; then
-    echo "❌ Missing seed.sql file. Please ensure it exists."
+if [[ ! -f "supabase/seed-data.sql" ]]; then
+    echo "❌ Missing seed-data.sql file. Please ensure it exists."
     exit 1
 fi
 
 echo "✅ Database setup files found:"
-echo "   - supabase/complete_setup.sql (schema and structure)"
-echo "   - supabase/seed.sql (demo data)"
+echo "   - supabase/schema.sql (tables, indexes, functions, policies)"
+echo "   - supabase/seed-data.sql (demo data)"
 echo ""
 
 echo "📋 Setup Instructions:"
@@ -32,7 +32,7 @@ echo "1. Go to your Supabase Dashboard:"
 echo "   https://supabase.com/dashboard/project/oxtjonaiubulnggytezf"
 echo "2. Navigate to SQL Editor"
 echo "3. Copy and paste the ENTIRE contents of:"
-echo "   📄 supabase/complete_setup.sql"
+echo "   📄 supabase/schema.sql"
 echo "4. Click 'Run' to execute the schema setup"
 echo ""
 
@@ -40,7 +40,7 @@ echo "STEP 2: Demo Data (Optional)"
 echo "----------------------------"
 echo "1. In the same SQL Editor"
 echo "2. Copy and paste the ENTIRE contents of:"
-echo "   📄 supabase/seed.sql"
+echo "   📄 supabase/seed-data.sql"
 echo "3. Click 'Run' to add demo data"
 echo ""
 
@@ -58,13 +58,13 @@ echo "npm run dev"
 echo ""
 
 echo "📝 File Sizes:"
-echo "   complete_setup.sql: $(wc -l < supabase/complete_setup.sql) lines"
-echo "   seed.sql: $(wc -l < supabase/seed.sql) lines"
+echo "   schema.sql: $(wc -l < supabase/schema.sql) lines"
+echo "   seed-data.sql: $(wc -l < supabase/seed-data.sql) lines"
 echo ""
 
 echo "🎯 What each file does:"
-echo "   complete_setup.sql: Creates all tables, indexes, RLS policies, functions"
-echo "   seed.sql: Adds demo contacts, events, campaigns, groups, and pathways"
+echo "   schema.sql: Creates all tables, indexes, RLS policies, functions"
+echo "   seed-data.sql: Adds demo contacts, events, campaigns, groups, and pathways"
 echo ""
 
 echo "✨ Setup complete! Follow the steps above to configure your database."

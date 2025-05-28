@@ -88,7 +88,7 @@ npm run dev
 
 1. Set up the database:
 ```bash
-# Copy the SQL from supabase/migrations/000_complete_setup.sql
+# Copy the SQL from supabase/schema.sql and then supabase/seed-data.sql
 # Run it in your Supabase SQL Editor
 ```
 

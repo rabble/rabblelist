@@ -82,6 +82,35 @@ contact-manager-pwa/
 - Used TypeScript discriminated unions for timeline item types
 - Created helper functions for icon/color mapping
 - Maintained consistency with existing UI patterns
+
+## Contact Merge UI Implementation (Jan 28, 2025)
+
+### Visual Merge Interface Design
+- Created ContactMergeModal for side-by-side comparison of duplicate contacts
+- Primary contact selection with visual indicators
+- Field-by-field selection table with:
+  - Visual representation of each field value
+  - Click-to-select interface for choosing values
+  - Special handling for merged fields (tags, custom fields)
+  - Read-only fields that show calculated values (events attended)
+
+### Merge Logic Improvements
+- Comprehensive data transfer including:
+  - contact_interactions
+  - call_logs
+  - event_registrations
+  - campaign_activities
+  - group_members
+  - pathway_members
+- Audit trail creation in contact_interactions for merge history
+- Two-step confirmation process with summary review
+
+### UI/UX Enhancements
+- Visual comparison table with clear selection states
+- Confirmation screen with merge summary
+- Warning messages about irreversible actions
+- Choice between "Quick Merge" (automatic) and "Visual Merge" (manual selection)
+- Loading states and error handling
 8. **Mobile Optimization**: Touch-friendly UI, click-to-call
 9. **PWA Features**: Installable, offline-capable, push notifications
 

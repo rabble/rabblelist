@@ -58,8 +58,8 @@ async function main() {
     );
     
     // Try to execute schema using supabase db push
-    const schemaPath = path.join(__dirname, 'supabase', 'complete_setup.sql');
-    const seedPath = path.join(__dirname, 'supabase', 'seed.sql');
+    const schemaPath = path.join(__dirname, 'supabase', 'schema.sql');
+    const seedPath = path.join(__dirname, 'supabase', 'seed-data.sql');
     
     // Create a temporary SQL file that combines both
     const combinedSQL = 
@@ -94,9 +94,9 @@ async function main() {
     console.log('\n📋 Manual Setup Instructions:');
     console.log('=============================');
     console.log('1. Go to: https://supabase.com/dashboard/project/oxtjonaiubulnggytezf/sql/new');
-    console.log('2. Copy and paste the contents of: supabase/complete_setup.sql');
+    console.log('2. Copy and paste the contents of: supabase/schema.sql');
     console.log('3. Click "Run" to execute');
-    console.log('4. Copy and paste the contents of: supabase/seed.sql');
+    console.log('4. Copy and paste the contents of: supabase/seed-data.sql');
     console.log('5. Click "Run" to execute');
     
     console.log('\n🔧 Error details:', error.message);

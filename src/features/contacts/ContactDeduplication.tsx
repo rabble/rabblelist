@@ -12,9 +12,11 @@ import {
   Phone,
   Mail,
   Calendar,
-  Tag
+  Tag,
+  Eye
 } from 'lucide-react'
 import type { Contact } from '@/types'
+import { ContactMergeModal } from './ContactMergeModal'
 
 interface DuplicateGroup {
   id: string
@@ -30,6 +32,7 @@ export function ContactDeduplication() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set())
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
+  const [mergeModalContacts, setMergeModalContacts] = useState<Contact[] | null>(null)
 
   useEffect(() => {
     findDuplicates()
@@ -497,25 +500,22 @@ export function ContactDeduplication() {
                       ))}
                     </div>
 
-                    <div className="mt-4 flex justify-end">
+                    <div className="mt-4 flex justify-end gap-2">
                       <Button
                         size="sm"
-                        onClick={() => {
-                          const primary = window.prompt(
-                            'Enter the name of the contact to keep as primary:',
-                            group.contacts[0].full_name
-                          )
-                          const selected = group.contacts.find(
-                            c => c.full_name.toLowerCase() === primary?.toLowerCase()
-                          )
-                          if (selected) {
-                            mergeContacts(group, selected.id)
-                          }
-                        }}
+                        variant="outline"
+                        onClick={() => setMergeModalContacts(group.contacts)}
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        Visual Merge
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => mergeContacts(group, group.contacts[0].id)}
                         disabled={isProcessing}
                       >
                         <Merge className="w-4 h-4 mr-2" />
-                        Choose Primary & Merge
+                        Quick Merge to Oldest
                       </Button>
                     </div>
                   </CardContent>
@@ -525,6 +525,18 @@ export function ContactDeduplication() {
           </div>
         )}
       </div>
+
+      {/* Merge Modal */}
+      {mergeModalContacts && (
+        <ContactMergeModal
+          contacts={mergeModalContacts}
+          onClose={() => setMergeModalContacts(null)}
+          onMergeComplete={() => {
+            setMergeModalContacts(null)
+            findDuplicates()
+          }}
+        />
+      )}
     </Layout>
   )
 }

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Database Setup Reorganization** - Separated schema from seed data (2025-05-28)
+  - Split `complete_setup.sql` into `schema.sql` (structure only) and `seed-data.sql` (demo data)
+  - Makes it easier to set up production databases without demo data
+  - Updated all setup scripts and documentation to use new file names
+  - Cleaner separation of concerns for database initialization
+
 ### Fixed
 - Allow logged-in users to view landing page at "/" instead of auto-redirecting to dashboard
 

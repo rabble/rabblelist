@@ -1,27 +1,66 @@
--- COMPREHENSIVE SEED DATA FOR CONTACT MANAGER PWA
--- This file combines all demo data migrations into a single seed file
--- Prerequisites: Run this AFTER creating demo@example.com user in Auth
+-- CONTACT MANAGER PWA - SEED DATA
+-- This file contains demo data for testing and development
+-- Prerequisites: 
+-- 1. Run schema.sql first to create the database structure
+-- 2. Create demo@example.com user in Supabase Auth dashboard
 
--- 1. ORGANIZATIONS AND USERS SETUP
--- ================================
+-- CREATE DEFAULT ORGANIZATION
+INSERT INTO organizations (id, name, country_code, settings, features)
+VALUES (
+    '00000000-0000-0000-0000-000000000001',
+    'Demo Organization',
+    'US',
+    '{"timezone": "America/New_York", "calling_hours": {"start": "09:00", "end": "20:00"}}',
+    '{"calling": true, "events": true, "imports": true, "groups": true, "pathways": true, "campaigns": true, "automation": true, "api_access": true}'
+)
+ON CONFLICT (id) DO UPDATE SET
+    name = EXCLUDED.name,
+    settings = EXCLUDED.settings,
+    features = EXCLUDED.features,
+    updated_at = NOW();
 
--- Create demo organization if it doesn't exist
-INSERT INTO organizations (id, name, created_at, updated_at)
-VALUES ('00000000-0000-0000-0000-000000000001'::uuid, 'Demo Organization', NOW(), NOW())
-ON CONFLICT (id) DO NOTHING;
+-- SETUP DEMO USER
+-- Get the existing demo user ID and use it for all references
+DO $$
+DECLARE
+    demo_user_id UUID;
+BEGIN
+    -- Get existing demo user ID
+    SELECT id INTO demo_user_id FROM auth.users WHERE email = 'demo@example.com';
+    
+    -- If no demo user exists, this setup requires one to be created manually
+    -- through Supabase Auth dashboard first
+    IF demo_user_id IS NOT NULL THEN
+        -- Create or update demo user in public.users
+        INSERT INTO users (id, email, full_name, organization_id, role)
+        VALUES (
+            demo_user_id,
+            'demo@example.com',
+            'Demo User',
+            '00000000-0000-0000-0000-000000000001',
+            'admin'
+        )
+        ON CONFLICT (id) DO UPDATE SET
+            full_name = EXCLUDED.full_name,
+            organization_id = EXCLUDED.organization_id,
+            role = EXCLUDED.role,
+            updated_at = NOW();
 
--- Update demo user to admin
-UPDATE users 
-SET 
-  role = 'admin',
-  organization_id = '00000000-0000-0000-0000-000000000001'::uuid,
-  settings = '{"demo": true}'::jsonb,
-  phone = '+1234567890'
-WHERE email = 'demo@example.com';
+        -- Add demo user to user_organizations
+        INSERT INTO user_organizations (user_id, organization_id, role, is_primary)
+        VALUES (
+            demo_user_id,
+            '00000000-0000-0000-0000-000000000001',
+            'admin',
+            true
+        )
+        ON CONFLICT (user_id, organization_id) DO UPDATE SET
+            role = EXCLUDED.role,
+            is_primary = EXCLUDED.is_primary;
+    END IF;
+END $$;
 
--- 2. CONTACTS (ACTIVISTS AND SUPPORTERS)
--- =====================================
-
+-- CONTACTS (ACTIVISTS AND SUPPORTERS)
 -- Clear existing demo contacts to avoid conflicts
 DELETE FROM contact_interactions WHERE contact_id IN (SELECT id FROM contacts WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid);
 DELETE FROM event_registrations WHERE contact_id IN (SELECT id FROM contacts WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid);
@@ -42,9 +81,7 @@ VALUES
   ('00000000-0000-0000-0000-000000000001'::uuid, 'Angela White', 'angela.w@example.com', '+1234567009', 'active', ARRAY['prospect', 'small-business', 'community-supporter'], '{"business": "Whites Bakery", "interests": ["local-economy"], "district": "Northside"}'::jsonb, 'manual', 60, (SELECT id FROM users WHERE email = 'demo@example.com')),
   ('00000000-0000-0000-0000-000000000001'::uuid, 'Patricia Martinez', 'pmartinez@example.com', '+1234567010', 'inactive', ARRAY['past-volunteer', 'donor', 'reactivation-target'], '{"last_activity": "2023-06-15", "past_donations": "$500", "district": "Westside"}'::jsonb, 'import', 45, (SELECT id FROM users WHERE email = 'demo@example.com'));
 
--- 3. GROUPS
--- =========
-
+-- GROUPS
 DELETE FROM groups WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid;
 
 INSERT INTO groups (organization_id, name, description, settings, tags, is_active, group_type, created_by)
@@ -92,9 +129,7 @@ UPDATE groups SET member_count = (
   SELECT COUNT(*) FROM group_members WHERE group_id = groups.id
 );
 
--- 4. EVENTS
--- =========
-
+-- EVENTS
 DELETE FROM event_registrations WHERE event_id IN (SELECT id FROM events WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid);
 DELETE FROM events WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid;
 
@@ -159,9 +194,7 @@ WHERE e.organization_id = '00000000-0000-0000-0000-000000000001'::uuid
   AND c.tags && ARRAY['phone-banker']
 LIMIT 4;
 
--- 5. PATHWAYS (ENGAGEMENT JOURNEYS)
--- =================================
-
+-- PATHWAYS (ENGAGEMENT JOURNEYS)
 DELETE FROM pathway_steps WHERE pathway_id IN (SELECT id FROM pathways WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid);
 DELETE FROM pathways WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid;
 
@@ -205,9 +238,7 @@ SELECT
   (SELECT id FROM users WHERE email = 'demo@example.com')
 FROM pathways WHERE name = 'New Volunteer Onboarding' AND organization_id = '00000000-0000-0000-0000-000000000001'::uuid;
 
--- 6. CAMPAIGNS
--- ============
-
+-- CAMPAIGNS
 DO $$
 DECLARE
   v_org_id UUID := '00000000-0000-0000-0000-000000000001'::uuid;
@@ -253,12 +284,15 @@ BEGIN
 
   -- Add petition signatures
   INSERT INTO petition_signatures (
-    campaign_id, contact_id, petition_text, comment, is_public, signed_at
+    campaign_id, contact_id, organization_id, full_name, email, phone, comment, is_public, signed_at
   )
   SELECT 
     v_campaign_ids[1],
     v_contact_ids[i],
-    'I support 100% renewable energy by 2030',
+    v_org_id,
+    'Supporter ' || i,
+    'supporter' || i || '@example.com',
+    '+1555000' || i,
     CASE 
       WHEN i % 5 = 0 THEN 'This is crucial for our children''s future!'
       WHEN i % 7 = 0 THEN 'We need climate action NOW!'
@@ -299,11 +333,12 @@ BEGIN
 
   -- Add phone bank calls
   INSERT INTO campaign_activities (
-    campaign_id, contact_id, activity_type, outcome, notes, created_by, created_at
+    campaign_id, contact_id, organization_id, activity_type, outcome, notes, created_by, created_at
   )
   SELECT 
     v_campaign_ids[2],
     v_contact_ids[(i % array_length(v_contact_ids, 1)) + 1],
+    v_org_id,
     'phone_call',
     CASE (i % 10)
       WHEN 0 THEN 'no_answer'
@@ -434,11 +469,12 @@ BEGIN
 
   -- Add canvassing results
   INSERT INTO campaign_activities (
-    campaign_id, contact_id, activity_type, outcome, notes, metadata, created_by, created_at
+    campaign_id, contact_id, organization_id, activity_type, outcome, notes, metadata, created_by, created_at
   )
   SELECT 
     v_campaign_ids[6],
     v_contact_ids[(i % array_length(v_contact_ids, 1)) + 1],
+    v_org_id,
     'canvass',
     CASE (i % 8)
       WHEN 0 THEN 'not_home'
@@ -496,13 +532,12 @@ BEGIN
 
 END $$;
 
--- 7. CONTACT INTERACTIONS
--- =======================
-
+-- CONTACT INTERACTIONS
 -- Add some meaningful interactions
-INSERT INTO contact_interactions (contact_id, user_id, type, direction, status, duration, notes)
+INSERT INTO contact_interactions (contact_id, organization_id, user_id, type, direction, status, duration, notes)
 SELECT 
   c.id,
+  c.organization_id,
   u.id,
   'note',
   NULL,
@@ -522,9 +557,10 @@ WHERE c.organization_id = '00000000-0000-0000-0000-000000000001'::uuid
   AND c.email IN ('maria.rodriguez@example.com', 'james.chen@example.com', 'sarah.t@example.com', 'david.kim@example.com');
 
 -- Add some call interactions
-INSERT INTO contact_interactions (contact_id, user_id, type, direction, status, duration, notes)
+INSERT INTO contact_interactions (contact_id, organization_id, user_id, type, direction, status, duration, notes)
 SELECT 
   c.id,
+  c.organization_id,
   u.id,
   'call',
   'outbound',
@@ -538,9 +574,10 @@ WHERE c.organization_id = '00000000-0000-0000-0000-000000000001'::uuid
   AND c.email IN ('maria.rodriguez@example.com', 'david.kim@example.com');
 
 -- Add some email interactions
-INSERT INTO contact_interactions (contact_id, user_id, type, direction, status, notes)
+INSERT INTO contact_interactions (contact_id, organization_id, user_id, type, direction, status, notes)
 SELECT 
   c.id,
+  c.organization_id,
   u.id,
   'email',
   'outbound',
@@ -557,7 +594,7 @@ LIMIT 5;
 DO $$
 BEGIN
   RAISE NOTICE '
-✅ COMPREHENSIVE SEED DATA LOADED!
+✅ SEED DATA LOADED SUCCESSFULLY!
 
 Demo Account Credentials:
 Email: demo@example.com
