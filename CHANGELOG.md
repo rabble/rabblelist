@@ -25,6 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Empty state and loading animations
   - Added `getContactInteractions` method to ContactService
   - Added `getCampaignActivitiesByContact` and `getEventRegistrationsByContact` to AnalyticsService
+- **Contact Merge UI** - Visual interface for reviewing and merging duplicate contacts (2025-01-28)
+  - Side-by-side comparison of all contact fields
+  - Field-by-field selection for choosing which values to keep
+  - Primary contact selection with visual indicators
+  - Two-step confirmation process with merge summary
+  - Comprehensive data transfer across all related tables
+  - Audit trail creation for merge history
+  - Choice between "Quick Merge" and "Visual Merge" options
 - **Sentry Error Tracking** - Application monitoring and error reporting (2025-05-28)
   - Integrated Sentry for real-time error tracking and monitoring
   - Added error boundaries to gracefully handle runtime errors
