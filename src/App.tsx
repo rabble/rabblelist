@@ -36,6 +36,7 @@ import { CampaignDetail } from '@/features/campaigns/CampaignDetail'
 import { EmailCampaign } from '@/features/campaigns/EmailCampaign'
 import { SMSCampaign } from '@/features/campaigns/SMSCampaign'
 import { PhoneBankCampaign } from '@/features/campaigns/PhoneBankCampaign'
+import { EmailTrackingDashboard } from '@/features/campaigns/EmailTrackingDashboard'
 import { PetitionSign } from '@/features/campaigns/PetitionSign'
 import { SmsTemplates } from '@/features/campaigns/SmsTemplates'
 import { PhoneBankScripts } from '@/features/campaigns/PhoneBankScripts'
@@ -52,6 +53,8 @@ import { TermsOfService } from '@/features/legal/TermsOfService'
 import { PrivacyPolicy } from '@/features/legal/PrivacyPolicy'
 import EventRegistrationForm from '@/features/events/EventRegistrationForm'
 import { EventCheckIn } from '@/features/events/EventCheckIn'
+import { EventAttendanceDashboard } from '@/features/events/EventAttendanceDashboard'
+import { EventWalkInRegistration } from '@/features/events/EventWalkInRegistration'
 
 function App() {
   return (
@@ -197,6 +200,18 @@ function AppRoutes() {
             </ProtectedRoute>
           } />
           
+          <Route path="/events/:id/attendance" element={
+            <ProtectedRoute>
+              <EventAttendanceDashboard />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/events/:id/check-in/walk-in" element={
+            <ProtectedRoute>
+              <EventWalkInRegistration />
+            </ProtectedRoute>
+          } />
+          
           <Route path="/groups" element={
             <ProtectedRoute>
               <Layout>
@@ -328,6 +343,14 @@ function AppRoutes() {
             <ProtectedRoute>
               <Layout>
                 <EmailCampaign />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/campaigns/:id/email/tracking" element={
+            <ProtectedRoute>
+              <Layout>
+                <EmailTrackingDashboard />
               </Layout>
             </ProtectedRoute>
           } />

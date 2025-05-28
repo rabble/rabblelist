@@ -13,7 +13,8 @@ import {
   CheckCircle, 
   AlertCircle,
   Eye,
-  Loader2
+  Loader2,
+  BarChart3
 } from 'lucide-react'
 
 export function EmailCampaign() {
@@ -248,22 +249,31 @@ export function EmailCampaign() {
                   This will send the email to {campaignContacts.filter(c => c.email).length} contacts
                 </p>
               </div>
-              <Button
-                onClick={handleSendCampaign}
-                disabled={isSending || campaignContacts.length === 0 || !campaign.email_subject}
-              >
-                {isSending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4 mr-2" />
-                    Send Campaign
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate(`/campaigns/${campaign.id}/email/tracking`)}
+                >
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  View Tracking
+                </Button>
+                <Button
+                  onClick={handleSendCampaign}
+                  disabled={isSending || campaignContacts.length === 0 || !campaign.email_subject}
+                >
+                  {isSending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Send Campaign
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
 

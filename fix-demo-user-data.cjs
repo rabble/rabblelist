@@ -6,154 +6,203 @@ require('dotenv').config({ path: '.env.local' });
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('❌ Missing Supabase credentials.');
+  console.error('Please ensure VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set in .env.local');
+  process.exit(1);
+}
+
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-async function createDemoUserAndData() {
-  console.log('🚀 Creating demo user and linking all data...');
+async function fixDemoUserData() {
+  console.log('🔧 Fixing demo user data associations...\n');
   
   try {
-    // 1. Create demo user in auth.users
-    console.log('📄 Creating demo user in auth.users...');
-    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-      email: 'demo@example.com',
-      password: 'demo123',
-      email_confirm: true
-    });
+    // 1. Get demo user ID from auth.users
+    console.log('📋 Looking for demo user in auth.users...');
+    const { data: authUsers, error: listError } = await supabase.auth.admin.listUsers();
     
-    if (authError && !authError.message.includes('already registered')) {
-      throw authError;
+    if (listError) {
+      console.error('❌ Error listing users:', listError);
+      return;
     }
     
-    const demoUserId = authUser?.user?.id || (await supabase.auth.admin.listUsers()).data.users.find(u => u.email === 'demo@example.com')?.id;
-    console.log('✅ Demo user created/found:', demoUserId);
+    const demoAuthUser = authUsers.users.find(u => u.email === 'demo@example.com');
+    
+    if (!demoAuthUser) {
+      console.error('❌ Demo user not found in auth.users!');
+      console.log('\n📝 To create the demo user:');
+      console.log('   1. Go to Supabase Dashboard > Authentication > Users');
+      console.log('   2. Click "Add user" → "Create new user"');
+      console.log('   3. Email: demo@example.com');
+      console.log('   4. Password: demo123');
+      console.log('   5. Auto Confirm Email: ✓ (CHECK THIS!)');
+      return;
+    }
+    
+    const demoUserId = demoAuthUser.id;
+    console.log('✅ Found demo auth user:', demoUserId);
 
-    // 2. Create demo user in public.users table
-    console.log('📄 Creating demo user in public.users...');
-    const { data: publicUser, error: publicUserError } = await supabase
+    // 2. Check if organization exists
+    console.log('\n📋 Checking organization...');
+    const { data: org, error: orgError } = await supabase
+      .from('organizations')
+      .select('*')
+      .eq('id', '00000000-0000-0000-0000-000000000001')
+      .single();
+    
+    if (orgError || !org) {
+      console.error('❌ Demo organization not found!');
+      console.log('📝 Run the seed-data.sql file in Supabase SQL editor first.');
+      return;
+    }
+    
+    console.log('✅ Found organization:', org.name);
+
+    // 3. Create or update demo user in public.users
+    console.log('\n📋 Creating/updating demo user in public.users...');
+    const { error: upsertError } = await supabase
       .from('users')
-      .upsert([{
+      .upsert({
         id: demoUserId,
         email: 'demo@example.com',
-        full_name: 'Demo User',
+        full_name: 'Alex Rivera',
         organization_id: '00000000-0000-0000-0000-000000000001',
-        role: 'admin'
-      }])
-      .select();
+        role: 'admin',
+        phone: '+1 (555) 123-4567',
+        settings: { notifications: true, theme: 'light' }
+      }, { onConflict: 'id' });
     
-    if (publicUserError) throw publicUserError;
-    console.log('✅ Public user record created');
+    if (upsertError) {
+      console.error('❌ Error upserting public user:', upsertError);
+      return;
+    }
+    
+    console.log('✅ Demo user updated in public.users');
 
-    // 3. Create user_organization link
-    console.log('📄 Creating user-organization link...');
-    const { data: userOrg, error: userOrgError } = await supabase
+    // 4. Create user-organization link
+    console.log('\n📋 Creating user-organization link...');
+    const { error: userOrgError } = await supabase
       .from('user_organizations')
-      .upsert([{
+      .upsert({
         user_id: demoUserId,
         organization_id: '00000000-0000-0000-0000-000000000001',
         role: 'admin',
         is_primary: true
-      }])
-      .select();
+      }, { onConflict: 'user_id,organization_id' });
     
-    if (userOrgError) throw userOrgError;
+    if (userOrgError) {
+      console.error('❌ Error creating user-org link:', userOrgError);
+      return;
+    }
+    
     console.log('✅ User-organization link created');
 
-    // 4. Update all existing data to be created_by demo user
-    console.log('📄 Linking existing contacts to demo user...');
-    const { error: contactsUpdateError } = await supabase
+    // 5. Check if demo data exists
+    console.log('\n📊 Checking demo data status...');
+    
+    const { count: contactCount } = await supabase
       .from('contacts')
-      .update({ created_by: demoUserId })
+      .select('*', { count: 'exact', head: true })
       .eq('organization_id', '00000000-0000-0000-0000-000000000001');
     
-    if (contactsUpdateError) throw contactsUpdateError;
-
-    console.log('📄 Linking existing groups to demo user...');
-    const { error: groupsUpdateError } = await supabase
-      .from('groups')
-      .update({ created_by: demoUserId })
-      .eq('organization_id', '00000000-0000-0000-0000-000000000001');
-    
-    if (groupsUpdateError) throw groupsUpdateError;
-
-    console.log('📄 Linking existing events to demo user...');
-    const { error: eventsUpdateError } = await supabase
-      .from('events')
-      .update({ created_by: demoUserId })
-      .eq('organization_id', '00000000-0000-0000-0000-000000000001');
-    
-    if (eventsUpdateError) throw eventsUpdateError;
-
-    console.log('📄 Linking existing campaigns to demo user...');
-    const { error: campaignsUpdateError } = await supabase
+    const { count: campaignCount } = await supabase
       .from('campaigns')
-      .update({ created_by: demoUserId })
+      .select('*', { count: 'exact', head: true })
       .eq('organization_id', '00000000-0000-0000-0000-000000000001');
     
-    if (campaignsUpdateError) throw campaignsUpdateError;
-
-    // 5. Add group memberships
-    console.log('📄 Adding contacts to groups...');
-    const { data: contacts } = await supabase
-      .from('contacts')
-      .select('id')
+    const { count: eventCount } = await supabase
+      .from('events')
+      .select('*', { count: 'exact', head: true })
       .eq('organization_id', '00000000-0000-0000-0000-000000000001');
-
-    const { data: groups } = await supabase
+    
+    const { count: groupCount } = await supabase
       .from('groups')
-      .select('id, name')
+      .select('*', { count: 'exact', head: true })
       .eq('organization_id', '00000000-0000-0000-0000-000000000001');
-
-    if (contacts && groups && contacts.length > 0 && groups.length > 0) {
-      // Add first contact to Core Volunteers
-      const coreVolunteersGroup = groups.find(g => g.name === 'Core Volunteers');
-      if (coreVolunteersGroup) {
-        await supabase
-          .from('group_members')
-          .upsert([{
-            group_id: coreVolunteersGroup.id,
-            contact_id: contacts[0].id,
-            organization_id: '00000000-0000-0000-0000-000000000001',
-            added_by: demoUserId
-          }]);
+    
+    console.log(`   - Contacts: ${contactCount || 0}`);
+    console.log(`   - Campaigns: ${campaignCount || 0}`);
+    console.log(`   - Events: ${eventCount || 0}`);
+    console.log(`   - Groups: ${groupCount || 0}`);
+    
+    if (contactCount === 0) {
+      console.log('\n⚠️  No demo data found!');
+      console.log('\n📝 To load the enhanced demo data:');
+      console.log('   1. Go to Supabase SQL Editor');
+      console.log('   2. Copy ALL contents of supabase/seed-data.sql');
+      console.log('   3. Paste and run the query');
+      console.log('\n   This will create:');
+      console.log('   - 500+ diverse contacts');
+      console.log('   - 8 active campaigns');
+      console.log('   - 10+ events');
+      console.log('   - 7 groups with members');
+      console.log('   - Thousands of activities');
+    } else {
+      // 6. Update created_by fields to demo user
+      console.log('\n📝 Updating created_by fields to demo user...');
+      
+      // Update contacts
+      if (contactCount > 0) {
+        const { error: contactUpdateError } = await supabase
+          .from('contacts')
+          .update({ created_by: demoUserId })
+          .eq('organization_id', '00000000-0000-0000-0000-000000000001')
+          .is('created_by', null);
+        
+        if (!contactUpdateError) {
+          console.log('✅ Updated contacts created_by');
+        }
       }
-
-      // Add second contact to Phone Bank Team
-      const phoneBankGroup = groups.find(g => g.name === 'Phone Bank Team');
-      if (phoneBankGroup && contacts[1]) {
-        await supabase
-          .from('group_members')
-          .upsert([{
-            group_id: phoneBankGroup.id,
-            contact_id: contacts[1].id,
-            organization_id: '00000000-0000-0000-0000-000000000001',
-            added_by: demoUserId
-          }]);
+      
+      // Update campaigns
+      if (campaignCount > 0) {
+        const { error: campaignUpdateError } = await supabase
+          .from('campaigns')
+          .update({ created_by: demoUserId })
+          .eq('organization_id', '00000000-0000-0000-0000-000000000001')
+          .is('created_by', null);
+        
+        if (!campaignUpdateError) {
+          console.log('✅ Updated campaigns created_by');
+        }
       }
+      
+      // Update events
+      if (eventCount > 0) {
+        const { error: eventUpdateError } = await supabase
+          .from('events')
+          .update({ created_by: demoUserId })
+          .eq('organization_id', '00000000-0000-0000-0000-000000000001')
+          .is('created_by', null);
+        
+        if (!eventUpdateError) {
+          console.log('✅ Updated events created_by');
+        }
+      }
+      
+      // Update groups
+      if (groupCount > 0) {
+        const { error: groupUpdateError } = await supabase
+          .from('groups')
+          .update({ created_by: demoUserId })
+          .eq('organization_id', '00000000-0000-0000-0000-000000000001')
+          .is('created_by', null);
+        
+        if (!groupUpdateError) {
+          console.log('✅ Updated groups created_by');
+        }
+      }
+      
+      console.log('\n🎉 Demo data is properly linked to demo user!');
+      console.log('\n📧 Login with: demo@example.com / demo123');
+      console.log('🌐 Visit: http://localhost:5173/');
     }
-
-    // 6. Update group member counts
-    console.log('📄 Updating group member counts...');
-    for (const group of groups || []) {
-      const { count } = await supabase
-        .from('group_members')
-        .select('*', { count: 'exact', head: true })
-        .eq('group_id', group.id);
-
-      await supabase
-        .from('groups')
-        .update({ member_count: count || 0 })
-        .eq('id', group.id);
-    }
-
-    console.log('\n🎉 Demo user and data setup completed successfully!');
-    console.log('📧 Demo login: demo@example.com');
-    console.log('🔑 Demo password: demo123');
-    console.log('✨ You can now login and see all the demo data!');
     
   } catch (error) {
-    console.error('❌ Error setting up demo user:', error.message);
-    console.error('Details:', error);
+    console.error('\n❌ Unexpected error:', error);
   }
 }
 
-createDemoUserAndData();
+// Run the fix
+fixDemoUserData();

@@ -18,7 +18,8 @@ import {
   UserCheck,
   ExternalLink,
   CheckCircle,
-  Camera
+  Camera,
+  Activity
 } from 'lucide-react'
 import { useEventStore } from '@/stores/eventStore'
 import { useEventRegistrationStore } from '@/stores/eventRegistrationStore'
@@ -308,6 +309,14 @@ export function EventDetail() {
                 >
                   <Camera className="w-4 h-4 mr-2" />
                   Scan QR Code Check-in
+                </Button>
+                <Button 
+                  fullWidth 
+                  variant="outline"
+                  onClick={() => navigate(`/events/${event.id}/attendance`)}
+                >
+                  <Activity className="w-4 h-4 mr-2" />
+                  Attendance Dashboard
                 </Button>
                 <Button 
                   fullWidth 
