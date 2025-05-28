@@ -86,16 +86,23 @@ CREATE TABLE user_organizations (
 CREATE TABLE contacts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID NOT NULL REFERENCES organizations(id),
+    external_id TEXT,
     full_name TEXT NOT NULL,
     phone TEXT,
     email TEXT,
     address TEXT,
+    status TEXT CHECK (status IN ('active', 'inactive', 'pending', 'unsubscribed')) DEFAULT 'active',
     tags TEXT[] DEFAULT '{}',
     custom_fields JSONB DEFAULT '{}',
+    source TEXT CHECK (source IN ('manual', 'import', 'api', 'form', 'referral', 'event')) DEFAULT 'manual',
+    engagement_score INTEGER DEFAULT 0 CHECK (engagement_score >= 0 AND engagement_score <= 100),
     notes TEXT,
     last_contact_date TIMESTAMPTZ,
+    total_events_attended INTEGER DEFAULT 0,
+    created_by UUID REFERENCES users(id),
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(organization_id, external_id)
 );
 
 -- Events
@@ -142,6 +149,10 @@ CREATE TABLE groups (
     description TEXT,
     parent_id UUID REFERENCES groups(id),
     settings JSONB DEFAULT '{}',
+    tags TEXT[] DEFAULT '{}',
+    is_active BOOLEAN DEFAULT true,
+    group_type TEXT CHECK (group_type IN ('volunteer_team', 'action_team', 'donor_circle', 'leadership', 'working_group', 'other')) DEFAULT 'other',
+    created_by UUID REFERENCES users(id),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -153,6 +164,7 @@ CREATE TABLE group_members (
     contact_id UUID NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,
     organization_id UUID NOT NULL REFERENCES organizations(id),
     role TEXT DEFAULT 'member',
+    added_by UUID REFERENCES users(id),
     joined_at TIMESTAMPTZ DEFAULT NOW(),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -163,7 +175,10 @@ CREATE TABLE pathways (
     organization_id UUID NOT NULL REFERENCES organizations(id),
     name TEXT NOT NULL,
     description TEXT,
+    pathway_type TEXT CHECK (pathway_type IN ('engagement', 'fundraising', 'leadership', 'reactivation', 'onboarding', 'training', 'other')) DEFAULT 'other',
+    status TEXT CHECK (status IN ('active', 'inactive', 'draft', 'archived')) DEFAULT 'draft',
     settings JSONB DEFAULT '{}',
+    created_by UUID REFERENCES users(id),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -175,7 +190,13 @@ CREATE TABLE pathway_steps (
     name TEXT NOT NULL,
     description TEXT,
     step_order INTEGER NOT NULL,
+    step_type TEXT CHECK (step_type IN ('action', 'wait', 'condition', 'trigger')) DEFAULT 'action',
+    trigger_type TEXT CHECK (trigger_type IN ('tag', 'event', 'time', 'manual', 'email_open', 'email_click', 'form_submit')),
+    trigger_value TEXT,
+    action_type TEXT CHECK (action_type IN ('send_email', 'send_sms', 'add_tag', 'remove_tag', 'create_task', 'schedule_call', 'move_to_group')),
+    action_value TEXT,
     requirements JSONB DEFAULT '{}',
+    created_by UUID REFERENCES users(id),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -212,6 +233,9 @@ CREATE TABLE contact_interactions (
     organization_id UUID NOT NULL REFERENCES organizations(id),
     user_id UUID REFERENCES users(id),
     type TEXT NOT NULL CHECK (type IN ('call', 'text', 'email', 'event', 'note', 'tag_added', 'tag_removed')),
+    direction TEXT CHECK (direction IN ('inbound', 'outbound')) DEFAULT 'outbound',
+    status TEXT CHECK (status IN ('completed', 'missed', 'busy', 'no_answer', 'voicemail', 'scheduled', 'cancelled')) DEFAULT 'completed',
+    duration INTEGER,
     outcome TEXT,
     notes TEXT,
     metadata JSONB DEFAULT '{}',
