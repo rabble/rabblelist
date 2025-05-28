@@ -243,20 +243,10 @@ DO $$
 DECLARE
   v_org_id UUID := '00000000-0000-0000-0000-000000000001'::uuid;
   v_demo_user_id UUID;
-  v_campaign_ids UUID[];
-  v_contact_ids UUID[];
-  v_event_id UUID;
+  v_campaign_id UUID;
 BEGIN
-  -- Get demo user and contacts
+  -- Get demo user
   SELECT u.id INTO v_demo_user_id FROM users u WHERE u.email = 'demo@example.com';
-  
-  SELECT ARRAY_AGG(id) INTO v_contact_ids
-  FROM (
-    SELECT id FROM contacts 
-    WHERE organization_id = v_org_id 
-    ORDER BY created_at 
-    LIMIT 50
-  ) c;
 
   -- 1. Climate Action Petition Campaign
   INSERT INTO campaigns (
@@ -280,29 +270,31 @@ BEGIN
       'tags', ARRAY['climate', 'environment', 'renewable-energy']
     ),
     v_demo_user_id
-  ) RETURNING id INTO v_campaign_ids[1];
+  ) RETURNING id INTO v_campaign_id;
 
-  -- Add petition signatures
+  -- Add petition signatures (using first 10 contacts if available)
   INSERT INTO petition_signatures (
     campaign_id, contact_id, organization_id, full_name, email, phone, comment, is_public, signed_at
   )
   SELECT 
-    v_campaign_ids[1],
-    v_contact_ids[i],
+    v_campaign_id,
+    c.id,
     v_org_id,
-    'Supporter ' || i,
-    'supporter' || i || '@example.com',
-    '+1555000' || i,
+    c.full_name,
+    c.email,
+    c.phone,
     CASE 
-      WHEN i % 5 = 0 THEN 'This is crucial for our children''s future!'
-      WHEN i % 7 = 0 THEN 'We need climate action NOW!'
-      WHEN i % 3 = 0 THEN 'Proud to support this initiative'
+      WHEN row_number() OVER () % 5 = 0 THEN 'This is crucial for our children''s future!'
+      WHEN row_number() OVER () % 7 = 0 THEN 'We need climate action NOW!'
+      WHEN row_number() OVER () % 3 = 0 THEN 'Proud to support this initiative'
       ELSE NULL
     END,
-    i % 3 != 0, -- 2/3 are public
+    row_number() OVER () % 3 != 0, -- 2/3 are public
     NOW() - (random() * INTERVAL '45 days')
-  FROM generate_series(1, 10) i
-  WHERE i <= array_length(v_contact_ids, 1);
+  FROM contacts c
+  WHERE c.organization_id = v_org_id
+  ORDER BY c.created_at
+  LIMIT 10;
 
   -- 2. Phone Banking Campaign
   INSERT INTO campaigns (
@@ -329,18 +321,18 @@ BEGIN
       'tags', ARRAY['election', 'education', 'gotv']
     ),
     v_demo_user_id
-  ) RETURNING id INTO v_campaign_ids[2];
+  ) RETURNING id INTO v_campaign_id;
 
   -- Add phone bank calls
   INSERT INTO campaign_activities (
     campaign_id, contact_id, organization_id, activity_type, outcome, notes, created_by, created_at
   )
   SELECT 
-    v_campaign_ids[2],
-    v_contact_ids[(i % array_length(v_contact_ids, 1)) + 1],
+    v_campaign_id,
+    c.id,
     v_org_id,
     'phone_call',
-    CASE (i % 10)
+    CASE (row_number() OVER () % 10)
       WHEN 0 THEN 'no_answer'
       WHEN 1 THEN 'voicemail'
       WHEN 2 THEN 'wrong_number'
@@ -352,7 +344,7 @@ BEGIN
       WHEN 8 THEN 'opposed'
       ELSE 'supporter'
     END,
-    CASE (i % 10)
+    CASE (row_number() OVER () % 10)
       WHEN 4 THEN 'Strong yes - will vote early'
       WHEN 5 THEN 'Supportive, needs ride to polls'
       WHEN 6 THEN 'Wants more information about tax impact'
@@ -361,7 +353,10 @@ BEGIN
     END,
     v_demo_user_id,
     NOW() - (random() * INTERVAL '14 days')
-  FROM generate_series(1, 20) i;
+  FROM contacts c
+  WHERE c.organization_id = v_org_id
+  ORDER BY random()
+  LIMIT 20;
 
   -- 3. Email Campaign (Completed)
   INSERT INTO campaigns (
@@ -387,7 +382,7 @@ BEGIN
       'tags', ARRAY['environment', 'urgent', 'pipeline']
     ),
     v_demo_user_id
-  ) RETURNING id INTO v_campaign_ids[3];
+  ) RETURNING id INTO v_campaign_id;
 
   -- 4. SMS Campaign
   INSERT INTO campaigns (
@@ -411,7 +406,7 @@ BEGIN
       'tags', ARRAY['rapid-response', 'alerts', 'mobilization']
     ),
     v_demo_user_id
-  ) RETURNING id INTO v_campaign_ids[4];
+  ) RETURNING id INTO v_campaign_id;
 
   -- 5. Fundraising Campaign
   INSERT INTO campaigns (
@@ -441,7 +436,7 @@ BEGIN
       'tags', ARRAY['fundraising', 'organizing', 'power-building']
     ),
     v_demo_user_id
-  ) RETURNING id INTO v_campaign_ids[5];
+  ) RETURNING id INTO v_campaign_id;
 
   -- 6. Canvassing Campaign
   INSERT INTO campaigns (
@@ -465,18 +460,18 @@ BEGIN
       'tags', ARRAY['canvassing', 'field', 'base-building']
     ),
     v_demo_user_id
-  ) RETURNING id INTO v_campaign_ids[6];
+  ) RETURNING id INTO v_campaign_id;
 
   -- Add canvassing results
   INSERT INTO campaign_activities (
     campaign_id, contact_id, organization_id, activity_type, outcome, notes, metadata, created_by, created_at
   )
   SELECT 
-    v_campaign_ids[6],
-    v_contact_ids[(i % array_length(v_contact_ids, 1)) + 1],
+    v_campaign_id,
+    c.id,
     v_org_id,
     'canvass',
-    CASE (i % 8)
+    CASE (row_number() OVER () % 8)
       WHEN 0 THEN 'not_home'
       WHEN 1 THEN 'refused'
       WHEN 2 THEN 'supporter'
@@ -486,20 +481,23 @@ BEGIN
       WHEN 6 THEN 'moved'
       ELSE 'supporter'
     END,
-    CASE (i % 8)
+    CASE (row_number() OVER () % 8)
       WHEN 2 THEN 'Excited about rent control campaign'
       WHEN 3 THEN 'Needs more info on our positions'
       WHEN 5 THEN 'Wants to volunteer!'
       ELSE NULL
     END,
     jsonb_build_object(
-      'canvasser', 'Vol_' || (i % 10),
-      'turf', 'Block_' || (i % 20),
-      'attempt_number', (i % 3) + 1
+      'canvasser', 'Vol_' || (row_number() OVER () % 10),
+      'turf', 'Block_' || (row_number() OVER () % 20),
+      'attempt_number', (row_number() OVER () % 3) + 1
     ),
     v_demo_user_id,
     NOW() - (random() * INTERVAL '21 days')
-  FROM generate_series(1, 30) i;
+  FROM contacts c
+  WHERE c.organization_id = v_org_id
+  ORDER BY random()
+  LIMIT 30;
 
   -- 7. Social Media Campaign (Completed)
   INSERT INTO campaigns (
@@ -528,7 +526,7 @@ BEGIN
       'tags', ARRAY['social-media', 'digital', 'justice']
     ),
     v_demo_user_id
-  ) RETURNING id INTO v_campaign_ids[7];
+  ) RETURNING id INTO v_campaign_id;
 
 END $$;
 
