@@ -17,10 +17,12 @@ import {
   Copy,
   UserCheck,
   ExternalLink,
-  CheckCircle
+  CheckCircle,
+  Camera
 } from 'lucide-react'
 import { useEventStore } from '@/stores/eventStore'
 import { useEventRegistrationStore } from '@/stores/eventRegistrationStore'
+import { QRScanner } from './QRScanner'
 
 export function EventDetail() {
   const { id } = useParams()
@@ -37,6 +39,7 @@ export function EventDetail() {
   
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState(false)
+  const [showQRScanner, setShowQRScanner] = useState(false)
 
   const event = events.find(e => e.id === id)
   const eventRegistrations = id ? registrations[id] || [] : []
@@ -300,6 +303,14 @@ export function EventDetail() {
               <div className="space-y-2">
                 <Button 
                   fullWidth 
+                  variant="primary"
+                  onClick={() => setShowQRScanner(true)}
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  Scan QR Code Check-in
+                </Button>
+                <Button 
+                  fullWidth 
                   variant="outline" 
                   onClick={() => alert('Send reminder feature coming soon!')}
                 >
@@ -391,6 +402,21 @@ export function EventDetail() {
           </div>
         </div>
       </div>
+
+      {/* QR Scanner Modal */}
+      {showQRScanner && id && (
+        <QRScanner
+          eventId={id}
+          onClose={() => setShowQRScanner(false)}
+          onSuccess={() => {
+            // Refresh registrations after successful check-in
+            if (id) {
+              fetchRegistrations(id)
+              fetchStats(id)
+            }
+          }}
+        />
+      )}
     </Layout>
   )
 }

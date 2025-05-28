@@ -160,7 +160,7 @@ export class QRCodeService {
     registration: any,
     eventName: string,
     qrCodeDataUrl: string
-  ): string {
+  ): Promise<string> {
     return `
       <div style="width: 4in; height: 3in; padding: 0.5in; border: 1px solid #ddd; font-family: Arial, sans-serif;">
         <div style="text-align: center; margin-bottom: 20px;">

@@ -50,6 +50,7 @@ import AboutPage from '@/features/landing/AboutPage'
 import { TermsOfService } from '@/features/legal/TermsOfService'
 import { PrivacyPolicy } from '@/features/legal/PrivacyPolicy'
 import EventRegistrationForm from '@/features/events/EventRegistrationForm'
+import { EventCheckIn } from '@/features/events/EventCheckIn'
 
 function App() {
   return (
@@ -96,6 +97,7 @@ function AppRoutes() {
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/events/:eventId/register" element={<EventRegistrationForm />} />
+      <Route path="/events/:eventId/check-in/:registrationId" element={<EventCheckIn />} />
           
           {/* Protected routes */}
           <Route path="/dashboard" element={
