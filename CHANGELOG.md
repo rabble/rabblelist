@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Sentry Error Tracking** - Application monitoring and error reporting (2025-05-28)
+  - Integrated Sentry for real-time error tracking and monitoring
+  - Added error boundaries to gracefully handle runtime errors
+  - Configured performance monitoring and session replay
+  - Enabled PII collection for better debugging context
 - **Demo Campaign Data** - Comprehensive demo campaigns with realistic data (2025-05-28)
   - Created 8 fully-featured campaigns across all campaign types
   - Climate petition with 3,847 signatures and public comments
