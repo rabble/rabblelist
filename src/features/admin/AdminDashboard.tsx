@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Ca
 import { Button } from '@/components/common/Button'
 import { useAuth } from '@/features/auth/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { Phone, Users, Calendar, TrendingUp, UserPlus, Upload, Loader2, Settings } from 'lucide-react'
+import { Phone, Users, Calendar, TrendingUp, UserPlus, Upload, Loader2, Settings, Key } from 'lucide-react'
 import type { Contact } from '@/types'
 
 interface Stats {
@@ -175,6 +175,14 @@ export function AdminDashboard() {
               >
                 <Settings className="w-4 h-4 mr-2" />
                 Custom Fields
+              </Button>
+              <Button 
+                className="justify-start" 
+                variant="outline"
+                onClick={() => navigate('/admin/api-keys')}
+              >
+                <Key className="w-4 h-4 mr-2" />
+                API Keys
               </Button>
             </div>
           </CardContent>

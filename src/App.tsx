@@ -41,6 +41,7 @@ import { AdminDashboard } from '@/features/admin/AdminDashboard'
 import { CustomFieldsConfig } from '@/features/admin/CustomFieldsConfig'
 import { UserForm } from '@/features/admin/UserForm'
 import { OrganizationInvite } from '@/features/admin/OrganizationInvite'
+import { APIKeysManagement } from '@/features/admin/APIKeysManagement'
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute'
 import { LoginPage } from '@/features/auth/LoginPage'
 import LandingPage from '@/features/landing/LandingPage'
@@ -385,6 +386,14 @@ function AppRoutes() {
             <ProtectedRoute allowedRoles={['admin']}>
               <Layout>
                 <OrganizationInvite />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/admin/api-keys" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Layout>
+                <APIKeysManagement />
               </Layout>
             </ProtectedRoute>
           } />

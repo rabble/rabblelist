@@ -128,6 +128,7 @@ const LandingPage = () => {
               <Button 
                 size="sm"
                 onClick={() => navigate('/login')}
+                className="bg-primary-500 hover:bg-primary-600 text-white"
               >
                 Start Organizing
               </Button>
@@ -154,7 +155,7 @@ const LandingPage = () => {
               <Button 
                 size="lg" 
                 onClick={() => navigate('/login')}
-                className="flex items-center shadow-xl hover:shadow-2xl"
+                className="flex items-center bg-primary-500 hover:bg-primary-600 text-white shadow-xl hover:shadow-2xl"
               >
                 Start Organizing Now <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
@@ -593,40 +594,50 @@ const LandingPage = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                icon: <Lock className="w-6 h-6" />,
-                title: "Secure",
-                description: "End-to-end encryption, GDPR-compliant, role-based access"
-              },
-              {
-                icon: <Shield className="w-6 h-6" />,
-                title: "Resilient",
-                description: "Functions during internet shutdowns, leader detention, traffic spikes"
-              },
-              {
-                icon: <Globe className="w-6 h-6" />,
-                title: "Accessible",
-                description: "Works on any device, any connection, any language"
-              },
-              {
-                icon: <Users className="w-6 h-6" />,
-                title: "Open Source",
-                description: "Community-controlled, federation-ready infrastructure"
-              }
-            ].map((feature, idx) => (
-              <div key={idx} className="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-shadow">
-                <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center text-primary-600 mb-4">
-                  {feature.icon}
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  {feature.description}
-                </p>
+            <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center text-primary-600 mb-4">
+                <Lock className="w-6 h-6" />
               </div>
-            ))}
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Secure
+              </h3>
+              <p className="text-gray-600 text-sm">
+                End-to-end encryption, GDPR-compliant, role-based access
+              </p>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center text-primary-600 mb-4">
+                <Shield className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Resilient
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Functions during internet shutdowns, leader detention, traffic spikes
+              </p>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center text-primary-600 mb-4">
+                <Globe className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Accessible
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Works on any device, any connection, any language
+              </p>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center text-primary-600 mb-4">
+                <Users className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Open Source
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Community-controlled, federation-ready infrastructure
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -646,7 +657,7 @@ const LandingPage = () => {
             <Button 
               size="lg" 
               onClick={() => navigate('/login')}
-              className="shadow-xl hover:shadow-2xl"
+              className="bg-primary-500 hover:bg-primary-600 text-white shadow-xl hover:shadow-2xl"
             >
               Start Organizing Now
             </Button>
