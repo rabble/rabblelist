@@ -104,25 +104,25 @@ BEGIN
         -- Base tags
         IF v_engagement_score > 80 THEN
             v_tag_set := v_tag_set || ARRAY['high-engagement', 'volunteer'];
-            IF random() < 0.3 THEN v_tag_set := v_tag_set || 'leader'; END IF;
-            IF random() < 0.4 THEN v_tag_set := v_tag_set || 'organizer'; END IF;
+            IF random() < 0.3 THEN v_tag_set := v_tag_set || ARRAY['leader']; END IF;
+            IF random() < 0.4 THEN v_tag_set := v_tag_set || ARRAY['organizer']; END IF;
         ELSIF v_engagement_score > 60 THEN
             v_tag_set := v_tag_set || ARRAY['volunteer'];
-            IF random() < 0.5 THEN v_tag_set := v_tag_set || 'phone-banker'; END IF;
-            IF random() < 0.3 THEN v_tag_set := v_tag_set || 'canvasser'; END IF;
+            IF random() < 0.5 THEN v_tag_set := v_tag_set || ARRAY['phone-banker']; END IF;
+            IF random() < 0.3 THEN v_tag_set := v_tag_set || ARRAY['canvasser']; END IF;
         ELSIF v_engagement_score > 40 THEN
             v_tag_set := v_tag_set || ARRAY['supporter'];
-            IF random() < 0.3 THEN v_tag_set := v_tag_set || 'donor'; END IF;
+            IF random() < 0.3 THEN v_tag_set := v_tag_set || ARRAY['donor']; END IF;
         ELSE
             v_tag_set := v_tag_set || ARRAY['prospect'];
         END IF;
         
         -- Add random additional tags
-        IF random() < 0.2 THEN v_tag_set := v_tag_set || 'student'; END IF;
-        IF random() < 0.15 THEN v_tag_set := v_tag_set || 'union-member'; END IF;
-        IF random() < 0.1 THEN v_tag_set := v_tag_set || 'community-leader'; END IF;
-        IF random() < 0.25 THEN v_tag_set := v_tag_set || 'event-attendee'; END IF;
-        IF random() < 0.1 THEN v_tag_set := v_tag_set || 'social-media-influencer'; END IF;
+        IF random() < 0.2 THEN v_tag_set := v_tag_set || ARRAY['student']; END IF;
+        IF random() < 0.15 THEN v_tag_set := v_tag_set || ARRAY['union-member']; END IF;
+        IF random() < 0.1 THEN v_tag_set := v_tag_set || ARRAY['community-leader']; END IF;
+        IF random() < 0.25 THEN v_tag_set := v_tag_set || ARRAY['event-attendee']; END IF;
+        IF random() < 0.1 THEN v_tag_set := v_tag_set || ARRAY['social-media-influencer']; END IF;
         
         -- Determine status
         IF v_engagement_score < 30 AND random() < 0.2 THEN
