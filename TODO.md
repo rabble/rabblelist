@@ -17,7 +17,7 @@
 - [x] **Contact history timeline** - Complete interaction log with all activities
 - [x] **Contact merge UI** - Visual interface for reviewing and merging duplicates
 - [x] **Bulk tag operations** - Add/remove tags from multiple contacts at once
-- [ ] **Smart lists** - Dynamic contact lists based on criteria
+- [x] **Smart lists** - Dynamic contact lists based on criteria
 - [ ] **Contact scoring** - Engagement scoring based on activities
 
 ### Communication Systems

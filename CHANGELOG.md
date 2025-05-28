@@ -42,6 +42,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Real-time search and filtering of available tags
   - Summary view of pending changes before applying
   - Audit trail in contact_interactions for all tag changes
+- **Smart Lists** - Dynamic contact lists based on criteria (2025-05-28)
+  - Create saved searches with multiple filter criteria
+  - Support for tag filtering (any, all, none matching)
+  - Date-based filters for last contact and creation date
+  - Events attended filtering with numeric comparisons
+  - Real-time contact count for each smart list
+  - Visual criteria summary in grid layout
+  - Direct navigation to filtered contact view
+  - Store smart lists in organization settings
 - **Sentry Error Tracking** - Application monitoring and error reporting (2025-05-28)
   - Integrated Sentry for real-time error tracking and monitoring
   - Added error boundaries to gracefully handle runtime errors

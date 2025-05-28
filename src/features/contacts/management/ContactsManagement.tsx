@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
@@ -42,6 +42,7 @@ interface SortOption {
 
 export function ContactsManagement() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { 
     contacts, 
     totalContacts, 
@@ -181,6 +182,10 @@ export function ContactsManagement() {
               </p>
             </div>
             <div className="flex gap-3">
+              <Button variant="outline" onClick={() => navigate('/contacts/smart-lists')}>
+                <Filter className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Smart Lists</span>
+              </Button>
               <Button variant="outline" onClick={() => navigate('/contacts/tags')}>
                 <Tag className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Tags</span>

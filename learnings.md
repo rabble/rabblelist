@@ -140,6 +140,41 @@ contact-manager-pwa/
 - Modal triggered when contacts are selected
 - Automatic refresh of contact list after operations complete
 - Clear selection after successful bulk operation
+
+## Smart Lists Implementation (May 28, 2025)
+
+### Dynamic Contact Segmentation
+- Created SmartLists component for creating dynamic contact lists based on criteria
+- Support for multiple filter types:
+  - Tags (any, all, none matching)
+  - Last contact date (before, after, between, never)
+  - Events attended (exactly, more than, less than, between)
+  - Creation date filtering
+  - Engagement level (prepared for future scoring implementation)
+
+### Data Storage Pattern
+- Smart lists stored in organization settings as JSON
+- Each list includes:
+  - Unique ID, name, and description
+  - Criteria object with filter definitions
+  - Timestamps for creation and updates
+  - Real-time contact count calculation
+
+### UI/UX Features
+- Grid layout showing all smart lists with live contact counts
+- Visual criteria summary with icons for each filter type
+- Create/Edit modal with:
+  - Multi-step criteria builder
+  - Preview functionality to test criteria
+  - Real-time validation
+- Direct navigation to filtered contact view
+
+### Technical Implementation
+- Criteria-based query building with Supabase
+- Complex tag filtering using array operations
+- Date range comparisons for temporal filters
+- Efficient count queries without loading full contact data
+- URL parameter encoding for passing filters to contact list
 8. **Mobile Optimization**: Touch-friendly UI, click-to-call
 9. **PWA Features**: Installable, offline-capable, push notifications
 
