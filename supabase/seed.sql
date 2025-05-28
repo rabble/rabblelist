@@ -54,30 +54,33 @@ VALUES
   ('00000000-0000-0000-0000-000000000001'::uuid, 'Major Donors', 'Supporters who have donated over $1000', '{"benefits": ["quarterly-briefings", "exclusive-events"]}'::jsonb, ARRAY['donors', 'vip'], true, 'donor_circle', (SELECT id FROM users WHERE email = 'demo@example.com'));
 
 -- Add group members
-INSERT INTO group_members (group_id, contact_id, added_by)
+INSERT INTO group_members (group_id, contact_id, organization_id, added_by)
 SELECT 
   (SELECT id FROM groups WHERE name = 'Core Volunteers' AND organization_id = '00000000-0000-0000-0000-000000000001'::uuid),
   id,
+  organization_id,
   (SELECT id FROM users WHERE email = 'demo@example.com')
 FROM contacts 
 WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid
   AND tags && ARRAY['volunteer']
 ON CONFLICT DO NOTHING;
 
-INSERT INTO group_members (group_id, contact_id, added_by)
+INSERT INTO group_members (group_id, contact_id, organization_id, added_by)
 SELECT 
   (SELECT id FROM groups WHERE name = 'Phone Bank Team' AND organization_id = '00000000-0000-0000-0000-000000000001'::uuid),
   id,
+  organization_id,
   (SELECT id FROM users WHERE email = 'demo@example.com')
 FROM contacts 
 WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid
   AND tags && ARRAY['phone-banker']
 ON CONFLICT DO NOTHING;
 
-INSERT INTO group_members (group_id, contact_id, added_by)
+INSERT INTO group_members (group_id, contact_id, organization_id, added_by)
 SELECT 
   (SELECT id FROM groups WHERE name = 'Major Donors' AND organization_id = '00000000-0000-0000-0000-000000000001'::uuid),
   id,
+  organization_id,
   (SELECT id FROM users WHERE email = 'demo@example.com')
 FROM contacts 
 WHERE organization_id = '00000000-0000-0000-0000-000000000001'::uuid
