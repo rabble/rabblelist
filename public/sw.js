@@ -9,7 +9,11 @@ const urlsToCache = [
   '/icon-512.png',
   '/vite.svg',
   '/privacy-policy.html',
-  '/terms-of-service.html'
+  '/terms-of-service.html',
+  '/dashboard.png',
+  '/contacts.png',
+  '/campaigns.png',
+  '/pathways.png'
 ];
 
 // Install event - cache essential files
@@ -91,7 +95,11 @@ self.addEventListener('fetch', event => {
                 });
               } else if (event.request.url.includes('.js') || 
                         event.request.url.includes('.css') ||
-                        event.request.url.includes('.json')) {
+                        event.request.url.includes('.json') ||
+                        event.request.url.includes('.png') ||
+                        event.request.url.includes('.jpg') ||
+                        event.request.url.includes('.jpeg') ||
+                        event.request.url.includes('.webp')) {
                 cache.put(event.request, responseToCache);
               }
             });

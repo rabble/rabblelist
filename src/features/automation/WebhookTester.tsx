@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Ca
 import { Button } from '@/components/common/Button'
 import { ArrowLeft, Send, Copy, Check, AlertCircle, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { WebhookService, WebhookEventType } from '@/services/webhook.service'
+import { WebhookService } from '@/services/webhook.service'
+import type { WebhookEventType } from '@/services/webhook.service'
 import { useAuth } from '@/features/auth/AuthContext'
 
 interface TestPayload {

@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
-import { WebhookService, WebhookConfig, WebhookEventType } from '@/services/webhook.service'
+import { WebhookService } from '@/services/webhook.service'
+import type { WebhookConfig, WebhookEventType } from '@/services/webhook.service'
 import { useAuth } from '@/features/auth/AuthContext'
 import { 
   Plus,

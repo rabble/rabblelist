@@ -28,18 +28,17 @@ export function GroupsManagement() {
     isLoadingGroups,
     selectedGroup,
     groupMembers,
-    isLoadingMembers,
     loadGroups,
+    loadGroupMembers,
     selectGroup,
     deleteGroup,
     clearSelection
   } = useGroupStore()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState<string>('all')
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
 
-  // Mock data
-  const mockGroups: Group[] = [
+  // Mock data - commented out as we're using the store now
+  /*const mockGroups: Group[] = [
     {
       id: '1',
       name: 'Downtown Climate Action',
@@ -88,15 +87,26 @@ export function GroupsManagement() {
       last_activity: '2024-02-09',
       organization_id: '1'
     }
-  ]
+  ]*/
 
-  const mockMembers: GroupMember[] = [
+  // Mock members with contact info for display - commented out as we're using the store now
+  /*interface GroupMemberWithContact extends GroupMember {
+    contact?: {
+      full_name: string
+      email?: string
+      phone?: string
+    }
+  }
+  
+  const mockMembers: GroupMemberWithContact[] = [
     {
       id: '1',
       group_id: '1',
       contact_id: '1',
       role: 'leader',
       joined_at: '2024-01-15',
+      organization_id: '1',
+      created_at: '2024-01-15',
       contact: {
         full_name: 'Sarah Johnson',
         email: 'sarah@example.com',
@@ -109,6 +119,8 @@ export function GroupsManagement() {
       contact_id: '2',
       role: 'member',
       joined_at: '2024-01-20',
+      organization_id: '1',
+      created_at: '2024-01-20',
       contact: {
         full_name: 'Mike Chen',
         email: 'mike@example.com',
@@ -121,110 +133,58 @@ export function GroupsManagement() {
       contact_id: '3',
       role: 'coordinator',
       joined_at: '2024-01-16',
+      organization_id: '1',
+      created_at: '2024-01-16',
       contact: {
         full_name: 'Lisa Rodriguez',
         email: 'lisa@example.com',
         phone: '555-0103'
       }
     }
-  ]
+  ]*/
 
   useEffect(() => {
     loadGroups()
-  }, [filterType, searchTerm])
+  }, [loadGroups])
 
   useEffect(() => {
     if (selectedGroup) {
       loadGroupMembers(selectedGroup.id)
     }
-  }, [selectedGroup])
+  }, [selectedGroup, loadGroupMembers])
 
-  const loadGroups = async () => {
-    try {
-      setLoading(true)
-      
-      // Using mock data for now
-      let filtered = [...mockGroups]
-      
-      if (filterType !== 'all') {
-        filtered = filtered.filter(g => g.type === filterType)
-      }
-      
-      if (searchTerm) {
-        const search = searchTerm.toLowerCase()
-        filtered = filtered.filter(g => 
-          g.name.toLowerCase().includes(search) ||
-          g.description.toLowerCase().includes(search)
-        )
-      }
-      
-      setGroups(filtered)
-      if (filtered.length > 0 && !selectedGroup) {
-        setSelectedGroup(filtered[0])
-      }
-    } catch (error) {
-      console.error('Failed to load groups:', error)
-    } finally {
-      setLoading(false)
+  // Filter groups based on filterType and searchTerm
+  const filteredGroups = groups.filter(group => {
+    // Apply type filter
+    if (filterType !== 'all' && group.type !== filterType) {
+      return false
     }
-  }
-
-  const loadGroupMembers = async (groupId: string) => {
-    try {
-      // Using mock data for now
-      const members = mockMembers.filter(m => m.group_id === groupId)
-      setGroupMembers(members)
-      
-      /* Real implementation for later:
-      } else {
-        const { data, error } = await supabase
-          .from('group_members')
-          .select(`
-            *,
-            contacts (
-              full_name,
-              email,
-              phone
-            )
-          `)
-          .eq('group_id', groupId)
-          .order('role')
-        
-        if (error) throw error
-        setGroupMembers(data || [])
-      */
-    } catch (error) {
-      console.error('Failed to load group members:', error)
+    
+    // Apply search filter
+    if (searchTerm) {
+      const search = searchTerm.toLowerCase()
+      return group.name.toLowerCase().includes(search) ||
+        (group.description?.toLowerCase().includes(search) || false)
     }
-  }
+    
+    return true
+  })
 
   const handleDeleteGroup = async (groupId: string) => {
     if (!confirm('Are you sure you want to delete this group? This action cannot be undone.')) return
     
     try {
-      // Using mock data for now
-      setGroups(prev => prev.filter(g => g.id !== groupId))
+      await deleteGroup(groupId)
       if (selectedGroup?.id === groupId) {
-        setSelectedGroup(null)
+        clearSelection()
       }
-      
-      /* Real implementation for later:
-      } else {
-        const { error } = await supabase
-          .from('groups')
-          .update({ active: false })
-          .eq('id', groupId)
-        
-        if (error) throw error
-        await loadGroups()
-      */
     } catch (error) {
       console.error('Failed to delete group:', error)
       alert('Failed to delete group')
     }
   }
 
-  const getTypeColor = (type: string) => {
+  const getTypeColor = (type?: string) => {
     switch (type) {
       case 'geographic': return 'bg-blue-100 text-blue-800'
       case 'interest': return 'bg-green-100 text-green-800'
@@ -242,7 +202,7 @@ export function GroupsManagement() {
     }
   }
 
-  if (loading) {
+  if (isLoadingGroups) {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
@@ -305,7 +265,7 @@ export function GroupsManagement() {
                 <div>
                   <p className="text-sm text-gray-600">Active Leaders</p>
                   <p className="text-2xl font-bold">
-                    {groups.reduce((sum, g) => sum + g.leader_count, 0)}
+                    {groups.reduce((sum, g) => sum + (g.leader_count || 0), 0)}
                   </p>
                 </div>
                 <Activity className="w-8 h-8 text-purple-600" />
@@ -319,8 +279,8 @@ export function GroupsManagement() {
                 <div>
                   <p className="text-sm text-gray-600">Avg. Group Size</p>
                   <p className="text-2xl font-bold">
-                    {groups.length > 0 
-                      ? Math.round(groups.reduce((sum, g) => sum + g.member_count, 0) / groups.length)
+                    {filteredGroups.length > 0 
+                      ? Math.round(filteredGroups.reduce((sum, g) => sum + (g.member_count || 0), 0) / filteredGroups.length)
                       : 0
                     }
                   </p>
@@ -366,7 +326,7 @@ export function GroupsManagement() {
                 </div>
                 
                 <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                  {groups.map((group) => (
+                  {filteredGroups.map((group) => (
                     <div
                       key={group.id}
                       className={`p-3 rounded-lg border cursor-pointer transition-colors ${
@@ -374,7 +334,7 @@ export function GroupsManagement() {
                           ? 'border-primary-500 bg-primary-50'
                           : 'border-gray-200 hover:bg-gray-50'
                       }`}
-                      onClick={() => setSelectedGroup(group)}
+                      onClick={() => selectGroup(group.id)}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <h4 className="font-medium text-gray-900">{group.name}</h4>
@@ -386,13 +346,13 @@ export function GroupsManagement() {
                         {group.description}
                       </p>
                       <div className="flex items-center justify-between text-xs text-gray-500">
-                        <span>{group.member_count} members</span>
-                        <span>{group.leader_count} leaders</span>
+                        <span>{group.member_count || 0} members</span>
+                        <span>{group.leader_count || 0} leaders</span>
                       </div>
                     </div>
                   ))}
                   
-                  {groups.length === 0 && (
+                  {filteredGroups.length === 0 && (
                     <div className="text-center py-8 text-gray-500">
                       <Users className="w-12 h-12 mx-auto mb-3 text-gray-400" />
                       <p>No groups found</p>
