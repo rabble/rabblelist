@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated all setup scripts and documentation to use new file names
   - Cleaner separation of concerns for database initialization
 - **Enhanced Demo Data** - Massive expansion of seed data for realistic demo (2025-05-28)
-  - Created `seed-data-enhanced.sql` with 500+ diverse contacts
+  - Consolidated enhanced demo data into `seed-data.sql` with 500+ diverse contacts
   - Added 8 active campaigns with thousands of activities
   - 10+ events showing past successes and upcoming actions
   - 7 active groups with realistic membership
@@ -22,6 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Thousands of interactions, phone calls, emails, and activities
   - Petition signatures, donations, event registrations
   - Makes the demo look like a very active grassroots campaign
+  - Fixed PostgreSQL array concatenation syntax for compatibility
+- **Real Data in Engagement Dashboard** - Fixed hardcoded values to show actual database data (2025-05-28)
+  - Updated EngagementDashboard to load real data from AnalyticsService
+  - Added `getEngagementLadder()` method to count contacts by tags
+  - Added `getCampaignPerformance()` method to show active campaigns
+  - Fixed table/column references in AnalyticsService
+  - Replaced all hardcoded metrics with dynamic database queries
+  - Dashboard now shows real engagement stats, ladder progression, and campaign performance
 
 ### Fixed
 - Allow logged-in users to view landing page at "/" instead of auto-redirecting to dashboard

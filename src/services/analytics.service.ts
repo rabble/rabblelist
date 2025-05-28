@@ -221,12 +221,6 @@ export class AnalyticsService {
         .eq('type', 'call')
         .gte('created_at', sevenDaysAgo.toISOString())
 
-      const { count: recentEvents } = await supabase
-        .from('event_registrations')
-        .select('*, events!inner(*)', { count: 'exact' })
-        .eq('events.organization_id', organizationId)
-        .gte('created_at', sevenDaysAgo.toISOString())
-
       // Calculate engagement segments
       const { data: activeContacts } = await supabase
         .from('contacts')

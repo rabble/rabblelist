@@ -18,7 +18,7 @@
 - [x] **Contact merge UI** - Visual interface for reviewing and merging duplicates
 - [x] **Bulk tag operations** - Add/remove tags from multiple contacts at once
 - [x] **Smart lists** - Dynamic contact lists based on criteria
-- [ ] **Contact scoring** - Engagement scoring based on activities
+- [x] **Contact scoring** - Engagement scoring based on activities
 
 ### Communication Systems
 - [x] **Email system integration** - Send emails directly from platform (Mailgun mock)

@@ -56,7 +56,6 @@ export function EngagementDashboard() {
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null)
   const [engagementStats, setEngagementStats] = useState<any>(null)
   const [recentActivities, setRecentActivities] = useState<EngagementActivity[]>([])
-  const [loading, setLoading] = useState(true)
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
   const [refreshing, setRefreshing] = useState(false)
@@ -91,14 +90,11 @@ export function EngagementDashboard() {
   const loadEngagementStats = async () => {
     if (!user?.organization_id) return
     
-    setLoading(true)
     try {
       const stats = await AnalyticsService.getEngagementStats(user.organization_id)
       setEngagementStats(stats)
     } catch (error) {
       console.error('Failed to load engagement stats:', error)
-    } finally {
-      setLoading(false)
     }
   }
 

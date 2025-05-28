@@ -10,6 +10,7 @@ import { ContactImport } from '@/features/contacts/ContactImport'
 import { ContactDeduplication } from '@/features/contacts/ContactDeduplication'
 import { TagsManagement } from '@/features/contacts/management/TagsManagement'
 import { SmartLists } from '@/features/contacts/SmartLists'
+import { ContactScoring } from '@/features/contacts/ContactScoring'
 import { EventForm } from '@/features/events/EventForm'
 import { Dashboard } from '@/features/dashboard/Dashboard'
 import { EventsManagement } from '@/features/events/EventsManagement'
@@ -161,6 +162,12 @@ function AppRoutes() {
           <Route path="/contacts/smart-lists" element={
             <ProtectedRoute>
               <SmartLists />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/contacts/scoring" element={
+            <ProtectedRoute>
+              <ContactScoring />
             </ProtectedRoute>
           } />
           
