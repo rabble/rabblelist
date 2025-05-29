@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Authentication Issues** - Fixed race conditions and error handling (2025-05-29)
+  - Added abort controller to prevent state updates on unmounted components
+  - Improved error handling in profile loading with proper state clearing
+  - Fixed auth state change listener to check component mount status
+  - Added isInitialized flag to prevent premature state updates
+  - Fixed signOut to clear state immediately before Supabase API call
+  - Added 5-second timeout to ProtectedRoute to prevent infinite loading
+  - Identified dual state management issue between SupabaseAuthContext and authStore
+
 ### Changed
 - **Database Setup Reorganization** - Separated schema from seed data (2025-05-28)
   - Split `complete_setup.sql` into `schema.sql` (structure only) and `seed-data.sql` (demo data)
