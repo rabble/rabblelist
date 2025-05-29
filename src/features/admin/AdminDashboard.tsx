@@ -44,7 +44,7 @@ export function AdminDashboard() {
       // Get stats in parallel
       const [contactsCount, callsCount, eventsCount, ringersCount] = await Promise.all([
         supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('organization_id', orgId),
-        supabase.from('call_logs').select('*', { count: 'exact', head: true }).eq('organization_id', orgId),
+        supabase.from('contact_interactions').select('*', { count: 'exact', head: true }).eq('organization_id', orgId).eq('type', 'call'),
         supabase.from('events').select('*', { count: 'exact', head: true }).eq('organization_id', orgId),
         supabase.from('users').select('*', { count: 'exact', head: true }).eq('organization_id', orgId).neq('role', 'admin')
       ])

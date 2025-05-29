@@ -59,11 +59,12 @@ export function Dashboard() {
       today.setHours(0, 0, 0, 0)
       
       const { data: activeRingerData } = await supabase
-        .from('call_logs')
-        .select('ringer_id')
-        .gte('called_at', today.toISOString())
+        .from('contact_interactions')
+        .select('user_id')
+        .eq('type', 'call')
+        .gte('created_at', today.toISOString())
       
-      const uniqueRingers = new Set(activeRingerData?.map(log => log.ringer_id) || [])
+      const uniqueRingers = new Set(activeRingerData?.map(log => log.user_id).filter(Boolean) || [])
 
       setStats({
         totalContacts: contactStats?.total || 0,
@@ -74,18 +75,19 @@ export function Dashboard() {
 
       // Get recent calls
       const { data: recentCallsData } = await supabase
-        .from('call_logs')
+        .from('contact_interactions')
         .select(`
           *,
           contacts:contact_id (
             full_name,
             phone
           ),
-          ringer:ringer_id (
+          users:user_id (
             full_name
           )
         `)
-        .order('called_at', { ascending: false })
+        .eq('type', 'call')
+        .order('created_at', { ascending: false })
         .limit(5)
 
       setRecentCalls(recentCallsData || [])
@@ -334,16 +336,16 @@ export function Dashboard() {
                             <span className="capitalize">{call.outcome.replace('_', ' ')}</span>
                           </p>
                           <p className="text-xs text-gray-500">
-                            {new Date(call.called_at).toLocaleString([], {
+                            {new Date(call.created_at).toLocaleString([], {
                               month: 'short',
                               day: 'numeric',
                               hour: '2-digit',
                               minute: '2-digit'
                             })}
                           </p>
-                          {call.ringer && (
+                          {call.users && (
                             <p className="text-xs text-gray-500">
-                              by {call.ringer.full_name}
+                              by {call.users.full_name}
                             </p>
                           )}
                         </div>

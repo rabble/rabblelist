@@ -18,10 +18,9 @@ export class CampaignService {
         .select(`
           *,
           campaign_stats (
-            participants,
-            conversions,
-            shares,
-            new_contacts
+            stat_type,
+            stat_value,
+            stat_date
           )
         `)
         .eq('organization_id', organizationId)
