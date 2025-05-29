@@ -98,7 +98,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      
+      // Don't set loading on auth state changes after initial load
+      // Only update the state
       if (session) {
         setSession(session)
         setUser(session.user)
@@ -118,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
@@ -128,10 +129,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error }
       }
 
-      if (data.user) {
-        await loadUserProfile(data.user.id)
-      }
-
+      // The auth state change handler will take care of loading the profile
+      // We don't need to do it here
       return { error: null }
     } catch (error) {
       console.error('Unexpected sign in error:', error)
