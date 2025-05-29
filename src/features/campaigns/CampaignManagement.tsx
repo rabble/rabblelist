@@ -183,12 +183,12 @@ export function CampaignManagement() {
                   <div className="flex items-start gap-3">
                     <div className="text-gray-600 mt-1">{getTypeIcon(campaign.type)}</div>
                     <div>
-                      <CardTitle className="text-lg">{campaign.title}</CardTitle>
+                      <CardTitle className="text-lg">{campaign.name || campaign.title}</CardTitle>
                       <div className="flex items-center gap-2 mt-1">
                         <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(campaign.status)}`}>
                           {campaign.status}
                         </span>
-                        {campaign.tags.includes('featured') && (
+                        {campaign.tags && campaign.tags.includes('featured') && (
                           <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 font-medium">
                             Featured
                           </span>

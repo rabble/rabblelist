@@ -1,15 +1,19 @@
 export interface Campaign {
   id: string
   organization_id: string
-  title: string
-  type: 'petition' | 'event' | 'donation' | 'email_blast' | 'phone_bank' | 'canvas' | 'social'
-  status: 'draft' | 'active' | 'scheduled' | 'completed' | 'archived'
+  name: string  // Changed from title to match database
+  title?: string  // Keep as optional for backward compatibility
+  type: 'petition' | 'event' | 'donation' | 'email_blast' | 'phone_bank' | 'canvas' | 'social' | 'email' | 'sms' | 'phonebank' | 'fundraising' | 'canvassing'
+  status: 'draft' | 'active' | 'paused' | 'completed' | 'cancelled' | 'scheduled' | 'archived'
   description?: string
   goal?: number
+  goal_type?: string
+  goal_target?: number
+  current_value?: number
   start_date?: string
   end_date?: string
   scheduled_for?: string
-  tags: string[]
+  tags?: string[]  // Made optional since not in database
   settings?: any
   metadata?: any
   email_subject?: string
@@ -26,10 +30,12 @@ export interface Campaign {
 export interface CampaignStats {
   id: string
   campaign_id: string
-  participants: number
-  conversions: number
-  shares: number
-  new_contacts: number
+  organization_id: string
+  stat_type: string
+  stat_value: number
+  stat_date?: string
+  metadata?: any
+  created_at: string
   updated_at: string
 }
 
