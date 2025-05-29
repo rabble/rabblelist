@@ -14,7 +14,7 @@ const groupSchema = z.object({
   description: z.string().optional(),
   type: z.enum(['geographic', 'interest', 'working', 'affinity']),
   parent_id: z.string().optional(),
-  active: z.boolean().optional().default(true)
+  active: z.boolean().default(true)
 })
 
 type GroupFormData = z.infer<typeof groupSchema>
@@ -32,10 +32,10 @@ export function GroupForm() {
     handleSubmit,
     formState: { errors },
     reset
-  } = useForm<GroupFormData>({
+  } = useForm({
     resolver: zodResolver(groupSchema),
     defaultValues: {
-      type: 'interest',
+      type: 'interest' as const,
       active: true
     }
   })

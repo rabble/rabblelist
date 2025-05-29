@@ -33,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Allow logged-in users to view landing page at "/" instead of auto-redirecting to dashboard
+- **Build Issues Fixed** - TypeScript errors resolved (2025-05-29)
+  - Fixed GroupForm.tsx type definition for active field in schema
+  - Made webhook.service.ts sendWebhook method public to resolve unused declaration error
+  - Successfully building without TypeScript compilation errors
 
 ### Cleaned Up
 - **Code Quality Improvements** - Production-ready cleanup (2025-05-28)
