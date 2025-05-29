@@ -108,7 +108,7 @@ export function CampaignFormEnhanced() {
   } = useForm<CampaignFormValues>({
     resolver: zodResolver(campaignSchema),
     defaultValues: {
-      title: '',
+      name: '',
       type: 'petition',
       status: 'draft',
       description: '',
@@ -126,7 +126,7 @@ export function CampaignFormEnhanced() {
   useEffect(() => {
     if (template && !isEditing) {
       reset({
-        title: template.name,
+        name: template.name,
         type: template.type,
         status: 'draft',
         description: template.description,

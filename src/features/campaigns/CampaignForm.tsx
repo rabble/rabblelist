@@ -63,7 +63,7 @@ export function CampaignForm() {
   } = useForm<CampaignFormValues>({
     resolver: zodResolver(campaignSchema),
     defaultValues: {
-      title: '',
+      name: '',
       type: 'petition',
       status: 'draft',
       description: '',
@@ -83,7 +83,7 @@ export function CampaignForm() {
   useEffect(() => {
     if (isEditing && currentCampaign) {
       reset({
-        title: currentCampaign.title,
+        name: currentCampaign.name || currentCampaign.title || '',
         type: currentCampaign.type,
         status: currentCampaign.status,
         description: currentCampaign.description || '',
@@ -207,21 +207,21 @@ export function CampaignForm() {
               <CardTitle>Campaign Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Title */}
+              {/* Name */}
               <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                  Campaign Title *
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Campaign Name *
                 </label>
                 <input
-                  {...register('title')}
+                  {...register('name')}
                   type="text"
                   className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-                    errors.title ? 'border-red-500' : 'border-gray-300'
+                    errors.name ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder="Enter campaign title"
+                  placeholder="Enter campaign name"
                 />
-                {errors.title && (
-                  <p className="text-sm text-red-600 mt-1">{errors.title.message}</p>
+                {errors.name && (
+                  <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>
                 )}
               </div>
 

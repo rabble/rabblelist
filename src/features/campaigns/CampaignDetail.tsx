@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Ca
 import { Button } from '@/components/common/Button'
 import { useCampaignStore } from '@/stores/campaignStore'
 import { useContactStore } from '@/stores/contactStore'
+import { getCampaignStat, CAMPAIGN_STAT_TYPES } from './campaignHelpers'
 import { 
   ArrowLeft,
   Edit,
@@ -47,7 +48,7 @@ export function CampaignDetail() {
   }, [showAddContacts, loadContacts])
 
   const handleDelete = async () => {
-    if (!currentCampaign || !confirm(`Are you sure you want to delete "${currentCampaign.title}"?`)) return
+    if (!currentCampaign || !confirm(`Are you sure you want to delete "${currentCampaign.name || currentCampaign.title}"?`)) return
     
     const success = await deleteCampaign(currentCampaign.id)
     if (success) {
@@ -117,7 +118,7 @@ export function CampaignDetail() {
   }
 
   const progress = currentCampaign.goal 
-    ? Math.round(((currentCampaign.campaign_stats?.[0]?.participants || 0) / currentCampaign.goal) * 100)
+    ? Math.round((getCampaignStat(currentCampaign, CAMPAIGN_STAT_TYPES.PARTICIPANTS) / currentCampaign.goal) * 100)
     : 0
 
   return (
@@ -140,14 +141,14 @@ export function CampaignDetail() {
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                  {currentCampaign.title}
+                  {currentCampaign.name || currentCampaign.title}
                 </h1>
                 <div className="flex items-center gap-3 mt-2">
                   <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(currentCampaign.status)}`}>
                     {getStatusIcon(currentCampaign.status)}
                     {currentCampaign.status}
                   </span>
-                  {currentCampaign.tags.map(tag => (
+                  {currentCampaign.tags?.map(tag => (
                     <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
                       {tag}
                     </span>
@@ -200,7 +201,7 @@ export function CampaignDetail() {
                   <div className="mb-4">
                     <div className="flex items-center justify-between text-lg mb-2">
                       <span className="font-medium">
-                        {currentCampaign.campaign_stats?.[0]?.participants || 0} of {currentCampaign.goal}
+                        {getCampaignStat(currentCampaign, CAMPAIGN_STAT_TYPES.PARTICIPANTS)} of {currentCampaign.goal}
                       </span>
                       <span className="font-bold text-primary-600">{progress}%</span>
                     </div>
@@ -215,25 +216,25 @@ export function CampaignDetail() {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div className="text-center p-3 bg-gray-50 rounded-lg">
                       <p className="text-2xl font-bold text-gray-900">
-                        {currentCampaign.campaign_stats?.[0]?.participants || 0}
+                        {getCampaignStat(currentCampaign, CAMPAIGN_STAT_TYPES.PARTICIPANTS)}
                       </p>
                       <p className="text-sm text-gray-600">Participants</p>
                     </div>
                     <div className="text-center p-3 bg-gray-50 rounded-lg">
                       <p className="text-2xl font-bold text-gray-900">
-                        {currentCampaign.campaign_stats?.[0]?.conversions || 0}
+                        {getCampaignStat(currentCampaign, CAMPAIGN_STAT_TYPES.CONVERSIONS)}
                       </p>
                       <p className="text-sm text-gray-600">Conversions</p>
                     </div>
                     <div className="text-center p-3 bg-gray-50 rounded-lg">
                       <p className="text-2xl font-bold text-gray-900">
-                        {currentCampaign.campaign_stats?.[0]?.shares || 0}
+                        {getCampaignStat(currentCampaign, CAMPAIGN_STAT_TYPES.SHARES)}
                       </p>
                       <p className="text-sm text-gray-600">Shares</p>
                     </div>
                     <div className="text-center p-3 bg-gray-50 rounded-lg">
                       <p className="text-2xl font-bold text-gray-900">
-                        {currentCampaign.campaign_stats?.[0]?.new_contacts || 0}
+                        {getCampaignStat(currentCampaign, CAMPAIGN_STAT_TYPES.NEW_CONTACTS)}
                       </p>
                       <p className="text-sm text-gray-600">New Contacts</p>
                     </div>
@@ -309,12 +310,7 @@ export function CampaignDetail() {
                   </div>
                 )}
                 
-                {currentCampaign.created_by_user && (
-                  <div>
-                    <p className="text-sm text-gray-600">Created By</p>
-                    <p className="font-medium">{currentCampaign.created_by_user.full_name}</p>
-                  </div>
-                )}
+                {/* Created by user info not available in current schema */}
                 
                 <div>
                   <p className="text-sm text-gray-600">Created</p>

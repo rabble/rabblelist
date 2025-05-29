@@ -5,6 +5,7 @@ import { Button } from '@/components/common/Button'
 import { useCampaignStore } from '@/stores/campaignStore'
 import { AnalyticsService } from '@/services/analytics.service'
 import type { CampaignAnalytics } from '@/services/analytics.service'
+import { getCampaignStat, CAMPAIGN_STAT_TYPES } from './campaignHelpers'
 import { 
   ArrowLeft,
   TrendingUp,
@@ -96,28 +97,28 @@ export function CampaignAnalytics() {
     // Create CSV data
     const csvData = [
       ['Campaign Analytics Report'],
-      ['Campaign:', currentCampaign?.title],
+      ['Campaign:', currentCampaign?.name || currentCampaign?.title],
       ['Type:', currentCampaign?.type],
       ['Date Range:', dateRange],
       [''],
       ['Metric', 'Value'],
-      ['Total Participants', currentCampaign?.campaign_stats?.[0]?.participants || 0],
-      ['Conversions', currentCampaign?.campaign_stats?.[0]?.conversions || 0],
-      ['Shares', currentCampaign?.campaign_stats?.[0]?.shares || 0],
-      ['New Contacts', currentCampaign?.campaign_stats?.[0]?.new_contacts || 0],
-      ['Emails Sent', currentCampaign?.campaign_stats?.[0]?.emails_sent || 0],
-      ['Emails Opened', currentCampaign?.campaign_stats?.[0]?.emails_opened || 0],
-      ['Emails Clicked', currentCampaign?.campaign_stats?.[0]?.emails_clicked || 0],
-      ['Calls Made', currentCampaign?.campaign_stats?.[0]?.calls_made || 0],
-      ['Calls Completed', currentCampaign?.campaign_stats?.[0]?.calls_completed || 0],
-      ['Amount Raised', `$${currentCampaign?.campaign_stats?.[0]?.amount_raised || 0}`]
+      ['Total Participants', getCampaignStat(currentCampaign, CAMPAIGN_STAT_TYPES.PARTICIPANTS)],
+      ['Conversions', getCampaignStat(currentCampaign, CAMPAIGN_STAT_TYPES.CONVERSIONS)],
+      ['Shares', getCampaignStat(currentCampaign, CAMPAIGN_STAT_TYPES.SHARES)],
+      ['New Contacts', getCampaignStat(currentCampaign, CAMPAIGN_STAT_TYPES.NEW_CONTACTS)],
+      ['Emails Sent', getCampaignStat(currentCampaign, CAMPAIGN_STAT_TYPES.EMAILS_SENT)],
+      ['Emails Opened', getCampaignStat(currentCampaign, CAMPAIGN_STAT_TYPES.EMAILS_OPENED)],
+      ['Emails Clicked', getCampaignStat(currentCampaign, CAMPAIGN_STAT_TYPES.EMAILS_CLICKED)],
+      ['Calls Made', getCampaignStat(currentCampaign, CAMPAIGN_STAT_TYPES.CALLS_MADE)],
+      ['Calls Completed', getCampaignStat(currentCampaign, CAMPAIGN_STAT_TYPES.CALLS_COMPLETED)],
+      ['Amount Raised', `$${getCampaignStat(currentCampaign, CAMPAIGN_STAT_TYPES.AMOUNT_RAISED)}`]
     ].map(row => row.join(',')).join('\n')
     
     const blob = new Blob([csvData], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `${currentCampaign?.title || 'campaign'}-analytics.csv`
+    a.download = `${currentCampaign?.name || currentCampaign?.title || 'campaign'}-analytics.csv`
     a.click()
   }
 
@@ -129,27 +130,17 @@ export function CampaignAnalytics() {
     )
   }
 
-  const stats = currentCampaign.campaign_stats?.[0] || {
-    participants: 0,
-    conversions: 0,
-    shares: 0,
-    new_contacts: 0,
-    emails_sent: 0,
-    emails_opened: 0,
-    emails_clicked: 0,
-    calls_made: 0,
-    calls_completed: 0,
-    amount_raised: 0
-  }
+  // Helper to get stats with proper typing
+  const getStatValue = (statType: string) => getCampaignStat(currentCampaign, statType)
 
   // Use real data from analytics or fallback to defaults
   const timeSeriesData = analytics?.timeSeriesData || []
 
   // Engagement funnel data
   const funnelData = [
-    { name: 'Reached', value: stats.participants, fill: '#3b82f6' },
-    { name: 'Engaged', value: stats.conversions, fill: '#10b981' },
-    { name: 'Converted', value: stats.new_contacts, fill: '#8b5cf6' }
+    { name: 'Reached', value: getStatValue(CAMPAIGN_STAT_TYPES.PARTICIPANTS), fill: '#3b82f6' },
+    { name: 'Engaged', value: getStatValue(CAMPAIGN_STAT_TYPES.CONVERSIONS), fill: '#10b981' },
+    { name: 'Converted', value: getStatValue(CAMPAIGN_STAT_TYPES.NEW_CONTACTS), fill: '#8b5cf6' }
   ]
 
   // Channel performance data from real analytics
@@ -242,7 +233,7 @@ export function CampaignAnalytics() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Reach</p>
-                <p className="text-2xl font-bold">{stats.participants.toLocaleString()}</p>
+                <p className="text-2xl font-bold">{getStatValue(CAMPAIGN_STAT_TYPES.PARTICIPANTS).toLocaleString()}</p>
                 <p className="text-sm text-green-600 mt-1">+12% from last period</p>
               </div>
               <Users className="w-8 h-8 text-blue-600" />
@@ -256,8 +247,8 @@ export function CampaignAnalytics() {
               <div>
                 <p className="text-sm text-gray-600">Conversion Rate</p>
                 <p className="text-2xl font-bold">
-                  {stats.participants > 0 
-                    ? Math.round((stats.conversions / stats.participants) * 100) 
+                  {getStatValue(CAMPAIGN_STAT_TYPES.PARTICIPANTS) > 0 
+                    ? Math.round((getStatValue(CAMPAIGN_STAT_TYPES.CONVERSIONS) / getStatValue(CAMPAIGN_STAT_TYPES.PARTICIPANTS)) * 100) 
                     : 0}%
                 </p>
                 <p className="text-sm text-green-600 mt-1">+5% from last period</p>
@@ -272,7 +263,7 @@ export function CampaignAnalytics() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">New Contacts</p>
-                <p className="text-2xl font-bold">{stats.new_contacts}</p>
+                <p className="text-2xl font-bold">{getStatValue(CAMPAIGN_STAT_TYPES.NEW_CONTACTS)}</p>
                 <p className="text-sm text-green-600 mt-1">+8 this week</p>
               </div>
               <UserPlus className="w-8 h-8 text-purple-600" />
@@ -289,7 +280,7 @@ export function CampaignAnalytics() {
                 </p>
                 <p className="text-2xl font-bold">
                   {currentCampaign.type === 'donation' 
-                    ? `$${stats.amount_raised.toLocaleString()}`
+                    ? `$${getStatValue(CAMPAIGN_STAT_TYPES.AMOUNT_RAISED).toLocaleString()}`
                     : '87%'
                   }
                 </p>
