@@ -725,3 +725,29 @@ if (existing?.organization_id !== profile.organization_id) {
 - **AuthStore Still Used**: Several components (SMSConversations, PhoneBankCampaign, etc.) still import authStore
 - **Need to Remove authStore**: To fully fix auth issues, need to update all components to use SupabaseAuthContext
 - **Test Auth Flow**: After removing authStore, need to test login/logout thoroughly
+
+## Database Schema Issues Fixed (2025-05-29)
+
+### Non-existent Tables Referenced
+- **call_logs table**: Code was querying `call_logs` table which doesn't exist in schema
+  - Dashboard and AdminDashboard were using this for call statistics
+  - Fixed by migrating to `contact_interactions` table with `type='call'`
+  
+### Column Structure Mismatches  
+- **campaign_stats table**: Code expected direct columns (participants, conversions, etc.)
+  - Actual schema uses key-value structure with stat_type and stat_value
+  - Fixed campaign service to query proper columns
+
+### Query Updates Made
+1. Dashboard.tsx:
+   - Changed `call_logs` to `contact_interactions` 
+   - Updated field names: `called_at` → `created_at`, `ringer_id` → `user_id`
+   - Added filter for `type='call'`
+
+2. AdminDashboard.tsx:
+   - Updated call count query to use `contact_interactions`
+   - Added type filter for calls
+
+3. campaigns.service.ts:
+   - Fixed campaign_stats select to use actual columns
+   - Removed references to non-existent columns
