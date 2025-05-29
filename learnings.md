@@ -684,3 +684,44 @@ if (existing?.organization_id !== profile.organization_id) {
 - **Cross-table Validation**: When linking resources (e.g., adding contact to group), both resources are validated
 - **Error Handling**: Proper error messages for unauthorized access attempts
 - **No More Hardcoded IDs**: All organization IDs now come from authenticated user context
+
+## Authentication Issues and Fixes (2025-05-29)
+
+### Login/Logout Problems Identified
+- **Dual State Management**: Application was using both SupabaseAuthContext and authStore (Zustand), causing state conflicts
+- **Race Conditions**: Auth state change handlers weren't properly handling rapid changes or component unmounting
+- **Missing Error Handling**: Profile loading errors weren't propagated, leaving users in half-authenticated states
+- **Navigation Loops**: LoginPage redirect logic ran on every render when user existed
+- **Service Worker Interference**: Old service workers being cleared on every app load could interfere with sessions
+
+### Fixes Implemented
+1. **Enhanced SupabaseAuthContext**:
+   - Added abort controller and mounted flag to prevent race conditions
+   - Added proper error handling with state clearing on failures
+   - Fixed auth state change listener to check if component is mounted
+   - Added isInitialized flag to prevent premature state updates
+   - Clear state immediately in signOut before Supabase call
+
+2. **Protected Route Improvements**:
+   - Added 5-second timeout to prevent infinite loading states
+   - Properly handle cases where loading never resolves
+
+3. **Key Code Changes**:
+   ```typescript
+   // Abort controller pattern
+   const abortController = new AbortController()
+   let mounted = true
+   
+   // Check mounted state before updates
+   if (!mounted || abortController.signal.aborted) return
+   
+   // Clear state on signOut regardless of API success
+   setUser(null)
+   setProfile(null)
+   await supabase.auth.signOut()
+   ```
+
+### Remaining Issues
+- **AuthStore Still Used**: Several components (SMSConversations, PhoneBankCampaign, etc.) still import authStore
+- **Need to Remove authStore**: To fully fix auth issues, need to update all components to use SupabaseAuthContext
+- **Test Auth Flow**: After removing authStore, need to test login/logout thoroughly

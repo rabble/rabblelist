@@ -32,10 +32,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [organization, setOrganization] = useState<Organization | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isInitialized, setIsInitialized] = useState(false)
 
   // Load user profile and organization
-  const loadUserProfile = async (userId: string) => {
+  const loadUserProfile = async (userId: string, abortSignal?: AbortSignal) => {
     try {
+      // Check if request was aborted
+      if (abortSignal?.aborted) return false
+
       // Get user profile
       const { data: userProfile, error: profileError } = await supabase
         .from('users')
@@ -43,9 +47,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', userId)
         .single()
 
+      if (abortSignal?.aborted) return false
+
       if (profileError) {
         console.error('Error loading user profile:', profileError)
-        return
+        // Clear profile if it doesn't exist
+        setProfile(null)
+        setOrganization(null)
+        return false
       }
 
       setProfile(userProfile)
@@ -58,64 +67,97 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .eq('id', userProfile.organization_id)
           .single()
 
+        if (abortSignal?.aborted) return false
+
         if (orgError) {
           console.error('Error loading organization:', orgError)
-          return
+          setOrganization(null)
+          return false
         }
 
         setOrganization(org)
+      } else {
+        setOrganization(null)
       }
+      
+      return true
     } catch (error) {
       console.error('Error in loadUserProfile:', error)
+      setProfile(null)
+      setOrganization(null)
+      return false
     }
   }
 
   // Check for existing session
   useEffect(() => {
+    const abortController = new AbortController()
+    let mounted = true
+
     const checkSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
         
+        if (!mounted || abortController.signal.aborted) return
+        
         if (error) {
           console.error('Error getting session:', error)
           setLoading(false)
+          setIsInitialized(true)
           return
         }
 
         if (session) {
           setSession(session)
           setUser(session.user)
-          await loadUserProfile(session.user.id)
+          await loadUserProfile(session.user.id, abortController.signal)
+        } else {
+          // Explicitly clear all auth state when no session
+          setSession(null)
+          setUser(null)
+          setProfile(null)
+          setOrganization(null)
         }
       } catch (error) {
         console.error('Error checking session:', error)
       } finally {
-        setLoading(false)
+        if (mounted) {
+          setLoading(false)
+          setIsInitialized(true)
+        }
       }
     }
 
     checkSession()
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted || abortController.signal.aborted) return
+      
+      console.log('Auth state changed:', event, session?.user?.email)
+      
       // Don't set loading on auth state changes after initial load
-      // Only update the state
-      if (session) {
-        setSession(session)
-        setUser(session.user)
-        await loadUserProfile(session.user.id)
-      } else {
-        setSession(null)
-        setUser(null)
-        setProfile(null)
-        setOrganization(null)
+      if (isInitialized) {
+        if (session) {
+          setSession(session)
+          setUser(session.user)
+          await loadUserProfile(session.user.id, abortController.signal)
+        } else {
+          // Clear all state when signed out
+          setSession(null)
+          setUser(null)
+          setProfile(null)
+          setOrganization(null)
+        }
       }
     })
 
     return () => {
+      mounted = false
+      abortController.abort()
       subscription.unsubscribe()
     }
-  }, [])
+  }, [isInitialized])
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -163,13 +205,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut()
+      // Clear local state first
       setUser(null)
       setProfile(null)
       setOrganization(null)
       setSession(null)
+      
+      // Then sign out from Supabase
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) {
+        console.error('Sign out error:', error)
+        // Even if signOut fails, keep local state cleared
+      }
     } catch (error) {
       console.error('Sign out error:', error)
+      // Ensure state is cleared even on error
+      setUser(null)
+      setProfile(null)
+      setOrganization(null)
+      setSession(null)
     }
   }
 

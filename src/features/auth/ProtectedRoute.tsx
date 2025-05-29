@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './AuthContext'
+import { useEffect, useState } from 'react'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -9,9 +10,21 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { user, profile, loading } = useAuth()
   const location = useLocation()
+  const [timedOut, setTimedOut] = useState(false)
+
+  // Set a timeout for loading state
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => {
+        setTimedOut(true)
+      }, 5000) // 5 second timeout
+
+      return () => clearTimeout(timer)
+    }
+  }, [loading])
 
   // Only show loading for a reasonable amount of time
-  if (loading) {
+  if (loading && !timedOut) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
