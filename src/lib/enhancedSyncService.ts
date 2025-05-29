@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { withRetry } from '@/lib/retryUtils'
 import { useSyncStore } from '@/stores/syncStore'
-import { differenceInMilliseconds } from 'date-fns'
+// import { differenceInMilliseconds } from 'date-fns'
 import type { SyncQueueItem } from '@/types'
 
 interface ConflictResolution {
@@ -131,7 +131,7 @@ export class EnhancedSyncService {
     }
 
     this.isRunning = true
-    const store = useSyncStore.getState()
+    // const store = useSyncStore.getState()
 
     try {
 
@@ -263,7 +263,7 @@ export class EnhancedSyncService {
   /**
    * Handle create operations with duplicate detection
    */
-  private static async handleCreate(item: SyncQueueItem) {
+  private static async handleCreate(item: SyncQueueItem): Promise<any> {
     if (!item.table || !item.data) {
       throw new Error('Invalid create operation')
     }
@@ -290,7 +290,7 @@ export class EnhancedSyncService {
   /**
    * Handle update operations with conflict resolution
    */
-  private static async handleUpdate(item: SyncQueueItem) {
+  private static async handleUpdate(item: SyncQueueItem): Promise<any> {
     if (!item.table || !item.recordId || !item.data) {
       throw new Error('Invalid update operation')
     }
@@ -525,7 +525,7 @@ export class EnhancedSyncService {
   /**
    * Store data locally (implement based on your storage strategy)
    */
-  private static async storeDataLocally(table: string, data: any[]) {
+  private static async storeDataLocally(_table: string, _data: any[]) {
     // This would integrate with your local storage solution
     // For example, IndexedDB, localStorage, or in-memory store
   }
@@ -533,14 +533,14 @@ export class EnhancedSyncService {
   /**
    * Store a single record locally
    */
-  private static async storeRecordLocally(table: string, record: any) {
+  private static async storeRecordLocally(_table: string, _record: any) {
     // Implementation depends on your local storage strategy
   }
 
   /**
    * Get a local record
    */
-  private static async getLocalRecord(table: string, id: string): Promise<any> {
+  private static async getLocalRecord(_table: string, _id: string): Promise<any> {
     // Implementation depends on your local storage strategy
     return null
   }

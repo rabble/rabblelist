@@ -41,7 +41,7 @@ export function CampaignAnalytics() {
   const [refreshing, setRefreshing] = useState(false)
   const [dateRange, setDateRange] = useState<'7d' | '30d' | 'all'>('7d')
   const [analytics, setAnalytics] = useState<CampaignAnalytics | null>(null)
-  const [loadingAnalytics, setLoadingAnalytics] = useState(true)
+  const [_loadingAnalytics, setLoadingAnalytics] = useState(true)
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
 

@@ -58,15 +58,17 @@ export function OrganizationSwitcher() {
             organization_id: row.organization_id,
             role: row.role,
             is_primary: row.is_primary,
-            organizations: {
-              id: row.org_id,
-              name: row.org_name,
-              country_code: row.org_country_code,
-              settings: row.org_settings,
-              features: row.org_features,
-              created_at: row.org_created_at,
-              updated_at: row.org_updated_at
-            }
+            organizations: [
+              {
+                id: row.org_id,
+                name: row.org_name,
+                country_code: row.org_country_code,
+                settings: row.org_settings,
+                features: row.org_features,
+                created_at: row.org_created_at,
+                updated_at: row.org_updated_at
+              }
+            ]
           }))
         } else if (viewError) {
           throw viewError
@@ -79,7 +81,7 @@ export function OrganizationSwitcher() {
         organization_id: uo.organization_id,
         role: uo.role,
         is_primary: uo.is_primary,
-        organization: uo.organizations as Organization
+        organization: Array.isArray(uo.organizations) ? uo.organizations[0] : uo.organizations
       })) || []
 
       // If user doesn't have any user_organization records yet, add their current org
@@ -108,7 +110,7 @@ export function OrganizationSwitcher() {
 
     try {
       // Call the switch_organization function
-      const { data, error } = await supabase
+      const { error } = await supabase
         .rpc('switch_organization', { target_org_id: orgId })
 
       if (error) throw error

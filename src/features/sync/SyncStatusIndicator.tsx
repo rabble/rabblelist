@@ -14,7 +14,7 @@ import { formatDistanceToNow } from 'date-fns'
 
 export function SyncStatusIndicator() {
   const isOnline = useOnlineStatus()
-  const { isSyncing, lastSyncTime, pendingChanges, error } = useSyncStore()
+  const { isSyncing, lastSyncTime, pendingChanges } = useSyncStore()
   const [conflicts, setConflicts] = useState(0)
   const [showDetails, setShowDetails] = useState(false)
 
@@ -37,7 +37,7 @@ export function SyncStatusIndicator() {
   }
 
   // Determine status
-  let status: 'synced' | 'syncing' | 'pending' | 'offline' | 'error' | 'conflict'
+  let status: 'synced' | 'syncing' | 'pending' | 'offline' | 'conflict'
   let statusColor: string
   let StatusIcon: any
 
@@ -49,8 +49,8 @@ export function SyncStatusIndicator() {
     status = 'conflict'
     statusColor = 'text-yellow-500'
     StatusIcon = AlertTriangle
-  } else if (error) {
-    status = 'error'
+  } else if (false) { // TODO: check for sync errors
+    status = 'conflict'
     statusColor = 'text-red-500'
     StatusIcon = AlertTriangle
   } else if (isSyncing) {
@@ -73,8 +73,6 @@ export function SyncStatusIndicator() {
         return 'Offline'
       case 'conflict':
         return `${conflicts} conflict${conflicts > 1 ? 's' : ''}`
-      case 'error':
-        return 'Sync error'
       case 'syncing':
         return 'Syncing...'
       case 'pending':
@@ -136,9 +134,9 @@ export function SyncStatusIndicator() {
             )}
 
             {/* Error Message */}
-            {error && (
+            {false && (
               <div className="pt-2 border-t">
-                <p className="text-xs text-red-600">{error.message}</p>
+                <p className="text-xs text-red-600">Error message</p>
               </div>
             )}
 

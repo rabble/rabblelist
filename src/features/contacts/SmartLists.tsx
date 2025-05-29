@@ -16,16 +16,11 @@ import {
   X,
   ChevronRight,
   Clock,
-  MapPin,
-  Phone,
-  Mail,
   Zap,
-  AlertCircle,
-  Check
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { ContactService } from './contacts.service'
-import type { Contact } from '@/types'
+// import { ContactService } from './contacts.service'
+// import type { Contact } from '@/types'
 
 interface SmartListCriteria {
   tags?: {

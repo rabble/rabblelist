@@ -7,7 +7,6 @@ import {
   ArrowLeft,
   Copy,
   Check,
-  Download,
   ExternalLink,
   GitBranch,
   Workflow,

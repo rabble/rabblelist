@@ -164,7 +164,7 @@ export class WebhookService {
   /**
    * Send webhook immediately (for testing)
    */
-  private static async sendWebhook(
+  private static async _sendWebhook(
     webhook: WebhookConfig,
     eventType: string,
     payload: any

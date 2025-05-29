@@ -11,11 +11,7 @@ import {
   Search,
   UserPlus,
   Check,
-  X,
-  Filter,
   Tag,
-  MapPin,
-  Calendar
 } from 'lucide-react'
 
 interface Group {

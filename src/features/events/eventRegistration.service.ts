@@ -393,7 +393,7 @@ export class EventRegistrationService {
       
       // Send email
       await EmailService.sendEmail({
-        to: recipientEmail,
+        to: [recipientEmail],
         subject: `Registration Confirmed: ${event.name}`,
         html: emailHtml,
         tags: ['event-confirmation', `event-${event.id}`]
@@ -510,7 +510,7 @@ export class EventRegistrationService {
         `
 
         await EmailService.sendEmail({
-          to: recipientEmail,
+          to: [recipientEmail],
           subject: `Reminder: ${event.name} - ${daysBefore === 1 ? 'Tomorrow' : `In ${daysBefore} Days`}`,
           html: reminderHtml,
           tags: ['event-reminder', `event-${event.id}`]

@@ -21,12 +21,9 @@ import {
   Share2,
   Heart,
   MapPin,
-  Clock,
   DollarSign,
   Target,
-  MessageSquare,
-  Link,
-  AlertCircle
+  MessageSquare
 } from 'lucide-react'
 import type { Campaign } from './campaign.types'
 
@@ -134,15 +131,15 @@ export function CampaignFormEnhanced() {
         status: 'draft',
         description: template.description,
         tags: [template.category],
-        goal: template.goal,
+        goal: template.settings.goal,
         // Add type-specific fields from template
         ...(template.type === 'petition' && template.settings ? {
-          petition_text: template.settings.petition_text,
-          petition_target: template.settings.petition_target
+          petition_text: '',
+          petition_target: ''
         } : {}),
-        ...(template.type === 'phone_bank' && template.callScript ? {
-          phone_script: template.callScript.script,
-          phone_talking_points: template.callScript.talking_points
+        ...(template.type === 'phone_bank' && template.callScripts && template.callScripts.length > 0 ? {
+          phone_script: template.callScripts[0].content,
+          phone_talking_points: []
         } : {})
       })
     }

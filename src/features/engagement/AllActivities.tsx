@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
+import { Card, CardContent } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { AnalyticsService } from '@/services/analytics.service'
 import { useAuthStore } from '@/stores/authStore'
@@ -14,7 +14,6 @@ import {
   Calendar,
   Zap,
   Share2,
-  Filter,
   Download,
   Loader2,
   Clock

@@ -13,12 +13,9 @@ import {
   Edit,
   Trash2,
   ArrowLeft,
-  Clock,
   MessageSquare,
   Loader2,
-  CheckCircle,
   XCircle,
-  Voicemail,
   Plus
 } from 'lucide-react'
 import type { Contact, CallLog } from '@/types'
@@ -28,7 +25,7 @@ export function ContactDetail() {
   const navigate = useNavigate()
   
   const [contact, setContact] = useState<Contact | null>(null)
-  const [callHistory, setCallHistory] = useState<CallLog[]>([])
+  const [_callHistory, setCallHistory] = useState<CallLog[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -101,20 +98,20 @@ export function ContactDetail() {
     return phone
   }
 
-  const getOutcomeIcon = (outcome: string) => {
-    switch (outcome) {
-      case 'answered':
-        return <CheckCircle className="w-4 h-4 text-green-600" />
-      case 'voicemail':
-        return <Voicemail className="w-4 h-4 text-orange-600" />
-      case 'no_answer':
-      case 'wrong_number':
-      case 'disconnected':
-        return <XCircle className="w-4 h-4 text-red-600" />
-      default:
-        return <Phone className="w-4 h-4 text-gray-400" />
-    }
-  }
+  // const _getOutcomeIcon = (outcome: string) => {
+  //   switch (outcome) {
+  //     case 'answered':
+  //       return <CheckCircle className="w-4 h-4 text-green-600" />
+  //     case 'voicemail':
+  //       return <Voicemail className="w-4 h-4 text-orange-600" />
+  //     case 'no_answer':
+  //     case 'wrong_number':
+  //     case 'disconnected':
+  //       return <XCircle className="w-4 h-4 text-red-600" />
+  //     default:
+  //       return <Phone className="w-4 h-4 text-gray-400" />
+  //   }
+  // }
 
   if (isLoading) {
     return (

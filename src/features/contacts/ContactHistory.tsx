@@ -7,22 +7,13 @@ import {
   MessageSquare, 
   Calendar, 
   StickyNote, 
-  Tag, 
-  X,
-  Clock,
-  ArrowUpRight,
-  ArrowDownLeft,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Users,
+  Tag,
   FileText,
   DollarSign,
-  PhoneOutgoing,
-  PhoneIncoming,
   Megaphone,
   HandHeart,
-  MapPin
+  MapPin,
+  Clock
 } from 'lucide-react'
 
 // Define types based on the database schema
@@ -128,7 +119,7 @@ export function ContactHistory({ contactId }: ContactHistoryProps) {
 
       // Combine all activities into a single timeline
       const combined = combineActivities(
-        interactionsData.data || [],
+        (interactionsData.data || []) as ContactInteraction[],
         campaignData || [],
         eventsData || [],
         callsData.data || []
@@ -253,29 +244,15 @@ export function ContactHistory({ contactId }: ContactHistoryProps) {
   }
 
   const getInteractionTitle = (interaction: ContactInteraction) => {
-    const directionIcon = interaction.direction === 'inbound' ? 
-      <ArrowDownLeft className="w-3 h-3 inline" /> : 
-      <ArrowUpRight className="w-3 h-3 inline" />
+    const direction = interaction.direction === 'inbound' ? '← ' : '→ '
 
     switch (interaction.type) {
       case 'call':
-        return (
-          <>
-            {directionIcon} Call {interaction.status && `- ${interaction.status.replace('_', ' ')}`}
-          </>
-        )
+        return `${direction}Call${interaction.status ? ` - ${interaction.status.replace('_', ' ')}` : ''}`
       case 'text':
-        return (
-          <>
-            {directionIcon} Text Message
-          </>
-        )
+        return `${direction}Text Message`
       case 'email':
-        return (
-          <>
-            {directionIcon} Email
-          </>
-        )
+        return `${direction}Email`
       case 'event':
         return 'Event Attendance'
       case 'note':

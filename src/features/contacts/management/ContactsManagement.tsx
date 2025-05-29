@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
@@ -42,7 +42,7 @@ interface SortOption {
 
 export function ContactsManagement() {
   const navigate = useNavigate()
-  const location = useLocation()
+  // const _location = useLocation()
   const { 
     contacts, 
     totalContacts, 

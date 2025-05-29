@@ -15,8 +15,6 @@ import {
   Crown,
   User,
   Trash2,
-  ChevronDown,
-  Filter,
   Download
 } from 'lucide-react'
 

@@ -5,8 +5,6 @@ import { EnhancedSyncService } from '@/lib/enhancedSyncService'
 import { 
   AlertTriangle, 
   CheckCircle, 
-  XCircle, 
-  RefreshCw,
   Database,
   Cloud,
   Merge

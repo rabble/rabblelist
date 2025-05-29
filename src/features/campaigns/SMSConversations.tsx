@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
+import { useNavigate } from 'react-router-dom'
+// import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/authStore'
@@ -176,12 +176,18 @@ export function SMSConversations() {
         .map(log => log.id)
 
       if (unreadIds.length > 0) {
-        await supabase
-          .from('communication_logs')
-          .update({ 
-            metadata: supabase.sql`metadata || '{"read": true}'::jsonb`
-          })
-          .in('id', unreadIds)
+        // Mark messages as read
+        for (const id of unreadIds) {
+          const log = data.find((l: any) => l.id === id)
+          if (log) {
+            await supabase
+              .from('communication_logs')
+              .update({ 
+                metadata: { ...log.metadata, read: true }
+              })
+              .eq('id', id)
+          }
+        }
       }
     } catch (error) {
       console.error('Failed to load messages:', error)

@@ -20,7 +20,6 @@ import {
   Mail,
   Phone,
   ChevronRight,
-  Filter,
   Download,
   X
 } from 'lucide-react'

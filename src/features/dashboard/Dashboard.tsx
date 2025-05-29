@@ -37,7 +37,16 @@ export function Dashboard() {
       setLoading(true)
 
       // Get contact stats
-      const contactStats = await ContactService.getContactStats()
+      const { data: contacts } = await ContactService.getContacts()
+      const contactStats = {
+        total: contacts?.length || 0,
+        new: contacts?.filter(c => {
+          const createdDate = new Date(c.created_at)
+          const thirtyDaysAgo = new Date()
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+          return createdDate > thirtyDaysAgo
+        }).length || 0
+      }
       
       // Get upcoming events
       const { count: eventsCount } = await supabase
@@ -57,8 +66,8 @@ export function Dashboard() {
       const uniqueRingers = new Set(activeRingerData?.map(log => log.ringer_id) || [])
 
       setStats({
-        totalContacts: contactStats?.totalContacts || 0,
-        contactsCalledToday: contactStats?.contactsCalledToday || 0,
+        totalContacts: contactStats?.total || 0,
+        contactsCalledToday: 0, // TODO: implement this metric
         upcomingEvents: eventsCount || 0,
         activeRingers: uniqueRingers?.size || 0
       })

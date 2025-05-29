@@ -279,7 +279,7 @@ export class OrganizationAPIKeyService {
    * Test API keys by making a simple request
    */
   async testKeys(
-    organizationId: string,
+    _organizationId: string,
     serviceName: ServiceName,
     keys: Record<string, string>
   ): Promise<{ success: boolean; error?: string }> {

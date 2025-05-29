@@ -6,7 +6,6 @@ import { Button } from '@/components/common/Button'
 import { 
   ArrowLeft,
   Zap,
-  Link,
   Settings,
   ExternalLink,
   Copy,
@@ -291,7 +290,7 @@ export function AutomationIntegrations() {
                           <Button
                             size="sm"
                             className="flex-1"
-                            onClick={() => navigate(integration.docsUrl)}
+                            onClick={() => navigate(integration.docsUrl!)}
                           >
                             <ExternalLink className="w-4 h-4 mr-1" />
                             Docs

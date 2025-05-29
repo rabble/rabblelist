@@ -16,10 +16,8 @@ import {
   AlertCircle,
   Activity,
   Clock,
-  X,
   Save,
   Loader2,
-  RefreshCw,
   Eye,
   EyeOff,
   Webhook,
@@ -173,7 +171,7 @@ export function WebhookManagement() {
           <WebhookForm
             webhook={editingWebhook}
             organizationId={organization?.id || ''}
-            onSave={async (webhook) => {
+            onSave={async (_webhook) => {
               await loadWebhooks()
               setShowNewWebhook(false)
               setEditingWebhook(null)
@@ -350,7 +348,8 @@ function WebhookForm({
           name,
           url,
           events,
-          is_active: true
+          is_active: true,
+          secret: crypto.randomUUID()
         })
         onSave(newWebhook)
       }

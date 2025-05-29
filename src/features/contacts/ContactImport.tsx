@@ -197,7 +197,7 @@ export function ContactImport() {
       if (error) {
         alert('Failed to import contacts')
       } else {
-        alert(`Successfully imported ${data.length} contacts!`)
+        alert(`Successfully imported ${data?.length || 0} contacts!`)
         navigate('/contacts')
       }
     } catch (error) {

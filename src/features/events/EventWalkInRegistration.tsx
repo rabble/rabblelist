@@ -60,7 +60,7 @@ export function EventWalkInRegistration() {
     setSaving(true)
     try {
       // Create the registration
-      const { data: registration, error: regError } = await supabase
+      const { error: regError } = await supabase
         .from('event_registrations')
         .insert({
           event_id: eventId,

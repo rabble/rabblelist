@@ -35,7 +35,7 @@ const testPayloads: TestPayload[] = [
     }
   },
   {
-    eventType: 'event.registered',
+    eventType: 'event.registration',
     sampleData: {
       event_id: 'test-event-id',
       contact_id: 'test-contact-id',
@@ -56,7 +56,7 @@ const testPayloads: TestPayload[] = [
 
 export function WebhookTester() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { organization } = useAuth()
   const [selectedEvent, setSelectedEvent] = useState<WebhookEventType>('contact.created')
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState<{
@@ -69,14 +69,14 @@ export function WebhookTester() {
   const selectedPayload = testPayloads.find(p => p.eventType === selectedEvent)
 
   const handleTest = async () => {
-    if (!user?.organization_id) return
+    if (!organization?.id) return
 
     setTesting(true)
     setTestResult(null)
 
     try {
       await WebhookService.triggerWebhook(
-        user.organization_id,
+        organization.id,
         selectedEvent,
         selectedPayload?.sampleData
       )

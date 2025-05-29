@@ -9,8 +9,6 @@ import {
   Send,
   AlertCircle,
   TrendingUp,
-  Users,
-  Clock,
   ArrowLeft,
   RefreshCw,
   BarChart3,
@@ -19,10 +17,17 @@ import {
   ExternalLink
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { EmailService } from '@/services/email.service'
-import type { Database } from '@/lib/database.types'
+// import { EmailService } from '@/services/email.service'
+// import type { Database } from '@/lib/database.types'
 
-type EmailEvent = Database['public']['Tables']['communication_logs']['Row'] & {
+type EmailEvent = {
+  id: string
+  campaign_id: string
+  contact_id: string
+  type: 'email' | 'sms' | 'call'
+  status: 'sent' | 'delivered' | 'opened' | 'clicked' | 'bounced' | 'failed'
+  metadata: any
+  created_at: string
   contacts?: {
     full_name: string
     email: string
@@ -136,7 +141,7 @@ export function EmailTrackingDashboard() {
       const uniqueClicks = new Set(clickedEmails.map(e => e.contact_id)).size
 
       // Calculate rates
-      const delivered = sentEmails.length - bouncedEmails.length
+      const delivered = deliveredEmails.length
       const openRate = delivered > 0 ? (uniqueOpens / delivered) * 100 : 0
       const clickRate = delivered > 0 ? (uniqueClicks / delivered) * 100 : 0
       const clickToOpenRate = uniqueOpens > 0 ? (uniqueClicks / uniqueOpens) * 100 : 0
@@ -171,18 +176,18 @@ export function EmailTrackingDashboard() {
           acc[url] = { total: 0, unique: new Set() }
         }
         acc[url].total++
-        acc[url].unique.add(event.contact_id)
+        (acc[url] as any).unique.add(event.contact_id)
         return acc
       }, {} as Record<string, { total: number; unique: Set<string> }>)
 
-      const totalClicks = Object.values(linkClicks).reduce((sum, link) => sum + link.total, 0)
+      const totalClicks = Object.values(linkClicks).reduce((sum, link: any) => sum + link.total, 0)
       
       const links: LinkStats[] = Object.entries(linkClicks)
-        .map(([url, data]) => ({
+        .map(([url, data]: [string, any]) => ({
           url,
           clicks: data.total,
-          uniqueClicks: data.unique.size,
-          percentage: totalClicks > 0 ? (data.total / totalClicks) * 100 : 0
+          uniqueClicks: (data as any).unique.size,
+          percentage: (totalClicks as number) > 0 ? (data.total / (totalClicks as number)) * 100 : 0
         }))
         .sort((a, b) => b.clicks - a.clicks)
 
@@ -452,7 +457,7 @@ export function EmailTrackingDashboard() {
                         {event.status === 'opened' && 'Opened email'}
                         {event.status === 'clicked' && `Clicked ${(event.metadata as any)?.url || 'link'}`}
                         {event.status === 'bounced' && 'Email bounced'}
-                        {event.status === 'unsubscribed' && 'Unsubscribed'}
+                        {event.status === 'failed' && 'Failed to deliver'}
                       </p>
                     </div>
                     <span className="text-xs text-gray-500">

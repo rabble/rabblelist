@@ -1,4 +1,4 @@
-import { emailConfig } from '@/lib/email.config'
+// import { emailConfig } from '@/lib/email.config'
 import { sendgridConfig } from '@/lib/sendgrid.config'
 import { supabase } from '@/lib/supabase'
 import { withRetry } from '@/lib/retryUtils'

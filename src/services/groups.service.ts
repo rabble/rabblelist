@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { withRetry } from '@/lib/retryUtils'
 import { getCurrentOrganizationId, validateResourceOwnership } from '@/lib/serviceHelpers'
-import type { Inserts } from '@/lib/database.types'
+// import type { Inserts } from '@/lib/database.types'
 
 export interface Group {
   id: string

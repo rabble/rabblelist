@@ -6,7 +6,7 @@ import { Button } from '@/components/common/Button'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ArrowLeft, Save, Users } from 'lucide-react'
+import { ArrowLeft, Save } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 const groupSchema = z.object({
@@ -14,7 +14,7 @@ const groupSchema = z.object({
   description: z.string().optional(),
   type: z.enum(['geographic', 'interest', 'working', 'affinity']),
   parent_id: z.string().optional(),
-  active: z.boolean().default(true)
+  active: z.boolean().optional().default(true)
 })
 
 type GroupFormData = z.infer<typeof groupSchema>

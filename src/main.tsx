@@ -51,7 +51,7 @@ if ('caches' in window) {
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
+      .then(() => {
         // Service worker registered successfully
       })
       .catch(err => {

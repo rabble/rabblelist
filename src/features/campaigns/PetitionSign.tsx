@@ -20,7 +20,7 @@ import {
 export function PetitionSign() {
   const { id: campaignId } = useParams()
   const [campaign, setCampaign] = useState<any>(null)
-  const [petition, setPetition] = useState<any>(null)
+  const [_petition, _setPetition] = useState<any>(null)
   const [stats, setStats] = useState<any>(null)
   const [recentSignatures, setRecentSignatures] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)

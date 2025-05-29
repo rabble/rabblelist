@@ -117,7 +117,7 @@ export class ContactService {
       const organizationId = await getCurrentOrganizationId()
       
       // Validate ownership
-      const isOwned = await validateResourceOwnership('contacts', id, organizationId)
+      const isOwned = await validateResourceOwnership('contacts', id)
       if (!isOwned) {
         throw new Error('Contact not found or access denied')
       }
@@ -152,7 +152,7 @@ export class ContactService {
       const organizationId = await getCurrentOrganizationId()
       
       // Validate ownership
-      const isOwned = await validateResourceOwnership('contacts', id, organizationId)
+      const isOwned = await validateResourceOwnership('contacts', id)
       if (!isOwned) {
         throw new Error('Contact not found or access denied')
       }
@@ -528,7 +528,7 @@ export class ContactService {
       
       // Validate all contacts belong to this organization
       for (const contactId of [primaryContactId, ...mergeContactIds]) {
-        const isOwned = await validateResourceOwnership('contacts', contactId, organizationId)
+        const isOwned = await validateResourceOwnership('contacts', contactId)
         if (!isOwned) {
           throw new Error(`Contact ${contactId} not found or access denied`)
         }
@@ -703,7 +703,7 @@ export class ContactService {
       const organizationId = await getCurrentOrganizationId()
       
       // Validate contact belongs to organization
-      const isOwned = await validateResourceOwnership('contacts', contactId, organizationId)
+      const isOwned = await validateResourceOwnership('contacts', contactId)
       if (!isOwned) {
         throw new Error('Contact not found or access denied')
       }

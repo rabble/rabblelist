@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Ca
 import { Button } from '@/components/common/Button'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/AuthContext'
-import { Mail, UserPlus, Copy, Check, AlertCircle } from 'lucide-react'
+import { UserPlus, Copy, Check, AlertCircle } from 'lucide-react'
 
 export function OrganizationInvite() {
   const { profile, organization } = useAuth()
@@ -215,7 +215,7 @@ export function OrganizationInvite() {
             <div className="text-sm text-gray-600">
               <p>To view and manage organization members, visit the</p>
               <Button
-                variant="link"
+                variant="ghost"
                 onClick={() => navigate('/admin')}
                 className="p-0 h-auto font-medium"
               >

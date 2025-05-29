@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { ContactService } from './contacts.service'
-import type { Contact } from '@/types'
+// import type { Contact } from '@/types'
 
 interface BulkTagOperationsProps {
   selectedContacts: string[]
