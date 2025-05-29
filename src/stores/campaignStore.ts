@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { CampaignService } from '@/features/campaigns/campaigns.service'
-import type { Campaign, CampaignStats } from '@/features/campaigns/campaign.types'
+import type { Campaign, CampaignStats } from '@/types/campaign.types'
 
 interface CampaignStore {
   campaigns: Campaign[]

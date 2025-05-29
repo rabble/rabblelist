@@ -25,13 +25,13 @@ import {
   Target,
   MessageSquare
 } from 'lucide-react'
-import type { Campaign } from './campaign.types'
+import type { Campaign } from '@/types/campaign.types'
 
 // Extended schema with type-specific fields
 const campaignSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  type: z.enum(['petition', 'event', 'donation', 'email_blast', 'phone_bank', 'canvas', 'social']),
-  status: z.enum(['draft', 'active', 'scheduled', 'completed', 'archived']),
+  name: z.string().min(1, 'Name is required'),
+  type: z.enum(['petition', 'event', 'donation', 'email_blast', 'phone_bank', 'canvas', 'social', 'email', 'sms', 'phonebank', 'fundraising', 'canvassing']),
+  status: z.enum(['draft', 'active', 'paused', 'completed', 'cancelled', 'scheduled', 'archived']),
   description: z.string().optional(),
   goal: z.number().optional(),
   start_date: z.string().optional(),

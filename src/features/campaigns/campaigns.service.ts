@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { withRetry } from '@/lib/retryUtils'
 import { getCurrentOrganizationId, validateResourceOwnership } from '@/lib/serviceHelpers'
-import type { Campaign, CampaignStats, CampaignAsset, Petition, PetitionSignature } from './campaign.types'
+import type { Campaign, CampaignStats, CampaignAsset, Petition, PetitionSignature } from '@/types/campaign.types'
 
 export class CampaignService {
   // Get all campaigns for the organization

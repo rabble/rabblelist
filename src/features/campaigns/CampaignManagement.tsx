@@ -72,8 +72,8 @@ export function CampaignManagement() {
     }
   }
 
-  const handleDeleteCampaign = async (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) return
+  const handleDeleteCampaign = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) return
     
     const success = await deleteCampaign(id)
     if (!success) {
@@ -81,9 +81,16 @@ export function CampaignManagement() {
     }
   }
 
+  const getCampaignStat = (campaign: any, statType: string): number => {
+    if (!campaign.campaign_stats || !Array.isArray(campaign.campaign_stats)) return 0
+    
+    const stat = campaign.campaign_stats.find((s: any) => s.stat_type === statType)
+    return stat?.stat_value || 0
+  }
+
   const getProgress = (campaign: any) => {
     if (!campaign.goal) return 0
-    const current = campaign.stats?.participants || 0
+    const current = getCampaignStat(campaign, 'participants')
     return Math.round((current / campaign.goal) * 100)
   }
 
@@ -217,7 +224,7 @@ export function CampaignManagement() {
                       />
                     </div>
                     <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
-                      <span>{campaign.campaign_stats?.[0]?.participants?.toLocaleString() || 0}</span>
+                      <span>{getCampaignStat(campaign, 'participants').toLocaleString()}</span>
                       <span>Goal: {campaign.goal.toLocaleString()}</span>
                     </div>
                   </div>
@@ -226,11 +233,11 @@ export function CampaignManagement() {
                 {/* Stats */}
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="text-center p-2 bg-gray-50 rounded">
-                    <p className="text-lg font-bold">{campaign.campaign_stats?.[0]?.participants || 0}</p>
+                    <p className="text-lg font-bold">{getCampaignStat(campaign, 'participants')}</p>
                     <p className="text-xs text-gray-600">Participants</p>
                   </div>
                   <div className="text-center p-2 bg-gray-50 rounded">
-                    <p className="text-lg font-bold">{campaign.campaign_stats?.[0]?.shares || 0}</p>
+                    <p className="text-lg font-bold">{getCampaignStat(campaign, 'shares')}</p>
                     <p className="text-xs text-gray-600">Shares</p>
                   </div>
                 </div>
@@ -262,7 +269,7 @@ export function CampaignManagement() {
                     size="sm" 
                     variant="outline"
                     className="text-red-600 hover:bg-red-50"
-                    onClick={() => handleDeleteCampaign(campaign.id, campaign.title)}
+                    onClick={() => handleDeleteCampaign(campaign.id, campaign.name || campaign.title || 'this campaign')}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
