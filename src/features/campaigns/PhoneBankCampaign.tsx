@@ -5,7 +5,7 @@ import { Button } from '@/components/common/Button'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { PhoneBankService } from '@/services/phonebank.service'
 import { useCampaignStore } from '@/stores/campaignStore'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuth } from '@/features/auth/AuthContext'
 import type { Campaign, CampaignStats } from '@/types/campaign.types'
 import { 
   Phone, 
@@ -38,7 +38,7 @@ const CALL_OUTCOMES: CallOutcome[] = [
 
 export function PhoneBankCampaign() {
   const { id: campaignId } = useParams()
-  const { user } = useAuthStore()
+  const { profile: user } = useAuth()
   const { campaigns, loadCampaign } = useCampaignStore()
   
   const [session, setSession] = useState<any>(null)

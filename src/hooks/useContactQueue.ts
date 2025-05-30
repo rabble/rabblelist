@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useContactStore } from '@/stores/contactStore'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuth } from '@/features/auth/AuthContext'
 
 /**
  * Hook to manage the contact queue for the current user
@@ -9,7 +9,7 @@ import { useAuthStore } from '@/stores/authStore'
  * @returns Queue data and loading state
  */
 export function useContactQueue() {
-  const user = useAuthStore(state => state.user)
+  const { profile: user } = useAuth()
   const queue = useContactStore(state => state.queue)
   const currentIndex = useContactStore(state => state.currentIndex)
   const isLoadingQueue = useContactStore(state => state.isLoadingQueue)

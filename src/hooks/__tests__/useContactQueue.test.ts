@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { useContactQueue } from '../useContactQueue'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuth } from '@/features/auth/AuthContext'
 import { useContactStore } from '@/stores/contactStore'
 import type { User, CallQueueItem } from '@/types'
 
-// Mock the stores
-vi.mock('@/stores/authStore')
+// Mock the stores and auth context
+vi.mock('@/features/auth/AuthContext')
 vi.mock('@/stores/contactStore')
 
 describe('useContactQueue', () => {
@@ -63,14 +63,6 @@ describe('useContactQueue', () => {
     }
   }
   
-  const createMockAuthStore = (user: User | null) => {
-    return (selector: any) => {
-      if (typeof selector === 'function') {
-        return selector({ user })
-      }
-      return { user }
-    }
-  }
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -78,7 +70,18 @@ describe('useContactQueue', () => {
 
   describe('when user is not authenticated', () => {
     beforeEach(() => {
-      vi.mocked(useAuthStore).mockImplementation(createMockAuthStore(null))
+      vi.mocked(useAuth).mockReturnValue({
+        user: null,
+        profile: null,
+        organization: null,
+        session: null,
+        loading: false,
+        signIn: vi.fn(),
+        signUp: vi.fn(),
+        signOut: vi.fn(),
+        resetPassword: vi.fn(),
+        updatePassword: vi.fn()
+      })
       vi.mocked(useContactStore).mockImplementation(createMockContactStore())
     })
 
@@ -96,7 +99,18 @@ describe('useContactQueue', () => {
 
   describe('when user is authenticated', () => {
     beforeEach(() => {
-      vi.mocked(useAuthStore).mockImplementation(createMockAuthStore(mockUser))
+      vi.mocked(useAuth).mockReturnValue({
+        user: { id: mockUser.id, email: mockUser.email } as any,
+        profile: mockUser,
+        organization: { id: 'org-123', name: 'Test Org' } as any,
+        session: {} as any,
+        loading: false,
+        signIn: vi.fn(),
+        signUp: vi.fn(),
+        signOut: vi.fn(),
+        resetPassword: vi.fn(),
+        updatePassword: vi.fn()
+      })
     })
 
     it('should return queue and loading state', () => {
@@ -147,7 +161,18 @@ describe('useContactQueue', () => {
 
       // Change user
       const newUser = { ...mockUser, id: 'user-456' }
-      vi.mocked(useAuthStore).mockImplementation(createMockAuthStore(newUser))
+      vi.mocked(useAuth).mockReturnValue({
+        user: { id: newUser.id, email: newUser.email } as any,
+        profile: newUser,
+        organization: { id: 'org-123', name: 'Test Org' } as any,
+        session: {} as any,
+        loading: false,
+        signIn: vi.fn(),
+        signUp: vi.fn(),
+        signOut: vi.fn(),
+        resetPassword: vi.fn(),
+        updatePassword: vi.fn()
+      })
 
       rerender()
 

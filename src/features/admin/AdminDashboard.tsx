@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
-import { useAuth } from '@/features/auth/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Phone, Users, Calendar, TrendingUp, UserPlus, Upload, Loader2, Settings, Key, Activity, Database } from 'lucide-react'
 import type { Contact } from '@/types'
@@ -16,7 +15,6 @@ interface Stats {
 
 export function AdminDashboard() {
   const navigate = useNavigate()
-  const { } = useAuth()
   const [stats, setStats] = useState<Stats>({
     totalContacts: 0,
     totalCalls: 0,

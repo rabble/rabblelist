@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { AnalyticsService } from '@/services/analytics.service'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuth } from '@/features/auth/AuthContext'
 import { 
   TrendingUp,
   TrendingDown,
@@ -61,7 +61,7 @@ export function EngagementDashboard() {
   const [refreshing, setRefreshing] = useState(false)
   const [ladderData, setLadderData] = useState<any>(null)
   const [campaignPerformance, setCampaignPerformance] = useState<any[]>([])
-  const { user } = useAuthStore()
+  const { profile: user } = useAuth()
 
   useEffect(() => {
     if (user?.organization_id) {

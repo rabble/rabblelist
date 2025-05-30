@@ -4,7 +4,7 @@ import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { AnalyticsService } from '@/services/analytics.service'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuth } from '@/features/auth/AuthContext'
 import { 
   ArrowLeft,
   Activity,
@@ -30,7 +30,7 @@ interface ActivityItem {
 
 export function AllActivities() {
   const navigate = useNavigate()
-  const { user } = useAuthStore()
+  const { profile: user } = useAuth()
   const [activities, setActivities] = useState<ActivityItem[]>([])
   const [loading, setLoading] = useState(true)
   const [filterType, setFilterType] = useState<string>('all')

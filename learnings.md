@@ -721,10 +721,15 @@ if (existing?.organization_id !== profile.organization_id) {
    await supabase.auth.signOut()
    ```
 
-### Remaining Issues
-- **AuthStore Still Used**: Several components (SMSConversations, PhoneBankCampaign, etc.) still import authStore
-- **Need to Remove authStore**: To fully fix auth issues, need to update all components to use SupabaseAuthContext
-- **Test Auth Flow**: After removing authStore, need to test login/logout thoroughly
+### Auth System Cleanup Completed (2025-05-30)
+- **Removed authStore Completely**: All components now use SupabaseAuthContext
+- **Components Updated**: PhoneBankCampaign, EventWalkInRegistration, AllActivities, EngagementDashboard, useContactQueue
+- **Mapping Applied**: 
+  - `authStore.user` → `SupabaseAuthContext.profile`
+  - `authStore.isLoading` → `SupabaseAuthContext.loading`
+- **Files Deleted**: authStore.ts and authStore.test.ts removed
+- **Tests Updated**: useContactQueue.test.ts now mocks useAuth instead of useAuthStore
+- **Build Verified**: No TypeScript errors after complete migration
 
 ## Database Schema Issues Fixed (2025-05-29)
 

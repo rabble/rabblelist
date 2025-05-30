@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { supabase } from '@/lib/supabase'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuth } from '@/features/auth/AuthContext'
 import { 
   UserPlus,
   Save,
@@ -17,7 +17,7 @@ import { format } from 'date-fns'
 export function EventWalkInRegistration() {
   const { id: eventId } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuthStore()
+  const { profile: user } = useAuth()
   const [event, setEvent] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
