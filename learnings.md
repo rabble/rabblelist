@@ -867,3 +867,51 @@ When implementing click-to-call functionality:
 - Trigger-based automatic occurrence creation
 - Series management: update/delete this, following, or all
 - Efficient queries using parent_event_id relationships
+
+## Email Tracking Implementation (2025-05-29)
+
+### Database Design for Email Tracking
+- Created `email_tracking_events` table for all email events
+- Supports event types: send, delivered, open, click, bounce, spam, unsubscribe, dropped
+- Created `email_links` table for tracking specific URLs with click counts
+- Added `email_statistics` JSONB field to campaign_assets for aggregated stats
+- Implemented database trigger to auto-update statistics on new events
+
+### Tracking Service Architecture
+```typescript
+// EmailTrackingService provides:
+- generateTrackingPixel() - Creates 1x1 pixel for open tracking
+- generateTrackingLinks() - Maps original URLs to tracking URLs
+- replaceLinksWithTracking() - Substitutes links in email content
+- trackEvent() - Records email events to database
+- getCampaignStatistics() - Returns aggregated metrics
+- handleWebhook() - Processes SendGrid/Mailgun webhooks
+```
+
+### Email Service Integration
+- Automatically extracts URLs from email HTML content
+- Generates tracking links before sending
+- Adds tracking pixel before closing </body> tag
+- Records send events for each recipient
+- Maintains compatibility with SendGrid's native tracking
+
+### Dashboard Updates
+- EmailTrackingDashboard now uses tracking service instead of communication_logs
+- Real-time statistics from aggregated data
+- Link performance metrics with click percentages
+- Device and email client detection from user agents
+- Timeline view of email interactions
+
+### Webhook Handling
+- Supports both SendGrid and Mailgun webhook formats
+- Maps provider-specific events to standard event types
+- Preserves all webhook data in event_data JSONB field
+- Handles arrays of events (SendGrid) and single events (Mailgun)
+
+### Key Learnings
+1. **URL Extraction**: Use regex to find all href links in HTML content
+2. **Link Replacement**: Must escape special regex characters in URLs
+3. **Tracking Pixel**: Insert before </body> to ensure it's rendered
+4. **Event Aggregation**: Use PostgreSQL functions for efficient stats calculation
+5. **Webhook Security**: In production, verify webhook signatures
+6. **Privacy Compliance**: Track opens/clicks must respect user preferences

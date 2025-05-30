@@ -26,7 +26,7 @@
   - [x] Email campaign UI with preview
   - [x] Test email functionality
   - [ ] Email template editor with drag-and-drop
-  - [ ] Email tracking (opens, clicks)
+  - [x] Email tracking (opens, clicks)
   - [ ] Bounce handling and list hygiene
   - [ ] Unsubscribe management
 - [x] **SMS messaging** - Campaign SMS messaging via Twilio
