@@ -6,6 +6,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { PhoneBankService } from '@/services/phonebank.service'
 import { useCampaignStore } from '@/stores/campaignStore'
 import { useAuthStore } from '@/stores/authStore'
+import type { Campaign, CampaignStats } from '@/types/campaign.types'
 import { 
   Phone, 
   Users, 
@@ -51,6 +52,13 @@ export function PhoneBankCampaign() {
   const [script, setScript] = useState<any>(null)
   
   const campaign = campaigns.find(c => c.id === campaignId)
+  
+  // Helper function to get campaign stat value
+  const getCampaignStat = (campaign: Campaign, statType: string): number => {
+    if (!campaign.campaign_stats || !Array.isArray(campaign.campaign_stats)) return 0
+    const stat = campaign.campaign_stats.find((s: CampaignStats) => s.stat_type === statType)
+    return stat?.stat_value || 0
+  }
   
   useEffect(() => {
     if (campaignId) {
@@ -440,14 +448,14 @@ export function PhoneBankCampaign() {
                 <div className="flex justify-between text-sm">
                   <span>Progress</span>
                   <span className="font-medium">
-                    {campaign.campaign_stats?.[0]?.participants || 0} / {campaign.goal}
+                    {getCampaignStat(campaign, 'participants')} / {campaign.goal}
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
                     className="bg-primary-500 h-2 rounded-full"
                     style={{ 
-                      width: `${Math.min(100, ((campaign.campaign_stats?.[0]?.participants || 0) / campaign.goal) * 100)}%` 
+                      width: `${Math.min(100, (getCampaignStat(campaign, 'participants') / campaign.goal) * 100)}%` 
                     }}
                   />
                 </div>

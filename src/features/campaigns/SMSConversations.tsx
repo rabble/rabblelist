@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 // import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { supabase } from '@/lib/supabase'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuth } from '@/features/auth/SupabaseAuthContext'
 import { useContactStore } from '@/stores/contactStore'
 import { 
   MessageSquare, 
@@ -40,7 +40,7 @@ interface Conversation {
 
 export function SMSConversations() {
   const navigate = useNavigate()
-  const { user } = useAuthStore()
+  const { user, profile } = useAuth()
   const { contacts } = useContactStore()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
@@ -84,14 +84,14 @@ export function SMSConversations() {
   }
 
   const loadConversations = async () => {
-    if (!user) return
+    if (!profile?.organization_id) return
 
     try {
       // Get all SMS communications grouped by contact
       const { data: smsLogs, error } = await supabase
         .from('communication_logs')
         .select('*')
-        .eq('organization_id', user.organization_id)
+        .eq('organization_id', profile.organization_id)
         .eq('type', 'sms')
         .order('created_at', { ascending: false })
 
@@ -145,7 +145,7 @@ export function SMSConversations() {
   }
 
   const loadMessages = async (contactId: string) => {
-    if (!user) return
+    if (!profile) return
 
     try {
       const { data, error } = await supabase
@@ -218,20 +218,28 @@ export function SMSConversations() {
   }
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation || !user) return
+    if (!newMessage.trim() || !selectedConversation || !profile) return
 
     const conversation = conversations.find(c => c.contact_id === selectedConversation)
     if (!conversation || !conversation.contact.phone) return
 
     setSending(true)
     try {
-      // Here you would integrate with your SMS service (Twilio, etc.)
-      // For now, we'll just log it to the communication_logs
+      // Import SMS service dynamically to avoid circular dependency
+      const { SMSService } = await import('@/services/sms.service')
+      
+      // Send actual SMS through Twilio
+      await SMSService.sendSMS({
+        to: [conversation.contact.phone],
+        body: newMessage,
+        tags: ['conversation', 'two-way']
+      })
 
+      // Also log to communication_logs for the conversation view
       const { error } = await supabase
         .from('communication_logs')
         .insert({
-          organization_id: user.organization_id,
+          organization_id: profile.organization_id,
           contact_id: selectedConversation,
           type: 'sms',
           content: newMessage,
@@ -239,7 +247,7 @@ export function SMSConversations() {
           status: 'sent',
           metadata: {
             direction: 'outbound',
-            sent_by: user.id
+            sent_by: user?.id
           }
         })
 

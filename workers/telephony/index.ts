@@ -12,6 +12,7 @@ export interface Env {
   TWILIO_API_KEY: string;
   TWILIO_API_SECRET: string;
   TWILIO_PROXY_SERVICE_SID: string;
+  TWILIO_PHONE_NUMBER: string;
   
   // Supabase credentials
   SUPABASE_URL: string;
@@ -67,6 +68,15 @@ export default {
         
         case '/api/telephony/webhook/out-of-session':
           return await handleOutOfSessionWebhook(request, env);
+        
+        case '/api/telephony/sms/send':
+          return await handleSendSMS(request, env);
+        
+        case '/api/telephony/webhook/sms':
+          return await handleSMSWebhook(request, env);
+        
+        case '/api/telephony/webhook/sms/status':
+          return await handleSMSStatusWebhook(request, env);
         
         default:
           return new Response('Not found', { status: 404 });
@@ -364,4 +374,198 @@ async function handleOutOfSessionWebhook(request: Request, env: Env): Promise<Re
   // Handle calls that come in when no session exists
   // You could create a new session or reject the call
   return new Response('OK', { status: 200 });
+}
+
+async function handleSendSMS(request: Request, env: Env): Promise<Response> {
+  // Verify authentication
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  const { to, body, from, mediaUrl, statusCallback, twilioConfig } = await request.json();
+  
+  const client = new Twilio(
+    twilioConfig?.accountSid || env.TWILIO_ACCOUNT_SID,
+    twilioConfig?.authToken || env.TWILIO_AUTH_TOKEN
+  );
+
+  try {
+    const messages = await Promise.all(
+      to.map(async (recipient: string) => {
+        const messageOptions: any = {
+          body,
+          from: from || env.TWILIO_PHONE_NUMBER,
+          to: recipient,
+        };
+
+        if (mediaUrl) {
+          messageOptions.mediaUrl = [mediaUrl];
+        }
+
+        if (statusCallback) {
+          messageOptions.statusCallback = statusCallback;
+        }
+
+        return client.messages.create(messageOptions);
+      })
+    );
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        messages: messages.map(m => ({ sid: m.sid, to: m.to })),
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  } catch (error: any) {
+    console.error('SMS send error:', error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
+}
+
+async function handleSMSWebhook(request: Request, env: Env): Promise<Response> {
+  // Verify Twilio signature
+  const signature = request.headers.get('X-Twilio-Signature');
+  if (!signature || !verifyTwilioSignature(request, signature, env)) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  const formData = await request.formData();
+  const messageSid = formData.get('MessageSid');
+  const messageStatus = formData.get('MessageStatus');
+  const from = formData.get('From');
+  const to = formData.get('To');
+  const body = formData.get('Body');
+  const numMedia = parseInt(formData.get('NumMedia') as string || '0');
+
+  // Handle incoming SMS
+  if (messageStatus === 'received' || !messageStatus) {
+    // Find contact by phone number
+    const contact = await findContactByPhone(from as string, env);
+    
+    if (contact) {
+      // Log the incoming message
+      await createCommunicationLog({
+        organization_id: contact.organization_id,
+        contact_id: contact.id,
+        type: 'sms',
+        content: body as string,
+        recipient: from as string,
+        status: 'received',
+        metadata: {
+          direction: 'inbound',
+          message_sid: messageSid,
+          from: from,
+          to: to,
+          media_count: numMedia,
+          received_at: new Date().toISOString()
+        }
+      }, env);
+
+      // Trigger webhook for the organization
+      await triggerOrganizationWebhook(
+        contact.organization_id,
+        'communication.received',
+        {
+          type: 'sms',
+          contact_id: contact.id,
+          from: from,
+          body: body,
+          media_count: numMedia
+        },
+        env
+      );
+    }
+  }
+
+  // Return empty TwiML response
+  return new Response(
+    '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
+    {
+      headers: { 'Content-Type': 'text/xml' },
+    }
+  );
+}
+
+async function handleSMSStatusWebhook(request: Request, env: Env): Promise<Response> {
+  // Verify Twilio signature
+  const signature = request.headers.get('X-Twilio-Signature');
+  if (!signature || !verifyTwilioSignature(request, signature, env)) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  const formData = await request.formData();
+  const messageSid = formData.get('MessageSid');
+  const messageStatus = formData.get('MessageStatus');
+
+  // Update message status in database
+  await updateMessageStatus(messageSid as string, messageStatus as string, env);
+
+  return new Response('OK', { status: 200 });
+}
+
+// Helper functions for SMS
+async function findContactByPhone(phone: string, env: Env): Promise<any> {
+  const response = await fetch(
+    `${env.SUPABASE_URL}/rest/v1/contacts?phone=eq.${encodeURIComponent(phone)}`,
+    {
+      headers: {
+        'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+      },
+    }
+  );
+
+  const contacts = await response.json();
+  return contacts[0];
+}
+
+async function createCommunicationLog(data: any, env: Env): Promise<void> {
+  await fetch(
+    `${env.SUPABASE_URL}/rest/v1/communication_logs`,
+    {
+      method: 'POST',
+      headers: {
+        'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    }
+  );
+}
+
+async function updateMessageStatus(messageSid: string, status: string, env: Env): Promise<void> {
+  await fetch(
+    `${env.SUPABASE_URL}/rest/v1/communication_logs?metadata->>message_sid=eq.${messageSid}`,
+    {
+      method: 'PATCH',
+      headers: {
+        'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        status,
+        metadata: {
+          status_updated_at: new Date().toISOString()
+        }
+      }),
+    }
+  );
+}
+
+async function triggerOrganizationWebhook(organizationId: string, event: string, data: any, env: Env): Promise<void> {
+  // This would trigger any webhooks configured by the organization
+  // For now, just log it
+  console.log('Webhook trigger:', { organizationId, event, data });
 }

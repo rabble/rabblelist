@@ -5,6 +5,7 @@ import { Button } from '@/components/common/Button'
 import { SMSService } from '@/services/sms.service'
 import { useCampaignStore } from '@/stores/campaignStore'
 import { useContactStore } from '@/stores/contactStore'
+import type { Campaign, CampaignStats } from '@/types/campaign.types'
 import { 
   MessageSquare, 
   Send, 
@@ -31,6 +32,13 @@ export function SMSCampaign() {
   const { contacts } = useContactStore()
   
   const campaign = campaigns.find(c => c.id === campaignId)
+  
+  // Helper function to get campaign stat value
+  const getCampaignStat = (campaign: Campaign, statType: string): number => {
+    if (!campaign || !campaign.campaign_stats || !Array.isArray(campaign.campaign_stats)) return 0
+    const stat = campaign.campaign_stats.find((s: CampaignStats) => s.stat_type === statType)
+    return stat?.stat_value || 0
+  }
   
   useEffect(() => {
     if (campaignId) {
@@ -147,12 +155,10 @@ export function SMSCampaign() {
     }
   }
 
-  const stats = campaign.campaign_stats?.[0] || {
-    participants: 0,
-    conversions: 0,
-    shares: 0,
-    new_contacts: 0
-  }
+  // Get stats using the helper function
+  const participantsStat = campaign ? getCampaignStat(campaign, 'participants') : 0
+  const conversionsStat = campaign ? getCampaignStat(campaign, 'conversions') : 0
+  const sharesStat = campaign ? getCampaignStat(campaign, 'shares') : 0
 
   return (
     <div className="space-y-6">
@@ -173,17 +179,17 @@ export function SMSCampaign() {
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">
               <Send className="w-8 h-8 mx-auto mb-2 text-green-600" />
-              <p className="text-2xl font-bold">{stats.participants}</p>
+              <p className="text-2xl font-bold">{participantsStat}</p>
               <p className="text-sm text-gray-600">Sent</p>
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">
               <CheckCircle className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-              <p className="text-2xl font-bold">{stats.conversions}</p>
+              <p className="text-2xl font-bold">{conversionsStat}</p>
               <p className="text-sm text-gray-600">Delivered</p>
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">
               <Phone className="w-8 h-8 mx-auto mb-2 text-purple-600" />
-              <p className="text-2xl font-bold">{stats.shares}</p>
+              <p className="text-2xl font-bold">{sharesStat}</p>
               <p className="text-sm text-gray-600">Responses</p>
             </div>
           </div>

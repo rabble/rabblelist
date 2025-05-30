@@ -5,6 +5,7 @@ import { Button } from '@/components/common/Button'
 import { EmailService } from '@/services/email.service'
 import { useCampaignStore } from '@/stores/campaignStore'
 import { useContactStore } from '@/stores/contactStore'
+import { getCampaignStat, CAMPAIGN_STAT_TYPES } from './campaignHelpers'
 import { 
   Mail, 
   Send, 
@@ -132,12 +133,7 @@ export function EmailCampaign() {
     }
   }
 
-  const stats = campaign.campaign_stats?.[0] || {
-    participants: 0,
-    conversions: 0,
-    shares: 0,
-    new_contacts: 0
-  }
+  // Stats are now accessed via helper functions
 
   return (
     <div className="space-y-6">
@@ -158,17 +154,17 @@ export function EmailCampaign() {
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">
               <Send className="w-8 h-8 mx-auto mb-2 text-green-600" />
-              <p className="text-2xl font-bold">{stats.participants}</p>
+              <p className="text-2xl font-bold">{getCampaignStat(campaign, CAMPAIGN_STAT_TYPES.PARTICIPANTS)}</p>
               <p className="text-sm text-gray-600">Sent</p>
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">
               <Eye className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-              <p className="text-2xl font-bold">{stats.conversions}</p>
+              <p className="text-2xl font-bold">{getCampaignStat(campaign, CAMPAIGN_STAT_TYPES.CONVERSIONS)}</p>
               <p className="text-sm text-gray-600">Opens</p>
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">
               <CheckCircle className="w-8 h-8 mx-auto mb-2 text-purple-600" />
-              <p className="text-2xl font-bold">{stats.shares}</p>
+              <p className="text-2xl font-bold">{getCampaignStat(campaign, CAMPAIGN_STAT_TYPES.SHARES)}</p>
               <p className="text-sm text-gray-600">Clicks</p>
             </div>
           </div>
