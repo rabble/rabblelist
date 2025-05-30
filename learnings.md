@@ -915,3 +915,68 @@ When implementing click-to-call functionality:
 4. **Event Aggregation**: Use PostgreSQL functions for efficient stats calculation
 5. **Webhook Security**: In production, verify webhook signatures
 6. **Privacy Compliance**: Track opens/clicks must respect user preferences
+
+## A/B Testing Implementation (2025-05-29)
+
+### Database Design for A/B Testing
+- Added `is_ab_test` boolean and `ab_test_config` JSONB to campaigns table
+- Created `ab_test_assignments` table for tracking contact-to-variant assignments
+- Created `ab_test_results` table for storing calculated performance metrics
+- Added `ab_variant_id` to email_tracking_events for variant tracking
+- Used PostgreSQL random() function for statistically sound variant assignment
+
+### A/B Test Configuration Structure
+```json
+{
+  "variants": [
+    {
+      "id": "control",
+      "name": "Control",
+      "allocation": 50,
+      "subject": "Original Subject",
+      "content": "Original content"
+    },
+    {
+      "id": "test",
+      "name": "Test", 
+      "allocation": 50,
+      "subject": "Alternative Subject",
+      "content": "Alternative content"
+    }
+  ],
+  "winning_criteria": "open_rate",
+  "test_duration_hours": 24,
+  "minimum_sample_size": 100,
+  "confidence_level": 0.95
+}
+```
+
+### Statistical Analysis Features
+- **Random Assignment**: Uses database function with random() for unbiased allocation
+- **Significance Testing**: Simplified z-test for proportions between variants
+- **Confidence Levels**: 90%, 95%, 99% thresholds for declaring winners
+- **Auto-completion**: Tests end when sample size or duration thresholds met
+- **Multiple Metrics**: Supports open rate, click rate, and conversion rate optimization
+
+### Email Service Integration
+- **Variant Detection**: Automatically detects A/B test configuration before sending
+- **Batch Processing**: Groups recipients by variant for efficient sending
+- **Content Substitution**: Replaces subject/content based on variant assignment
+- **Tracking Integration**: Includes variant ID in all tracking events
+- **Fallback Handling**: Gracefully handles regular campaigns without A/B testing
+
+### Dashboard Features
+- **Real-time Performance**: Live updates of variant metrics
+- **Statistical Confidence**: Visual indicators for significance levels
+- **Winner Declaration**: Manual or automatic winner selection
+- **Test Management**: Start, stop, and configure tests through UI
+- **Visual Comparison**: Side-by-side variant performance display
+
+### Key Learnings
+1. **Allocation Validation**: Always ensure variant allocations sum to 100%
+2. **Persistent Assignment**: Store assignments to ensure consistent user experience
+3. **Statistical Rigor**: Use proper significance testing, not just raw percentages
+4. **Sample Size Planning**: Calculate minimum samples needed for reliable results
+5. **Test Duration**: Balance statistical power with business needs
+6. **Variant Isolation**: Keep variant content/logic separate from base campaign
+7. **Performance Impact**: Bulk assignment reduces database queries for large campaigns

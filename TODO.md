@@ -79,7 +79,7 @@
   - [x] Contact assignment to campaigns
   - [x] Real-time performance monitoring via stats
   - [x] Campaign status management (draft, active, completed)
-  - [ ] A/B testing capabilities
+  - [x] A/B testing capabilities
   - [ ] Campaign pause/resume functionality
 - [x] **Campaign analytics** - Basic reporting
   - [x] Key metrics dashboard (participants, conversions, shares)
