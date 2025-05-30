@@ -57,6 +57,7 @@ import { EventCheckIn } from '@/features/events/EventCheckIn'
 import { EventAttendanceDashboard } from '@/features/events/EventAttendanceDashboard'
 import { EventWalkInRegistration } from '@/features/events/EventWalkInRegistration'
 import { SyncConflictManager } from '@/features/sync/SyncConflictManager'
+import { DatabaseDebug } from '@/features/debug/DatabaseDebug'
 
 function App() {
   return (
@@ -452,6 +453,12 @@ function AppRoutes() {
               <Layout>
                 <SyncConflictManager />
               </Layout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/admin/database-debug" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <DatabaseDebug />
             </ProtectedRoute>
           } />
           
