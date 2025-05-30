@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { withRetry } from '@/lib/retryUtils'
 import { OrganizationAPIKeyService } from './api-key.service'
 import { EmailTrackingService } from './emailTracking.service'
+import { ABTestingService } from './abTesting.service'
 
 export interface EmailMessage {
   to: string[]
@@ -45,6 +46,7 @@ export interface EmailCampaign {
 export class EmailService {
   private static apiKeyService = OrganizationAPIKeyService.getInstance()
   private static trackingService = EmailTrackingService.getInstance()
+  private static abTestService = ABTestingService.getInstance()
   
   // Get current organization ID
   private static async getCurrentOrgId(): Promise<string> {
@@ -182,113 +184,192 @@ export class EmailService {
     })
   }
   
-  // Send bulk email campaign
+  // Send bulk email campaign with A/B testing support
   static async sendCampaignEmail(
     campaignId: string, 
     recipients: Array<{ id: string; email: string; firstName?: string; lastName?: string }>,
     emailData: { subject: string; html: string; tags?: string[]; template?: string }
   ) {
     return withRetry(async () => {
-      // Extract URLs from HTML content for tracking
-      const urlRegex = /href=["']?(https?:\/\/[^"'\s>]+)["']?/gi
-      const urls: Array<{ url: string; alias?: string }> = []
-      let match
+      // Check if this is an A/B test
+      const abTestConfig = await this.abTestService.getABTestConfig(campaignId)
       
-      while ((match = urlRegex.exec(emailData.html)) !== null) {
-        const url = match[1]
-        if (!urls.find(u => u.url === url)) {
-          urls.push({ url })
+      if (abTestConfig) {
+        return this.sendABTestCampaign(campaignId, recipients, emailData, abTestConfig)
+      } else {
+        return this.sendRegularCampaign(campaignId, recipients, emailData)
+      }
+    })
+  }
+
+  // Send A/B test campaign
+  private static async sendABTestCampaign(
+    campaignId: string,
+    recipients: Array<{ id: string; email: string; firstName?: string; lastName?: string }>,
+    baseEmailData: { subject: string; html: string; tags?: string[]; template?: string },
+    abTestConfig: any
+  ) {
+    // Get variant assignments for all recipients
+    const contactIds = recipients.map(r => r.id)
+    const variantAssignments = await this.abTestService.getBulkVariantAssignments(campaignId, contactIds)
+    
+    let totalSuccess = 0
+    let totalFailure = 0
+    
+    // Group recipients by variant
+    const variantGroups = new Map<string, typeof recipients>()
+    
+    recipients.forEach(recipient => {
+      const variantId = variantAssignments.get(recipient.id)
+      if (variantId) {
+        if (!variantGroups.has(variantId)) {
+          variantGroups.set(variantId, [])
         }
+        variantGroups.get(variantId)!.push(recipient)
+      }
+    })
+    
+    // Send each variant group
+    for (const [variantId, variantRecipients] of variantGroups) {
+      const variant = abTestConfig.variants.find((v: any) => v.id === variantId)
+      if (!variant) continue
+      
+      // Use variant-specific content
+      const variantEmailData = {
+        subject: variant.subject || baseEmailData.subject,
+        html: variant.content || baseEmailData.html,
+        tags: baseEmailData.tags,
+        template: variant.template_id || baseEmailData.template
       }
       
-      // Generate tracking links
-      const linkMap = await this.trackingService.generateTrackingLinks(campaignId, urls)
-      
-      // Replace links with tracking URLs
-      const trackedHtml = this.trackingService.replaceLinksWithTracking(emailData.html, linkMap)
-      
-      // Generate tracking pixel
-      const trackingPixel = await this.trackingService.generateTrackingPixel(campaignId)
-      
-      // Add tracking pixel to HTML (before closing </body> tag)
-      const htmlWithPixel = trackedHtml.replace(
-        '</body>',
-        `<img src="${trackingPixel}" width="1" height="1" style="display:none;" /></body>`
+      const { successCount, failureCount } = await this.sendVariantBatch(
+        campaignId,
+        variantRecipients,
+        variantEmailData,
+        variantId
       )
       
-      // SendGrid allows up to 1000 personalizations per request
-      const batchSize = 1000
-      let successCount = 0
-      let failureCount = 0
+      totalSuccess += successCount
+      totalFailure += failureCount
+    }
+    
+    // Calculate results after sending
+    await this.abTestService.calculateResults(campaignId)
+    
+    return { successCount: totalSuccess, failureCount: totalFailure }
+  }
 
-      for (let i = 0; i < recipients.length; i += batchSize) {
-        const batch = recipients.slice(i, i + batchSize)
-        
-        try {
-          // Build personalizations for batch
-          const personalizations = batch.map(recipient => ({
-            to: [{ email: recipient.email }],
-            dynamic_template_data: {
-              firstName: recipient.firstName || '',
-              lastName: recipient.lastName || '',
-              email: recipient.email
-            }
-          }))
+  // Send regular campaign (non A/B test)
+  private static async sendRegularCampaign(
+    campaignId: string,
+    recipients: Array<{ id: string; email: string; firstName?: string; lastName?: string }>,
+    emailData: { subject: string; html: string; tags?: string[]; template?: string }
+  ) {
+    return this.sendVariantBatch(campaignId, recipients, emailData, null)
+  }
 
-          const payload = {
-            personalizations,
-            from: {
-              email: sendgridConfig.defaultFrom.email,
-              name: sendgridConfig.defaultFrom.name
-            },
-            subject: emailData.subject,
-            ...(emailData.template ? {
-              template_id: sendgridConfig.templates[emailData.template as keyof typeof sendgridConfig.templates]
-            } : {
-              content: [{ type: 'text/html', value: htmlWithPixel }]
-            }),
-            categories: [...(emailData.tags || []), `campaign-${campaignId}`],
-            tracking_settings: {
-              click_tracking: { enable: true },
-              open_tracking: { enable: true }
-            },
-            custom_args: {
-              campaign_id: campaignId
-            }
-          }
-
-          await this.callSendGridAPI('/mail/send', payload)
-          successCount += batch.length
-          
-          // Track send events
-          for (const recipient of batch) {
-            await this.trackingService.trackEvent({
-              campaign_id: campaignId,
-              contact_id: recipient.id,
-              email_address: recipient.email,
-              event_type: 'send',
-              event_timestamp: new Date().toISOString()
-            })
-          }
-        } catch (error) {
-          console.error(`Batch send failed for ${batch.length} recipients:`, error)
-          failureCount += batch.length
-        }
+  // Send a batch of emails for a specific variant (or regular campaign)
+  private static async sendVariantBatch(
+    campaignId: string,
+    recipients: Array<{ id: string; email: string; firstName?: string; lastName?: string }>,
+    emailData: { subject: string; html: string; tags?: string[]; template?: string },
+    variantId: string | null
+  ) {
+    // Extract URLs from HTML content for tracking
+    const urlRegex = /href=["']?(https?:\/\/[^"'\s>]+)["']?/gi
+    const urls: Array<{ url: string; alias?: string }> = []
+    let match
+    
+    while ((match = urlRegex.exec(emailData.html)) !== null) {
+      const url = match[1]
+      if (!urls.find(u => u.url === url)) {
+        urls.push({ url })
       }
+    }
+    
+    // Generate tracking links
+    const linkMap = await this.trackingService.generateTrackingLinks(campaignId, urls)
+    
+    // Replace links with tracking URLs
+    const trackedHtml = this.trackingService.replaceLinksWithTracking(emailData.html, linkMap)
+    
+    // Generate tracking pixel
+    const trackingPixel = await this.trackingService.generateTrackingPixel(campaignId)
+    
+    // Add tracking pixel to HTML (before closing </body> tag)
+    const htmlWithPixel = trackedHtml.replace(
+      '</body>',
+      `<img src="${trackingPixel}" width="1" height="1" style="display:none;" /></body>`
+    )
+    
+    // SendGrid allows up to 1000 personalizations per request
+    const batchSize = 1000
+    let successCount = 0
+    let failureCount = 0
 
+    for (let i = 0; i < recipients.length; i += batchSize) {
+      const batch = recipients.slice(i, i + batchSize)
+      
+      try {
+        // Build personalizations for batch
+        const personalizations = batch.map(recipient => ({
+          to: [{ email: recipient.email }],
+          dynamic_template_data: {
+            firstName: recipient.firstName || '',
+            lastName: recipient.lastName || '',
+            email: recipient.email
+          },
+          custom_args: {
+            campaign_id: campaignId,
+            contact_id: recipient.id,
+            ...(variantId && { ab_variant_id: variantId })
+          }
+        }))
 
-      // Update campaign stats
-      await supabase
-        .from('email_campaigns')
-        .update({ 
-          sent_count: successCount,
-          status: 'sent',
-          sent_at: new Date().toISOString()
-        })
-        .eq('id', campaignId)
+        const payload = {
+          personalizations,
+          from: {
+            email: sendgridConfig.defaultFrom.email,
+            name: sendgridConfig.defaultFrom.name
+          },
+          subject: emailData.subject,
+          ...(emailData.template ? {
+            template_id: sendgridConfig.templates[emailData.template as keyof typeof sendgridConfig.templates]
+          } : {
+            content: [{ type: 'text/html', value: htmlWithPixel }]
+          }),
+          categories: [...(emailData.tags || []), `campaign-${campaignId}`, ...(variantId ? [`variant-${variantId}`] : [])],
+          tracking_settings: {
+            click_tracking: { enable: true },
+            open_tracking: { enable: true }
+          },
+          custom_args: {
+            campaign_id: campaignId,
+            ...(variantId && { ab_variant_id: variantId })
+          }
+        }
 
-      return { successCount, failureCount }
-    })
+        await this.callSendGridAPI('/mail/send', payload)
+        successCount += batch.length
+        
+        // Track send events with variant information
+        for (const recipient of batch) {
+          await this.trackingService.trackEvent({
+            campaign_id: campaignId,
+            contact_id: recipient.id,
+            email_address: recipient.email,
+            event_type: 'send',
+            event_timestamp: new Date().toISOString(),
+            ab_variant_id: variantId || undefined
+          })
+        }
+      } catch (error) {
+        console.error(`Batch send failed for ${batch.length} recipients:`, error)
+        failureCount += batch.length
+      }
+    }
+
+    return { successCount, failureCount }
   }
   
   // Create email campaign

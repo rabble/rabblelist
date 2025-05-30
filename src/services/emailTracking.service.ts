@@ -16,6 +16,7 @@ export interface EmailTrackingEvent {
   ip_address?: string
   device_type?: string
   email_client?: string
+  ab_variant_id?: string
   event_timestamp: string
   created_at: string
 }
