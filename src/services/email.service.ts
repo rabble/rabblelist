@@ -15,6 +15,12 @@ export interface EmailMessage {
   campaignId?: string
   trackOpens?: boolean
   trackClicks?: boolean
+  attachments?: Array<{
+    filename: string
+    content: string
+    contentType?: string
+    disposition?: 'attachment' | 'inline'
+  }>
 }
 
 export interface EmailCampaign {
@@ -147,7 +153,15 @@ export class EmailService {
         },
         custom_args: {
           campaign_id: message.campaignId || ''
-        }
+        },
+        ...(message.attachments ? {
+          attachments: message.attachments.map(att => ({
+            content: Buffer.from(att.content).toString('base64'),
+            filename: att.filename,
+            type: att.contentType || 'application/octet-stream',
+            disposition: att.disposition || 'attachment'
+          }))
+        } : {})
       }
       
       const result = await this.callSendGridAPI('/mail/send', payload)

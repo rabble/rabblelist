@@ -309,6 +309,50 @@ export class EventRegistrationService {
     return csv
   }
 
+  // Generate .ics calendar file content
+  static generateICSFile(event: any, registration: EventRegistration): string {
+    const startDate = new Date(event.start_time)
+    const endDate = new Date(event.end_time || event.start_time)
+    if (!event.end_time) {
+      endDate.setHours(endDate.getHours() + 2) // Default 2 hour event
+    }
+    
+    // Format dates for ICS (YYYYMMDDTHHmmssZ)
+    const formatICSDate = (date: Date) => {
+      return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+    }
+    
+    const uid = `${registration.id}@${window.location.hostname}`
+    const timestamp = formatICSDate(new Date())
+    const location = event.location ? event.location.replace(/[\n\r]/g, ', ') : ''
+    const description = event.description ? event.description.replace(/[\n\r]/g, '\\n') : ''
+    
+    const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Rise Protest//Event Calendar//EN
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VEVENT
+UID:${uid}
+DTSTAMP:${timestamp}
+DTSTART:${formatICSDate(startDate)}
+DTEND:${formatICSDate(endDate)}
+SUMMARY:${event.name}
+DESCRIPTION:${description}\\n\\nCheck-in link: ${window.location.origin}/events/${event.id}/check-in/${registration.id}
+LOCATION:${location}
+STATUS:CONFIRMED
+SEQUENCE:0
+BEGIN:VALARM
+TRIGGER:-PT1H
+ACTION:DISPLAY
+DESCRIPTION:Event reminder: ${event.name}
+END:VALARM
+END:VEVENT
+END:VCALENDAR`
+    
+    return icsContent
+  }
+  
   // Send confirmation email
   static async sendConfirmationEmail(registration: EventRegistration, event: any) {
     try {
@@ -345,6 +389,10 @@ export class EventRegistrationService {
       
       // Create check-in link
       const checkInLink = `${window.location.origin}/events/${event.id}/check-in/${registration.id}`
+      
+      // Generate calendar file
+      const icsContent = this.generateICSFile(event, registration)
+      const icsBase64 = btoa(icsContent)
       
       // Email HTML content
       const emailHtml = `
@@ -383,6 +431,13 @@ export class EventRegistrationService {
             <p style="font-size: 14px; color: #666;">We've noted these requirements and will do our best to accommodate them.</p>
           </div>
           ` : ''}
+          
+          <div style="background-color: #f0f7ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #0066cc;">Add to Calendar</h3>
+            <p>Add this event to your calendar so you don't forget!</p>
+            <a href="data:text/calendar;base64,${icsBase64}" download="${event.name.replace(/[^a-z0-9]/gi, '_')}.ics" style="display: inline-block; background-color: #0066cc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px;">Download Calendar File</a>
+            <p style="margin-top: 10px; font-size: 12px; color: #666;">Works with Google Calendar, Outlook, Apple Calendar, and more.</p>
+          </div>
           
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 14px; color: #666;">
             <p>If you need to cancel your registration, please contact us as soon as possible.</p>
@@ -509,11 +564,19 @@ export class EventRegistrationService {
           </div>
         `
 
+        // Generate calendar file for reminder
+        const icsContent = this.generateICSFile(event, registration)
+        
         await EmailService.sendEmail({
           to: [recipientEmail],
           subject: `Reminder: ${event.name} - ${daysBefore === 1 ? 'Tomorrow' : `In ${daysBefore} Days`}`,
           html: reminderHtml,
-          tags: ['event-reminder', `event-${event.id}`]
+          tags: ['event-reminder', `event-${event.id}`],
+          attachments: [{
+            filename: `${event.name.replace(/[^a-z0-9]/gi, '_')}.ics`,
+            content: icsContent,
+            contentType: 'text/calendar'
+          }]
         })
 
         // Log the reminder
