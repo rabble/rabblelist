@@ -47,11 +47,11 @@ export function LoginPage() {
         setIsLoading(false)
         
         if (error.message.includes('not properly set up')) {
-          setError('Demo account not properly configured. Please run the database setup script.')
+          setError('Demo account exists in auth but has no user profile. Run: npm run setup:demo-user')
         } else if (error.message.includes('Invalid login credentials')) {
-          setError('Demo account credentials are incorrect. Expected: demo@example.com / demo123')
+          setError('Demo account does not exist. Run: npm run setup:demo-user')
         } else {
-          setError(`Demo login failed: ${error.message || 'Please check if demo user is set up'}`)
+          setError(`Demo login failed: ${error.message || 'Please run: npm run setup:demo-user'}`)
         }
       } else {
         setSuccess('Demo login successful! Redirecting...')
