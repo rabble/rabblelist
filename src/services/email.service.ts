@@ -3,6 +3,7 @@ import { sendgridConfig } from '@/lib/sendgrid.config'
 import { supabase } from '@/lib/supabase'
 import { withRetry } from '@/lib/retryUtils'
 import { OrganizationAPIKeyService } from './api-key.service'
+import { EmailTrackingService } from './emailTracking.service'
 
 export interface EmailMessage {
   to: string[]
@@ -43,6 +44,7 @@ export interface EmailCampaign {
 
 export class EmailService {
   private static apiKeyService = OrganizationAPIKeyService.getInstance()
+  private static trackingService = EmailTrackingService.getInstance()
   
   // Get current organization ID
   private static async getCurrentOrgId(): Promise<string> {
@@ -187,6 +189,33 @@ export class EmailService {
     emailData: { subject: string; html: string; tags?: string[]; template?: string }
   ) {
     return withRetry(async () => {
+      // Extract URLs from HTML content for tracking
+      const urlRegex = /href=["']?(https?:\/\/[^"'\s>]+)["']?/gi
+      const urls: Array<{ url: string; alias?: string }> = []
+      let match
+      
+      while ((match = urlRegex.exec(emailData.html)) !== null) {
+        const url = match[1]
+        if (!urls.find(u => u.url === url)) {
+          urls.push({ url })
+        }
+      }
+      
+      // Generate tracking links
+      const linkMap = await this.trackingService.generateTrackingLinks(campaignId, urls)
+      
+      // Replace links with tracking URLs
+      const trackedHtml = this.trackingService.replaceLinksWithTracking(emailData.html, linkMap)
+      
+      // Generate tracking pixel
+      const trackingPixel = await this.trackingService.generateTrackingPixel(campaignId)
+      
+      // Add tracking pixel to HTML (before closing </body> tag)
+      const htmlWithPixel = trackedHtml.replace(
+        '</body>',
+        `<img src="${trackingPixel}" width="1" height="1" style="display:none;" /></body>`
+      )
+      
       // SendGrid allows up to 1000 personalizations per request
       const batchSize = 1000
       let successCount = 0
@@ -216,7 +245,7 @@ export class EmailService {
             ...(emailData.template ? {
               template_id: sendgridConfig.templates[emailData.template as keyof typeof sendgridConfig.templates]
             } : {
-              content: [{ type: 'text/html', value: emailData.html }]
+              content: [{ type: 'text/html', value: htmlWithPixel }]
             }),
             categories: [...(emailData.tags || []), `campaign-${campaignId}`],
             tracking_settings: {
@@ -230,6 +259,17 @@ export class EmailService {
 
           await this.callSendGridAPI('/mail/send', payload)
           successCount += batch.length
+          
+          // Track send events
+          for (const recipient of batch) {
+            await this.trackingService.trackEvent({
+              campaign_id: campaignId,
+              contact_id: recipient.id,
+              email_address: recipient.email,
+              event_type: 'send',
+              event_timestamp: new Date().toISOString()
+            })
+          }
         } catch (error) {
           console.error(`Batch send failed for ${batch.length} recipients:`, error)
           failureCount += batch.length
@@ -305,39 +345,15 @@ export class EmailService {
   
   // Handle webhooks (in production, this would be in a Cloudflare Worker)
   static async handleWebhook(event: any) {
-    // Process SendGrid webhook events
-    // Events come as an array of event objects
-    const events = Array.isArray(event) ? event : [event]
+    // Use the tracking service to handle webhook data
+    await this.trackingService.handleWebhook('sendgrid', event)
     
+    // Handle unsubscribes separately
+    const events = Array.isArray(event) ? event : [event]
     for (const evt of events) {
-      const { event: eventType, email, timestamp, campaign_id } = evt
-      
-      // Update campaign stats based on event type
-      switch (eventType) {
-        case 'open':
-          await supabase.rpc('increment_email_opens', { campaign_id })
-          break
-        case 'click':
-          await supabase.rpc('increment_email_clicks', { campaign_id })
-          break
-        case 'bounce':
-        case 'dropped':
-          await supabase.rpc('increment_email_bounces', { campaign_id })
-          break
-        case 'unsubscribe':
-          // Handle unsubscribe
-          await this.handleUnsubscribe(email)
-          break
+      if (evt.event === 'unsubscribe') {
+        await this.handleUnsubscribe(evt.email)
       }
-      
-      // Log event
-      await supabase.from('email_events').insert({
-        campaign_id,
-        email,
-        event: eventType,
-        timestamp: new Date(timestamp * 1000).toISOString(),
-        metadata: evt
-      })
     }
   }
   

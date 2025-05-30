@@ -17,16 +17,23 @@ import {
   ExternalLink
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-// import { EmailService } from '@/services/email.service'
+import { EmailTrackingService } from '@/services/emailTracking.service'
 // import type { Database } from '@/lib/database.types'
 
 type EmailEvent = {
   id: string
-  campaign_id: string
-  contact_id: string
-  type: 'email' | 'sms' | 'call'
-  status: 'sent' | 'delivered' | 'opened' | 'clicked' | 'bounced' | 'failed'
-  metadata: any
+  campaign_id?: string
+  contact_id?: string
+  email_address: string
+  event_type: 'send' | 'delivered' | 'open' | 'click' | 'bounce' | 'spam' | 'unsubscribe' | 'dropped'
+  event_data?: any
+  clicked_url?: string
+  bounce_reason?: string
+  user_agent?: string
+  ip_address?: string
+  device_type?: string
+  email_client?: string
+  event_timestamp: string
   created_at: string
   contacts?: {
     full_name: string
@@ -59,6 +66,7 @@ interface LinkStats {
 export function EmailTrackingDashboard() {
   const { campaignId } = useParams()
   const navigate = useNavigate()
+  const trackingService = EmailTrackingService.getInstance()
   const [stats, setStats] = useState<EmailStats>({
     sent: 0,
     delivered: 0,
@@ -97,17 +105,30 @@ export function EmailTrackingDashboard() {
 
       setCampaign(campaignData)
 
-      // Get email communication logs for this campaign
-      let query = supabase
-        .from('communication_logs')
-        .select(`
-          *,
-          contacts(full_name, email)
-        `)
-        .eq('campaign_id', campaignId)
-        .eq('type', 'email')
+      // Get email statistics from tracking service
+      const emailStats = await trackingService.getCampaignStatistics(campaignId!)
+      
+      if (emailStats) {
+        setStats({
+          sent: emailStats.sent,
+          delivered: emailStats.delivered,
+          opens: emailStats.opened,
+          uniqueOpens: emailStats.unique_opens,
+          clicks: emailStats.clicked,
+          uniqueClicks: emailStats.unique_clicks,
+          bounces: emailStats.bounced,
+          complaints: emailStats.spam_reports,
+          unsubscribes: emailStats.unsubscribed,
+          openRate: emailStats.open_rate,
+          clickRate: emailStats.click_rate,
+          clickToOpenRate: emailStats.unique_opens > 0 
+            ? (emailStats.unique_clicks / emailStats.unique_opens) * 100 
+            : 0
+        })
+      }
 
-      // Apply time range filter
+      // Get tracking events based on time range
+      const filters: any = {}
       if (timeRange !== 'all') {
         const now = new Date()
         const startDate = new Date()
@@ -118,79 +139,49 @@ export function EmailTrackingDashboard() {
         } else if (timeRange === '30d') {
           startDate.setDate(now.getDate() - 30)
         }
-        query = query.gte('created_at', startDate.toISOString())
+        filters.start_date = startDate.toISOString()
       }
 
-      const { data: emailLogs } = await query
-
-      // Calculate statistics
-      const sentEmails = emailLogs?.filter(log => log.status === 'sent') || []
-      const deliveredEmails = emailLogs?.filter(log => 
-        ['sent', 'opened', 'clicked'].includes(log.status || '')
-      ) || []
-      const openedEmails = emailLogs?.filter(log => 
-        ['opened', 'clicked'].includes(log.status || '')
-      ) || []
-      const clickedEmails = emailLogs?.filter(log => log.status === 'clicked') || []
-      const bouncedEmails = emailLogs?.filter(log => log.status === 'bounced') || []
-      const complaintEmails = emailLogs?.filter(log => log.status === 'complained') || []
-      const unsubscribedEmails = emailLogs?.filter(log => log.status === 'unsubscribed') || []
-
-      // Get unique opens and clicks by contact
-      const uniqueOpens = new Set(openedEmails.map(e => e.contact_id)).size
-      const uniqueClicks = new Set(clickedEmails.map(e => e.contact_id)).size
-
-      // Calculate rates
-      const delivered = deliveredEmails.length
-      const openRate = delivered > 0 ? (uniqueOpens / delivered) * 100 : 0
-      const clickRate = delivered > 0 ? (uniqueClicks / delivered) * 100 : 0
-      const clickToOpenRate = uniqueOpens > 0 ? (uniqueClicks / uniqueOpens) * 100 : 0
-
-      setStats({
-        sent: sentEmails.length,
-        delivered,
-        opens: openedEmails.length,
-        uniqueOpens,
-        clicks: clickedEmails.length,
-        uniqueClicks,
-        bounces: bouncedEmails.length,
-        complaints: complaintEmails.length,
-        unsubscribes: unsubscribedEmails.length,
-        openRate,
-        clickRate,
-        clickToOpenRate
-      })
-
-      // Get recent events
-      const recent = emailLogs
-        ?.filter(log => ['opened', 'clicked', 'bounced', 'unsubscribed'].includes(log.status || ''))
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 20) || []
-
-      setRecentEvents(recent)
-
-      // Analyze clicked links
-      const linkClicks = clickedEmails.reduce((acc, event) => {
-        const url = (event.metadata as any)?.url || 'Unknown Link'
-        if (!acc[url]) {
-          acc[url] = { total: 0, unique: new Set() }
-        }
-        acc[url].total++
-        (acc[url] as any).unique.add(event.contact_id)
-        return acc
-      }, {} as Record<string, { total: number; unique: Set<string> }>)
-
-      const totalClicks = Object.values(linkClicks).reduce((sum, link: any) => sum + link.total, 0)
+      // Get all tracking events
+      const trackingEvents = await trackingService.getCampaignTrackingEvents(campaignId!, filters)
       
-      const links: LinkStats[] = Object.entries(linkClicks)
-        .map(([url, data]: [string, any]) => ({
-          url,
-          clicks: data.total,
-          uniqueClicks: (data as any).unique.size,
-          percentage: (totalClicks as number) > 0 ? (data.total / (totalClicks as number)) * 100 : 0
-        }))
-        .sort((a, b) => b.clicks - a.clicks)
+      // Filter for recent activity (opens, clicks, bounces, unsubscribes)
+      const recentActivity = trackingEvents
+        .filter(event => ['open', 'click', 'bounce', 'unsubscribe'].includes(event.event_type))
+        .slice(0, 20)
+      
+      // Fetch contact information for recent events
+      const contactIds = [...new Set(recentActivity.map(e => e.contact_id).filter(Boolean))]
+      const { data: contacts } = await supabase
+        .from('contacts')
+        .select('id, full_name, email')
+        .in('id', contactIds)
+      
+      const contactMap = new Map(contacts?.map(c => [c.id, c]) || [])
+      
+      // Map events with contact info
+      const recentWithContacts = recentActivity.map(event => ({
+        ...event,
+        contacts: event.contact_id ? contactMap.get(event.contact_id) : undefined
+      })) as any[]
+      
+      setRecentEvents(recentWithContacts)
 
+      // Get link statistics
+      const linkData = await trackingService.getCampaignLinkStats(campaignId!)
+      const links: LinkStats[] = linkData.map(link => ({
+        url: link.original_url,
+        clicks: link.click_count,
+        uniqueClicks: link.unique_click_count,
+        percentage: 0 // Will calculate after
+      }))
+      
+      // Calculate percentages
+      const totalClicks = links.reduce((sum, link) => sum + link.clicks, 0)
+      links.forEach(link => {
+        link.percentage = totalClicks > 0 ? (link.clicks / totalClicks) * 100 : 0
+      })
+      
       setLinkStats(links)
     } catch (error) {
       console.error('Error loading email data:', error)
@@ -199,12 +190,14 @@ export function EmailTrackingDashboard() {
     }
   }
 
-  const getEventIcon = (status: string) => {
-    switch (status) {
-      case 'opened': return <Eye className="w-4 h-4 text-blue-500" />
-      case 'clicked': return <MousePointer className="w-4 h-4 text-green-500" />
-      case 'bounced': return <AlertCircle className="w-4 h-4 text-red-500" />
-      case 'unsubscribed': return <ExternalLink className="w-4 h-4 text-gray-500" />
+  const getEventIcon = (eventType: string) => {
+    switch (eventType) {
+      case 'open': return <Eye className="w-4 h-4 text-blue-500" />
+      case 'click': return <MousePointer className="w-4 h-4 text-green-500" />
+      case 'bounce': return <AlertCircle className="w-4 h-4 text-red-500" />
+      case 'unsubscribe': return <ExternalLink className="w-4 h-4 text-gray-500" />
+      case 'spam': return <AlertCircle className="w-4 h-4 text-orange-500" />
+      case 'delivered': return <Mail className="w-4 h-4 text-green-400" />
       default: return <Mail className="w-4 h-4 text-gray-400" />
     }
   }
@@ -448,20 +441,27 @@ export function EmailTrackingDashboard() {
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {recentEvents.map((event) => (
                   <div key={event.id} className="flex items-start gap-3 pb-3 border-b last:border-0">
-                    {getEventIcon(event.status || '')}
+                    {getEventIcon(event.event_type)}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {event.contacts?.full_name || 'Unknown'}
+                        {event.contacts?.full_name || event.email_address || 'Unknown'}
                       </p>
                       <p className="text-xs text-gray-600">
-                        {event.status === 'opened' && 'Opened email'}
-                        {event.status === 'clicked' && `Clicked ${(event.metadata as any)?.url || 'link'}`}
-                        {event.status === 'bounced' && 'Email bounced'}
-                        {event.status === 'failed' && 'Failed to deliver'}
+                        {event.event_type === 'open' && 'Opened email'}
+                        {event.event_type === 'click' && `Clicked ${event.clicked_url || 'link'}`}
+                        {event.event_type === 'bounce' && `Email bounced${event.bounce_reason ? `: ${event.bounce_reason}` : ''}`}
+                        {event.event_type === 'unsubscribe' && 'Unsubscribed'}
+                        {event.event_type === 'spam' && 'Marked as spam'}
+                        {event.event_type === 'delivered' && 'Email delivered'}
                       </p>
+                      {event.device_type && (
+                        <p className="text-xs text-gray-400">
+                          {event.device_type} {event.email_client ? `- ${event.email_client}` : ''}
+                        </p>
+                      )}
                     </div>
                     <span className="text-xs text-gray-500">
-                      {formatTime(event.created_at)}
+                      {formatTime(event.event_timestamp)}
                     </span>
                   </div>
                 ))}
