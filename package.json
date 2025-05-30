@@ -11,9 +11,12 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
+    "setup": "node scripts/setup-all.js all",
+    "setup:schema": "node scripts/setup-all.js schema",
+    "setup:seed": "node scripts/setup-all.js seed",
+    "setup:demo": "node scripts/setup-all.js demo",
     "setup:twilio": "node scripts/setup-twilio.js",
     "setup:cloudflare-secrets": "./scripts/setup-cloudflare-secrets.sh",
-    "setup:demo": "node scripts/setup-demo-user.js",
     "deploy": "wrangler pages deploy dist"
   },
   "dependencies": {

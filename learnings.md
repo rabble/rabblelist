@@ -985,3 +985,42 @@ When implementing click-to-call functionality:
 5. **Test Duration**: Balance statistical power with business needs
 6. **Variant Isolation**: Keep variant content/logic separate from base campaign
 7. **Performance Impact**: Bulk assignment reduces database queries for large campaigns
+
+## Setup Script Consolidation (2025-05-30)
+
+### Multiple Duplicate Scripts Problem
+- **Issue**: Multiple database setup scripts scattered across the project
+- **Root directory scripts**:
+  - `setup-database.sh` - Manual instructions only
+  - `run-database-setup.cjs` - Attempts psql/supabase CLI
+  - `execute-seed-data.cjs` - Direct REST API setup
+  - `fix-demo-user-data.cjs` - Demo data fixes
+  - `run-all-sql.js` - Another setup variant
+- **Scripts directory**:
+  - Various setup scripts for database, demo user, Twilio, Cloudflare
+
+### Consolidation Solution
+- **Created unified script**: `scripts/setup-all.js`
+- **Features**:
+  - Single entry point for all database setup
+  - Command-based execution: `all`, `schema`, `seed`, `demo`
+  - Proper error handling and connection testing
+  - Manual instructions when direct execution not possible
+  - Demo user creation with auth integration
+- **Updated package.json**:
+  ```json
+  "setup": "node scripts/setup-all.js all",
+  "setup:schema": "node scripts/setup-all.js schema",
+  "setup:seed": "node scripts/setup-all.js seed",
+  "setup:demo": "node scripts/setup-all.js demo"
+  ```
+- **Removed duplicates**: Cleaned up 5+ redundant setup scripts
+- **Documentation**: Created scripts/README.md for setup guidance
+
+### Key Learnings
+1. **Script Proliferation**: Setup scripts tend to multiply when not managed
+2. **Central Location**: Keep all setup scripts in a dedicated scripts/ directory
+3. **Command Pattern**: Use command arguments instead of multiple script files
+4. **Idempotency**: Setup scripts should be safe to run multiple times
+5. **Clear Instructions**: When automation isn't possible, provide clear manual steps
+6. **Environment Validation**: Always check required env vars before execution
