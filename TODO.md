@@ -43,7 +43,7 @@
   - [x] Real-time script display during calls
   - [x] Session statistics and progress tracking
   - [ ] Actual VoIP integration (Twilio calling)
-  - [ ] Click-to-call implementation
+  - [x] Click-to-call implementation
   - [ ] Call recording capabilities
   - [ ] Predictive dialing for efficiency
 
