@@ -223,6 +223,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Dynamic template support with personalization
   - Unsubscribe handling and compliance features
   - Created setup documentation for SendGrid configuration
+- **Click-to-Call Phone Banking** - Actual calling functionality for phone bank campaigns (2025-05-29)
+  - Real-time call status display with duration tracking
+  - Integration with Twilio telephony worker for actual calls
+  - Call status indicators (connecting, connected, duration timer)
+  - Enhanced error handling with user-friendly messages
+  - Dynamic script personalization with contact and campaign details
+  - Visual call status feedback with animations
+  - Phone banking endpoints added to telephony worker
+  - TwiML voice response for connecting calls
+  - Proper call session cleanup on call end
+  - Updated environment variables for telephony worker URL
 
 ### Fixed
 - **Contact Creation** - Fixed database field mismatch (2025-05-28)

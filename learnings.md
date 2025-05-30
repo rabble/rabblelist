@@ -804,3 +804,31 @@ if (existing?.organization_id !== profile.organization_id) {
   - Organization: Rise Community Action
   - 500+ contacts, campaigns, events loaded
   - All demo data properly associated with demo user
+
+## Phone Banking and Twilio Integration (2025-05-29)
+
+### Click-to-Call Implementation
+When implementing click-to-call functionality:
+1. Use Twilio's standard calling API rather than Proxy for simpler phone banking
+2. The telephony worker needs specific endpoints for phone banking
+3. TwiML responses should connect calls directly without complex routing
+4. Always include proper error handling for connection failures
+5. Track call duration on the client side for real-time updates
+
+### Call Status Management
+- Twilio provides multiple status callbacks (initiated, ringing, answered, completed)
+- Map Twilio statuses to application-specific statuses for consistency
+- Use metadata fields to store Twilio-specific information
+- Clean up call sessions when calls end to prevent resource leaks
+
+### Script Personalization
+- Replace placeholders in scripts with actual contact/campaign data
+- Common placeholders: [Name], [Your Name], [Organization], [Campaign Topic]
+- Provide default values for missing data to avoid awkward gaps
+
+### UI/UX Considerations for Calling
+- Show real-time call status with visual indicators
+- Display call duration prominently during active calls
+- Provide clear feedback for connection states
+- Handle errors gracefully with user-friendly messages
+- Use animations for call status changes

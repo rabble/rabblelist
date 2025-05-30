@@ -78,6 +78,15 @@ export default {
         case '/api/telephony/webhook/sms/status':
           return await handleSMSStatusWebhook(request, env);
         
+        case '/api/telephony/phonebank/call':
+          return await handlePhoneBankCall(request, env);
+        
+        case '/api/telephony/phonebank/status':
+          return await handlePhoneBankStatus(request, env);
+        
+        case '/api/telephony/voice/phonebank':
+          return await handlePhoneBankVoice(request, env);
+        
         default:
           return new Response('Not found', { status: 404 });
       }
@@ -568,4 +577,160 @@ async function triggerOrganizationWebhook(organizationId: string, event: string,
   // This would trigger any webhooks configured by the organization
   // For now, just log it
   console.log('Webhook trigger:', { organizationId, event, data });
+}
+
+async function handlePhoneBankCall(request: Request, env: Env): Promise<Response> {
+  // Verify authentication
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  const { to, from, callRecordId, statusCallback } = await request.json();
+  
+  const client = new Twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
+  
+  try {
+    // Create call through Twilio
+    const call = await client.calls.create({
+      to,
+      from: from || env.TWILIO_PHONE_NUMBER,
+      url: `${request.url.replace('/phonebank/call', '/voice/phonebank')}`,
+      statusCallback: statusCallback || `${request.url.replace('/phonebank/call', '/phonebank/status')}`,
+      statusCallbackMethod: 'POST',
+      statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
+      record: true, // Record calls for quality and training
+      recordingStatusCallback: `${request.url.replace('/phonebank/call', '/phonebank/recording')}`,
+      timeout: 30, // 30 second timeout for no answer
+      machineDetection: 'DetectMessageEnd', // Detect answering machines
+      asyncAmd: true,
+      asyncAmdStatusCallback: `${request.url.replace('/phonebank/call', '/phonebank/amd')}`,
+    });
+    
+    // Update call record with Twilio SID
+    await updatePhoneBankCall(callRecordId, { twilio_call_sid: call.sid }, env);
+    
+    return new Response(
+      JSON.stringify({
+        success: true,
+        callSid: call.sid,
+        status: call.status,
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  } catch (error: any) {
+    console.error('Phone bank call error:', error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
+}
+
+async function handlePhoneBankStatus(request: Request, env: Env): Promise<Response> {
+  // Verify Twilio signature
+  const signature = request.headers.get('X-Twilio-Signature');
+  if (!signature || !verifyTwilioSignature(request, signature, env)) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  const formData = await request.formData();
+  const callSid = formData.get('CallSid');
+  const callStatus = formData.get('CallStatus');
+  const callDuration = formData.get('CallDuration');
+  const answeredBy = formData.get('AnsweredBy'); // human, machine, unknown
+  
+  // Map Twilio status to our status
+  let mappedStatus = 'calling';
+  switch (callStatus) {
+    case 'completed':
+      mappedStatus = 'completed';
+      break;
+    case 'busy':
+      mappedStatus = 'busy';
+      break;
+    case 'no-answer':
+      mappedStatus = 'no_answer';
+      break;
+    case 'failed':
+      mappedStatus = 'failed';
+      break;
+    case 'canceled':
+      mappedStatus = 'failed';
+      break;
+  }
+  
+  // Update call record
+  await updatePhoneBankCallByTwilioSid(
+    callSid as string, 
+    { 
+      status: mappedStatus,
+      duration: callDuration ? parseInt(callDuration as string) : undefined,
+      metadata: {
+        answered_by: answeredBy,
+        twilio_status: callStatus
+      }
+    }, 
+    env
+  );
+  
+  return new Response('OK', { status: 200 });
+}
+
+// Helper functions for phone banking
+async function updatePhoneBankCall(callId: string, updates: any, env: Env): Promise<void> {
+  await fetch(
+    `${env.SUPABASE_URL}/rest/v1/phonebank_calls?id=eq.${callId}`,
+    {
+      method: 'PATCH',
+      headers: {
+        'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    }
+  );
+}
+
+async function updatePhoneBankCallByTwilioSid(twilioSid: string, updates: any, env: Env): Promise<void> {
+  await fetch(
+    `${env.SUPABASE_URL}/rest/v1/phonebank_calls?metadata->>twilio_call_sid=eq.${twilioSid}`,
+    {
+      method: 'PATCH',
+      headers: {
+        'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    }
+  );
+}
+
+async function handlePhoneBankVoice(request: Request, env: Env): Promise<Response> {
+  // Verify Twilio signature
+  const signature = request.headers.get('X-Twilio-Signature');
+  if (!signature || !verifyTwilioSignature(request, signature, env)) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  // Return TwiML for phone banking calls
+  // This connects the ringer directly to the contact
+  const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+      <Say>Connecting your call. Please wait.</Say>
+      <Dial callerId="${env.TWILIO_PHONE_NUMBER}" timeout="30">
+        <Number>{{To}}</Number>
+      </Dial>
+    </Response>`;
+
+  return new Response(twiml, {
+    headers: { 'Content-Type': 'text/xml' },
+  });
 }

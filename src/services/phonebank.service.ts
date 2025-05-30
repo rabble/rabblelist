@@ -1,5 +1,4 @@
 import { supabase } from '@/lib/supabase'
-import { twilioConfig } from '@/lib/twilio.config'
 import { withRetry } from '@/lib/retryUtils'
 
 export interface PhoneBankSession {
@@ -44,7 +43,7 @@ export interface PhoneBankQuestion {
 }
 
 export class PhoneBankService {
-  private static twilioWorkerUrl = import.meta.env.VITE_TELEPHONY_WEBHOOK_URL || '/api/telephony'
+  private static twilioWorkerUrl = import.meta.env.VITE_TELEPHONY_WEBHOOK_URL || 'https://telephony.rise.workers.dev/api/telephony'
 
   /**
    * Start a new phone banking session
@@ -152,16 +151,20 @@ export class PhoneBankService {
   static async startCall(
     sessionId: string,
     contactId: string,
-    phoneNumber: string
+    _phoneNumber: string // Keep for future direct dialing
   ): Promise<string> {
     return withRetry(async () => {
+      // Get user info for the ringer
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+      
       // Create call record
       const { data: callRecord, error } = await supabase
         .from('phonebank_calls')
         .insert({
           session_id: sessionId,
           contact_id: contactId,
-          status: 'calling',
+          status: 'initiating',
           started_at: new Date().toISOString()
         })
         .select()
@@ -169,27 +172,52 @@ export class PhoneBankService {
 
       if (error) throw error
 
-      // Initiate call through Twilio worker
-      const response = await fetch(`${this.twilioWorkerUrl}/phonebank/call`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await this.getAuthToken()}`
-        },
-        body: JSON.stringify({
-          to: phoneNumber,
-          from: twilioConfig.phoneNumbers.US,
-          callRecordId: callRecord.id,
-          statusCallback: `${this.twilioWorkerUrl}/phonebank/status`
+      try {
+        // Initiate call through Twilio worker's start-call endpoint
+        const response = await fetch(`${this.twilioWorkerUrl}/start-call`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${await this.getAuthToken()}`
+          },
+          body: JSON.stringify({
+            contactId: contactId,
+            ringerId: user.id
+          })
         })
-      })
 
-      if (!response.ok) {
-        throw new Error(`Failed to start call: ${response.statusText}`)
+        if (!response.ok) {
+          const errorData = await response.text()
+          throw new Error(`Failed to start call: ${errorData}`)
+        }
+
+        const result = await response.json()
+        
+        // Update call record with proxy session info
+        await supabase
+          .from('phonebank_calls')
+          .update({
+            metadata: {
+              proxySessionSid: result.proxySessionSid,
+              twilioSessionId: result.sessionId
+            },
+            status: 'calling'
+          })
+          .eq('id', callRecord.id)
+        
+        return callRecord.id
+      } catch (error) {
+        // Update call record as failed
+        await supabase
+          .from('phonebank_calls')
+          .update({
+            status: 'failed',
+            ended_at: new Date().toISOString()
+          })
+          .eq('id', callRecord.id)
+        
+        throw error
       }
-
-      await response.json()
-      return callRecord.id
     })
   }
 
@@ -221,11 +249,29 @@ export class PhoneBankService {
       if (status === 'completed' && duration) {
         const { data: call } = await supabase
           .from('phonebank_calls')
-          .select('session_id')
+          .select('session_id, metadata')
           .eq('id', callId)
           .single()
 
         if (call) {
+          // End the Twilio session if it exists
+          if (call.metadata?.twilioSessionId) {
+            try {
+              await fetch(`${this.twilioWorkerUrl}/end-call`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${await this.getAuthToken()}`
+                },
+                body: JSON.stringify({
+                  sessionId: call.metadata.twilioSessionId
+                })
+              })
+            } catch (error) {
+              console.error('Failed to end Twilio session:', error)
+            }
+          }
+          
           const { data: session } = await supabase
             .from('phonebank_sessions')
             .select('calls_made, total_duration')
@@ -340,7 +386,24 @@ export class PhoneBankService {
         .eq('campaign_id', campaignId)
         .single()
 
-      if (error || !data) return null
+      if (error || !data) {
+        // Return a default script if none exists
+        return {
+          id: 'default',
+          campaignId: campaignId,
+          name: 'Default Script',
+          content: `Hi [Name], this is [Your Name] calling from [Organization]. 
+
+I'm reaching out to talk about [Campaign Topic]. Do you have a minute to chat?
+
+[If yes] Great! [Continue with your message]
+
+[If no] No problem! Is there a better time I could call back?
+
+Thank you for your time!`,
+          questions: []
+        }
+      }
       return data
     })
   }

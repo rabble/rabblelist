@@ -46,6 +46,9 @@ export function PhoneBankCampaign() {
   const [currentCall, setCurrentCall] = useState<any>(null)
   const [isStarting, setIsStarting] = useState(false)
   const [isCalling, setIsCalling] = useState(false)
+  const [callStatus, setCallStatus] = useState<string>('')
+  const [callDuration, setCallDuration] = useState(0)
+  const [callTimer, setCallTimer] = useState<NodeJS.Timeout | null>(null)
   const [callNotes, setCallNotes] = useState('')
   const [selectedOutcome, setSelectedOutcome] = useState<string>('')
   const [sessionStats, setSessionStats] = useState<any>(null)
@@ -145,6 +148,7 @@ export function PhoneBankCampaign() {
     if (!session?.id || !currentContact?.id || !currentContact?.phone) return
     
     setIsCalling(true)
+    setCallStatus('Connecting...')
     try {
       const callId = await PhoneBankService.startCall(
         session.id,
@@ -152,9 +156,17 @@ export function PhoneBankCampaign() {
         currentContact.phone
       )
       setCurrentCall({ id: callId, startTime: Date.now() })
-    } catch (error) {
+      setCallStatus('Connected')
+      
+      // Start call duration timer
+      const timer = setInterval(() => {
+        setCallDuration(prev => prev + 1)
+      }, 1000)
+      setCallTimer(timer)
+    } catch (error: any) {
       console.error('Failed to start call:', error)
-      alert('Failed to start call')
+      setCallStatus('')
+      alert(error.message || 'Failed to start call. Please check your connection and try again.')
     } finally {
       setIsCalling(false)
     }
@@ -163,7 +175,13 @@ export function PhoneBankCampaign() {
   const handleEndCall = async () => {
     if (!currentCall?.id) return
     
-    const duration = Math.round((Date.now() - currentCall.startTime) / 1000)
+    // Clear timer
+    if (callTimer) {
+      clearInterval(callTimer)
+      setCallTimer(null)
+    }
+    
+    const duration = callDuration
     await PhoneBankService.updateCallStatus(currentCall.id, 'completed', duration)
     
     // Save outcome and notes if provided
@@ -176,6 +194,8 @@ export function PhoneBankCampaign() {
     }
     
     setCurrentCall(null)
+    setCallStatus('')
+    setCallDuration(0)
     await loadSessionStats()
     await loadNextContact()
   }
@@ -183,8 +203,16 @@ export function PhoneBankCampaign() {
   const handleNoAnswer = async () => {
     if (!currentCall?.id) return
     
+    // Clear timer
+    if (callTimer) {
+      clearInterval(callTimer)
+      setCallTimer(null)
+    }
+    
     await PhoneBankService.updateCallStatus(currentCall.id, 'no_answer')
     setCurrentCall(null)
+    setCallStatus('')
+    setCallDuration(0)
     await loadSessionStats()
     await loadNextContact()
   }
@@ -268,6 +296,21 @@ export function PhoneBankCampaign() {
                     <p className="text-gray-600">{currentContact.phone}</p>
                   </div>
                 </div>
+                
+                {/* Call Status */}
+                {callStatus && (
+                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <PhoneCall className="w-4 h-4 text-blue-600 animate-pulse" />
+                      <span className="text-sm font-medium text-blue-900">{callStatus}</span>
+                    </div>
+                    {currentCall && (
+                      <span className="text-sm font-mono text-blue-700">
+                        {Math.floor(callDuration / 60)}:{(callDuration % 60).toString().padStart(2, '0')}
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {/* Call Controls */}
                 <div className="flex gap-3">
@@ -347,7 +390,13 @@ export function PhoneBankCampaign() {
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none">
-                <p className="whitespace-pre-wrap">{script.content}</p>
+                <p className="whitespace-pre-wrap">
+                  {script.content
+                    .replace('[Name]', currentContact?.full_name || 'there')
+                    .replace('[Your Name]', user?.full_name || 'a volunteer')
+                    .replace('[Organization]', 'Rise Community Action')
+                    .replace('[Campaign Topic]', campaign.title)}
+                </p>
               </div>
             </CardContent>
           </Card>
