@@ -172,6 +172,10 @@ export interface Database {
           end_time: string | null
           capacity: number | null
           settings: Json
+          is_recurring?: boolean
+          recurrence_rule?: Json
+          parent_event_id?: string | null
+          occurrence_date?: string | null
           created_at: string
           updated_at: string
         }
@@ -185,6 +189,10 @@ export interface Database {
           end_time?: string | null
           capacity?: number | null
           settings?: Json
+          is_recurring?: boolean
+          recurrence_rule?: Json
+          parent_event_id?: string | null
+          occurrence_date?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -198,6 +206,10 @@ export interface Database {
           end_time?: string | null
           capacity?: number | null
           settings?: Json
+          is_recurring?: boolean
+          recurrence_rule?: Json
+          parent_event_id?: string | null
+          occurrence_date?: string | null
           created_at?: string
           updated_at?: string
         }

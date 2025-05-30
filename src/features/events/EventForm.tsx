@@ -7,7 +7,8 @@ import { Layout } from '@/components/layout/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { useEventStore } from '@/stores/eventStore'
-import { EventService } from './events.service'
+import { EventService, type RecurrenceRule } from './events.service'
+import { RecurrenceSettings } from './RecurrenceSettings'
 import { 
   Calendar,
   Clock,
@@ -43,6 +44,7 @@ export function EventForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [, setExistingEvent] = useState<any>(null)
+  const [recurrenceRule, setRecurrenceRule] = useState<RecurrenceRule | null>(null)
 
   const {
     register,
@@ -133,7 +135,8 @@ export function EventForm() {
         location: data.location,
         is_virtual: data.is_virtual,
         capacity: data.capacity ? Number(data.capacity) : null,
-        settings: {}
+        settings: {},
+        recurrence_rule: recurrenceRule as any // Cast to any for JSON compatibility
       }
       
       if (isEditing && id) {
@@ -330,6 +333,14 @@ export function EventForm() {
                   min="1"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Leave empty for unlimited"
+                />
+              </div>
+
+              {/* Recurrence Settings */}
+              <div className="border-t pt-4">
+                <RecurrenceSettings
+                  recurrenceRule={recurrenceRule || undefined}
+                  onChange={setRecurrenceRule}
                 />
               </div>
 

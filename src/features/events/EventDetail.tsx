@@ -19,7 +19,9 @@ import {
   ExternalLink,
   CheckCircle,
   Camera,
-  Activity
+  Activity,
+  RotateCw,
+  CalendarDays
 } from 'lucide-react'
 import { useEventStore } from '@/stores/eventStore'
 import { useEventRegistrationStore } from '@/stores/eventRegistrationStore'
@@ -43,6 +45,7 @@ export function EventDetail() {
   const [deleting, setDeleting] = useState(false)
   const [showQRScanner, setShowQRScanner] = useState(false)
   const [sendingReminder, setSendingReminder] = useState(false)
+  // const [eventSeries, setEventSeries] = useState<any[]>([]) // Not used yet
 
   const event = events.find(e => e.id === id)
   const eventRegistrations = id ? registrations[id] || [] : []
@@ -258,8 +261,45 @@ export function EventDetail() {
                     </p>
                   </div>
                 </div>
+                
+                {event.is_recurring && event.recurrence_rule && (
+                  <div className="flex items-start gap-3">
+                    <RotateCw className="w-5 h-5 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Recurring Event</p>
+                      <p className="text-sm text-gray-600">
+                        {getRecurrenceDescription(event.recurrence_rule)}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </Card>
+
+            {event.is_recurring && (
+              <Card>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <CalendarDays className="w-5 h-5" />
+                  Event Series
+                </h3>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600 mb-3">
+                    This is part of a recurring event series
+                  </p>
+                  <div className="space-y-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={() => navigate(`/events?series=${event.parent_event_id || event.id}`)}
+                    >
+                      <CalendarDays className="w-4 h-4 mr-2" />
+                      View All Occurrences
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )}
 
             <Card>
               <h3 className="text-lg font-semibold mb-4">Registration Status</h3>
@@ -455,4 +495,52 @@ export function EventDetail() {
       )}
     </Layout>
   )
+}
+
+function getRecurrenceDescription(rule: any): string {
+  if (!rule) return ''
+  
+  const frequency = rule.frequency
+  const interval = rule.interval || 1
+  
+  let desc = `Repeats every ${interval === 1 ? '' : interval + ' '}`
+  
+  switch (frequency) {
+    case 'daily':
+      desc += interval === 1 ? 'day' : 'days'
+      break
+    case 'weekly':
+      desc += interval === 1 ? 'week' : 'weeks'
+      if (rule.daysOfWeek && rule.daysOfWeek.length > 0) {
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        desc += ' on ' + rule.daysOfWeek.map((d: number) => days[d]).join(', ')
+      }
+      break
+    case 'monthly':
+      desc += interval === 1 ? 'month' : 'months'
+      if (rule.dayOfMonth) {
+        desc += ` on the ${rule.dayOfMonth}${getOrdinalSuffix(rule.dayOfMonth)}`
+      }
+      break
+    case 'yearly':
+      desc += interval === 1 ? 'year' : 'years'
+      break
+  }
+  
+  if (rule.endType === 'after' && rule.endAfterOccurrences) {
+    desc += `, ${rule.endAfterOccurrences} times`
+  } else if (rule.endType === 'on' && rule.endDate) {
+    desc += ` until ${new Date(rule.endDate).toLocaleDateString()}`
+  }
+  
+  return desc
+}
+
+function getOrdinalSuffix(num: number): string {
+  const j = num % 10
+  const k = num % 100
+  if (j === 1 && k !== 11) return 'st'
+  if (j === 2 && k !== 12) return 'nd'
+  if (j === 3 && k !== 13) return 'rd'
+  return 'th'
 }

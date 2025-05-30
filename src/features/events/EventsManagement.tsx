@@ -17,7 +17,8 @@ import {
   ChevronRight,
   AlertCircle,
   Loader2,
-  Filter
+  Filter,
+  RotateCw
 } from 'lucide-react'
 
 export function EventsManagement() {
@@ -233,6 +234,12 @@ export function EventsManagement() {
                         )}
                       </div>
                       <div className="flex items-center gap-2 ml-4">
+                        {event.is_recurring && (
+                          <div className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                            <RotateCw className="w-3 h-3" />
+                            Recurring
+                          </div>
+                        )}
                         {new Date(event.start_time) > new Date() && (
                           <Clock className="w-4 h-4 text-blue-600" />
                         )}

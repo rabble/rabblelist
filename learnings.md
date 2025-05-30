@@ -832,3 +832,38 @@ When implementing click-to-call functionality:
 - Provide clear feedback for connection states
 - Handle errors gracefully with user-friendly messages
 - Use animations for call status changes
+
+## Recurring Events Implementation (2025-05-29)
+
+### Database Design for Recurrence
+- Added columns to events table: is_recurring, recurrence_rule, parent_event_id, occurrence_date
+- Used JSONB for recurrence_rule to store flexible recurrence patterns
+- Parent-child relationship: parent event has the rule, child events are occurrences
+- Database functions generate occurrences automatically via triggers
+
+### Recurrence Rule Structure
+```json
+{
+  "frequency": "daily|weekly|monthly|yearly",
+  "interval": 1,
+  "daysOfWeek": [0,1,2,3,4,5,6], // For weekly
+  "dayOfMonth": 15, // For monthly
+  "endType": "never|after|on",
+  "endAfterOccurrences": 10,
+  "endDate": "2025-12-31",
+  "exceptions": ["2025-07-04"] // Skip specific dates
+}
+```
+
+### UI/UX Patterns
+- RecurrenceSettings component with intuitive controls
+- Visual preview of recurrence pattern in natural language
+- Day-of-week selector for weekly patterns
+- Three end types: never, after N occurrences, on specific date
+- Clear indicators for recurring events in lists and details
+
+### Technical Implementation
+- PostgreSQL functions for occurrence generation
+- Trigger-based automatic occurrence creation
+- Series management: update/delete this, following, or all
+- Efficient queries using parent_event_id relationships
