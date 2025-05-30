@@ -54,6 +54,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Clear profile if it doesn't exist
         setProfile(null)
         setOrganization(null)
+        
+        // If profile doesn't exist, sign out the user
+        // This prevents being stuck in a half-authenticated state
+        if (profileError.code === 'PGRST116') { // Row not found
+          console.error('User profile not found in database, signing out')
+          await supabase.auth.signOut()
+        }
         return false
       }
 
@@ -161,7 +168,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('Attempting sign in for:', email)
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
@@ -171,8 +179,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error }
       }
 
-      // The auth state change handler will take care of loading the profile
-      // We don't need to do it here
+      console.log('Sign in successful, user:', data.user?.id)
+
+      // Check if user profile exists
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', data.user.id)
+          .single()
+
+        if (profileError) {
+          console.error('Profile check error:', profileError)
+          // Sign out if no profile exists
+          await supabase.auth.signOut()
+          return { 
+            error: new Error('Your account is not properly set up. Please contact an administrator.') 
+          }
+        }
+        
+        console.log('Profile exists, sign in complete')
+      }
+
+      // The auth state change handler will take care of loading the full profile
       return { error: null }
     } catch (error) {
       console.error('Unexpected sign in error:', error)

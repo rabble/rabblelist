@@ -16,7 +16,7 @@ export function LoginPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   
-  const { signIn, signUp, user, loading } = useAuth()
+  const { signIn, signUp, user, profile, loading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   
@@ -24,12 +24,12 @@ export function LoginPage() {
   const from = (location.state as any)?.from?.pathname || '/dashboard'
   const redirectTo = from === '/login' ? '/dashboard' : from
 
-  // If already logged in, redirect to intended page (but not if we're on the landing page)
+  // If already logged in WITH profile, redirect to intended page
   useEffect(() => {
-    if (!loading && user && location.pathname === '/login') {
+    if (!loading && user && profile && location.pathname === '/login') {
       navigate(redirectTo, { replace: true })
     }
-  }, [loading, user, navigate, redirectTo, location.pathname])
+  }, [loading, user, profile, navigate, redirectTo, location.pathname])
 
   const handleDemoLogin = async () => {
     setError(null)
@@ -44,10 +44,20 @@ export function LoginPage() {
       
       if (error) {
         console.error('Demo login error:', error)
-        setError(`Login failed: ${error.message || 'Demo user may not be set up correctly'}`)
         setIsLoading(false)
+        
+        if (error.message.includes('not properly set up')) {
+          setError('Demo account not properly configured. Please run the database setup script.')
+        } else if (error.message.includes('Invalid login credentials')) {
+          setError('Demo account credentials are incorrect. Expected: demo@example.com / demo123')
+        } else {
+          setError(`Demo login failed: ${error.message || 'Please check if demo user is set up'}`)
+        }
       } else {
-        navigate(redirectTo, { replace: true })
+        setSuccess('Demo login successful! Redirecting...')
+        setTimeout(() => {
+          navigate(redirectTo, { replace: true })
+        }, 100)
       }
     } catch (err) {
       console.error('Unexpected error:', err)
@@ -69,6 +79,8 @@ export function LoginPage() {
         
         if (error) {
           console.error('Sign in error:', error)
+          setIsLoading(false)
+          
           // Provide user-friendly error messages
           if (error.message.includes('Invalid login credentials')) {
             setError('Invalid email or password. Please try again.')
@@ -76,12 +88,18 @@ export function LoginPage() {
             setError('Please check your email to confirm your account before signing in.')
           } else if (error.message.includes('Network')) {
             setError('Network error. Please check your connection and try again.')
+          } else if (error.message.includes('not properly set up')) {
+            setError('Your account exists but is not properly configured. Please contact an administrator.')
           } else {
-            setError(error.message)
+            setError(error.message || 'An error occurred during sign in. Please try again.')
           }
-          setIsLoading(false)
         } else {
-          navigate(redirectTo, { replace: true })
+          // Don't set loading to false here - let the redirect happen first
+          // This prevents the form from flickering
+          setSuccess('Login successful! Redirecting...')
+          setTimeout(() => {
+            navigate(redirectTo, { replace: true })
+          }, 100)
         }
       } else {
         // Sign up
