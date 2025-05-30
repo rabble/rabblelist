@@ -28,31 +28,51 @@ if (import.meta.env.PROD || import.meta.env.VITE_ENABLE_SENTRY === 'true') {
 } else {
 }
 
-// Clean up any existing service workers and caches
-// This is necessary to fix the network errors caused by stale service workers
-if ('serviceWorker' in navigator) {
+// Only clean up service workers in development to avoid cache issues
+if ('serviceWorker' in navigator && import.meta.env.DEV) {
   navigator.serviceWorker.getRegistrations().then(registrations => {
     registrations.forEach(registration => {
       registration.unregister()
     })
   })
-}
-
-// Clear all caches to ensure fresh content
-if ('caches' in window) {
-  caches.keys().then(names => {
-    names.forEach(name => {
-      caches.delete(name)
+  
+  // Clear caches in development
+  if ('caches' in window) {
+    caches.keys().then(names => {
+      names.forEach(name => {
+        caches.delete(name)
+      })
     })
-  })
+  }
 }
 
 // Register service worker for offline functionality
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
+// Enable in both development and production for testing
+if ('serviceWorker' in navigator && !import.meta.env.DEV) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
-      .then(() => {
-        // Service worker registered successfully
+      .then(registration => {
+        console.log('ServiceWorker registered with scope:', registration.scope);
+        
+        // Check for updates periodically
+        setInterval(() => {
+          registration.update();
+        }, 60 * 60 * 1000); // Check every hour
+        
+        // Handle updates
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New service worker available, prompt user to refresh
+                if (confirm('New version available! Refresh to update?')) {
+                  window.location.reload();
+                }
+              }
+            });
+          }
+        });
       })
       .catch(err => {
         console.error('ServiceWorker registration failed:', err);

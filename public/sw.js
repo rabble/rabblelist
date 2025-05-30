@@ -1,19 +1,32 @@
-const CACHE_NAME = 'contact-manager-v1';
-const RUNTIME_CACHE = 'contact-manager-runtime-v1';
+const CACHE_NAME = 'contact-manager-v2';
+const RUNTIME_CACHE = 'contact-manager-runtime-v2';
+const API_CACHE = 'contact-manager-api-v1';
+
+// Core assets to cache on install
 const urlsToCache = [
   '/',
-  '/index.html',
   '/offline.html',
   '/manifest.json',
   '/icon-192.png',
-  '/icon-512.png',
-  '/vite.svg',
-  '/privacy-policy.html',
-  '/terms-of-service.html',
-  '/dashboard.png',
-  '/contacts.png',
-  '/campaigns.png',
-  '/pathways.png'
+  '/icon-512.png'
+];
+
+// API routes to handle specially
+const API_ROUTES = [
+  '/api/',
+  'supabase',
+  '/auth/',
+  '/rest/'
+];
+
+// Assets that should be cached after fetch
+const CACHE_PATTERNS = [
+  /\.js$/,
+  /\.css$/,
+  /\.woff2?$/,
+  /\.ttf$/,
+  /\.otf$/,
+  /\.(png|jpg|jpeg|svg|gif|webp)$/
 ];
 
 // Install event - cache essential files
@@ -34,7 +47,7 @@ self.addEventListener('activate', event => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE) {
+          if (cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE && cacheName !== API_CACHE) {
             console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
@@ -44,74 +57,78 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - implement proper caching strategies
 self.addEventListener('fetch', event => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
 
-  // Skip chrome-extension and other non-http(s) requests
+  // Skip non-http(s) requests
   if (!event.request.url.startsWith('http')) return;
 
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Cache hit - return response
-        if (response) {
+  const { url } = event.request;
+  const isAPI = API_ROUTES.some(route => url.includes(route));
+  const isAsset = CACHE_PATTERNS.some(pattern => pattern.test(url));
+
+  // Network-first strategy for API calls
+  if (isAPI) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Cache successful API responses
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(API_CACHE).then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+          }
           return response;
-        }
+        })
+        .catch(() => {
+          // Fallback to cache for API calls when offline
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
 
-        // Clone the request
-        const fetchRequest = event.request.clone();
-
-        return fetch(fetchRequest).then(response => {
-          // Check if valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
+  // Cache-first strategy for assets
+  if (isAsset || url.includes('/assets/')) {
+    event.respondWith(
+      caches.match(event.request)
+        .then(response => {
+          if (response) {
+            // Return cached version
             return response;
           }
-
-          // Clone the response
-          const responseToCache = response.clone();
-
-          // Determine which cache to use
-          const isAPI = event.request.url.includes('/api/') || 
-                       event.request.url.includes('supabase');
-          const cacheName = isAPI ? RUNTIME_CACHE : CACHE_NAME;
-
-          // Cache dynamic content for offline use
-          caches.open(cacheName)
-            .then(cache => {
-              // Cache API responses with expiration
-              if (isAPI) {
-                // Add timestamp to API responses
-                const headers = new Headers(responseToCache.headers);
-                headers.append('sw-fetched-on', new Date().getTime().toString());
-                
-                return responseToCache.blob().then(body => {
-                  return cache.put(event.request, new Response(body, {
-                    status: responseToCache.status,
-                    statusText: responseToCache.statusText,
-                    headers: headers
-                  }));
-                });
-              } else if (event.request.url.includes('.js') || 
-                        event.request.url.includes('.css') ||
-                        event.request.url.includes('.json') ||
-                        event.request.url.includes('.png') ||
-                        event.request.url.includes('.jpg') ||
-                        event.request.url.includes('.jpeg') ||
-                        event.request.url.includes('.webp')) {
-                cache.put(event.request, responseToCache);
-              }
+          
+          // Fetch and cache new assets
+          return fetch(event.request).then(response => {
+            if (!response || response.status !== 200) {
+              return response;
+            }
+            
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseToCache);
             });
+            
+            return response;
+          });
+        })
+    );
+    return;
+  }
 
-          return response;
-        });
-      })
+  // Network-first for everything else (HTML pages)
+  event.respondWith(
+    fetch(event.request)
       .catch(() => {
-        // Offline fallback for navigation requests
-        if (event.request.destination === 'document') {
+        // For navigation requests, return offline page
+        if (event.request.mode === 'navigate') {
           return caches.match('/offline.html');
         }
+        // Try cache for other requests
+        return caches.match(event.request);
       })
   );
 });
@@ -120,11 +137,67 @@ self.addEventListener('fetch', event => {
 self.addEventListener('sync', event => {
   if (event.tag === 'sync-contacts') {
     event.waitUntil(syncContacts());
+  } else if (event.tag === 'sync-messages') {
+    event.waitUntil(syncMessages());
   }
+});
+
+// Handle messages from the app
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// Push notifications
+self.addEventListener('push', event => {
+  if (!event.data) return;
+  
+  const data = event.data.json();
+  const options = {
+    body: data.body,
+    icon: '/icon-192.png',
+    badge: '/icon-96.png',
+    vibrate: [200, 100, 200],
+    data: data.data,
+    actions: data.actions || []
+  };
+  
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+// Notification click handler
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  
+  const urlToOpen = event.notification.data?.url || '/';
+  
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(windowClients => {
+        // Check if there's already a window/tab open
+        for (const client of windowClients) {
+          if (client.url === urlToOpen && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        // Open new window if not found
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen);
+        }
+      })
+  );
 });
 
 async function syncContacts() {
   // This will be called when connectivity is restored
   console.log('Syncing contacts...');
-  // Implementation will depend on your sync strategy
+  // The actual sync is handled by EnhancedSyncService in the app
+}
+
+async function syncMessages() {
+  console.log('Syncing messages...');
+  // Handle message sync when back online
 }
