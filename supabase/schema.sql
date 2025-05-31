@@ -325,6 +325,21 @@ CREATE TABLE campaign_donations (
     donated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Campaign Assets (for email templates, scripts, etc)
+CREATE TABLE campaign_assets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    campaign_id UUID NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+    organization_id UUID NOT NULL REFERENCES organizations(id),
+    asset_type TEXT NOT NULL CHECK (asset_type IN ('email_template', 'sms_template', 'phone_script', 'social_post', 'image', 'document')),
+    name TEXT NOT NULL,
+    content TEXT,
+    metadata JSONB DEFAULT '{}',
+    is_primary BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES users(id),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- STEP 5: SPECIALIZED TABLES
 
 -- Petition Signatures
@@ -505,6 +520,8 @@ CREATE INDEX idx_campaigns_type ON campaigns(type);
 CREATE INDEX idx_campaign_activities_campaign_id ON campaign_activities(campaign_id);
 CREATE INDEX idx_campaign_activities_contact_id ON campaign_activities(contact_id);
 CREATE INDEX idx_campaign_activities_organization_id ON campaign_activities(organization_id);
+CREATE INDEX idx_campaign_assets_campaign_id ON campaign_assets(campaign_id);
+CREATE INDEX idx_campaign_assets_organization_id ON campaign_assets(organization_id);
 
 CREATE INDEX idx_webhook_configs_organization_id ON webhook_configs(organization_id);
 CREATE INDEX idx_webhook_events_webhook_id ON webhook_events(webhook_id);
@@ -823,7 +840,7 @@ CREATE OR REPLACE FUNCTION generate_recurring_events(
 DECLARE
     parent_event events%ROWTYPE;
     recurrence JSONB;
-    current_date TIMESTAMPTZ;
+    curr_date TIMESTAMPTZ;
     occurrence_count INTEGER := 0;
     max_occurrences INTEGER;
     frequency TEXT;
@@ -857,21 +874,21 @@ BEGIN
         end_date := start_date + INTERVAL '1 year';
     END IF;
     
-    current_date := parent_event.start_time;
+    curr_date := parent_event.start_time;
     
     -- Generate occurrences
-    WHILE current_date <= end_date AND (end_type != 'after' OR occurrence_count < max_occurrences) LOOP
+    WHILE curr_date <= end_date AND (end_type != 'after' OR occurrence_count < max_occurrences) LOOP
         -- Skip if this date is in exceptions
         IF recurrence->'exceptions' IS NOT NULL AND 
-           recurrence->'exceptions' @> to_jsonb(current_date::DATE::TEXT) THEN
+           recurrence->'exceptions' @> to_jsonb(curr_date::DATE::TEXT) THEN
             -- Skip this occurrence
-        ELSIF current_date > parent_event.start_time THEN
+        ELSIF curr_date > parent_event.start_time THEN
             -- Create occurrence (skip the first one as it's the parent)
             parent_event.id := gen_random_uuid();
             parent_event.parent_event_id := parent_id;
-            parent_event.start_time := current_date;
-            parent_event.end_time := current_date + event_duration;
-            parent_event.occurrence_date := current_date::DATE;
+            parent_event.start_time := curr_date;
+            parent_event.end_time := curr_date + event_duration;
+            parent_event.occurrence_date := curr_date::DATE;
             parent_event.is_recurring := false;
             parent_event.recurrence_rule := NULL;
             parent_event.created_at := NOW();
@@ -884,13 +901,13 @@ BEGIN
         -- Calculate next occurrence
         CASE frequency
             WHEN 'daily' THEN
-                current_date := current_date + (interval_value || ' days')::INTERVAL;
+                curr_date := curr_date + (interval_value || ' days')::INTERVAL;
             WHEN 'weekly' THEN
-                current_date := current_date + (interval_value || ' weeks')::INTERVAL;
+                curr_date := curr_date + (interval_value || ' weeks')::INTERVAL;
             WHEN 'monthly' THEN
-                current_date := current_date + (interval_value || ' months')::INTERVAL;
+                curr_date := curr_date + (interval_value || ' months')::INTERVAL;
             WHEN 'yearly' THEN
-                current_date := current_date + (interval_value || ' years')::INTERVAL;
+                curr_date := curr_date + (interval_value || ' years')::INTERVAL;
         END CASE;
     END LOOP;
 END;
