@@ -71,8 +71,8 @@ See [TODO.md](TODO.md) for detailed development roadmap.
 
 1. Clone and install:
 ```bash
-git clone <repo>
-cd contact-manager-pwa
+git clone https://github.com/rabble/rabblelist.git
+cd rabblelist
 npm install
 ```
 
@@ -82,7 +82,7 @@ npm install
 npm run dev
 ```
 
-3. Open http://localhost:5173 and login with any email/password
+3. Open [http://localhost:5173](http://localhost:5173) and login with any email/password
 
 ### Production Mode (With Supabase)
 
@@ -140,7 +140,11 @@ The app uses these main tables:
 - `events`: Event management
 - `call_assignments`: Contact-to-ringer assignments
 
+For detailed schema documentation, see [SCHEMA_DOCUMENTATION.md](SCHEMA_DOCUMENTATION.md).
+
 ## 🚀 Deployment
+
+For detailed deployment instructions, see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md).
 
 ### Build for Production
 
@@ -194,21 +198,23 @@ MIT License - feel free to use for your organization
 4. Push to the branch
 5. Open a Pull Request
 
+See [CHANGELOG.md](CHANGELOG.md) for recent changes and development history.
+
 ## 🐛 Troubleshooting
 
 ### "Invalid login credentials"
-- In demo mode: Any email/password works
-- In Supabase mode: User must exist in Supabase Auth
+- **In demo mode**: Any email/password combination will work
+- **In Supabase mode**: User must be created in Supabase Auth first
 
 ### No contacts showing
-- Check that test data was inserted
-- Verify user's organization_id matches contacts
-- Check browser console for errors
+- **Check test data**: Verify that sample data was inserted into the database
+- **Organization mismatch**: Ensure user's organization_id matches the contacts' organization_id
+- **Console errors**: Check browser developer console for any JavaScript errors
 
 ### PWA not installing
-- Must be served over HTTPS (or localhost)
-- Check that manifest.json is loading
-- Verify service worker registration
+- **HTTPS required**: App must be served over HTTPS (localhost is also acceptable)
+- **Manifest file**: Check that manifest.json is loading correctly in Network tab
+- **Service worker**: Verify service worker registration in Application tab of DevTools
 
 ## 📞 Support
 
